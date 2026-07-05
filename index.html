@@ -1,0 +1,1783 @@
+<!doctype html>
+<!--
+  Kalcul — Application de facturation, devis et calcul de marge.
+  © Empire Donko. Tous droits réservés.
+  Toute reproduction, redistribution ou exploitation commerciale de ce code,
+  en tout ou partie, sans autorisation écrite d'Empire Donko est interdite
+  (voir Conditions Générales d'Utilisation et Mentions Légales de l'application).
+  Contact : empiredonko@gmail.com
+-->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Kalcul — Factures, devis &amp; marges</title>
+<meta name="description" content="Kalcul : facturation, devis et calcul de marge, 100% local, sans inscription.">
+
+<!-- PWA : installabilité + icônes (Chrome/Android, Safari/iOS) -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1B3358">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kalcul">
+<style>
+/* ============================================================
+   KALCUL — design tokens
+   Palette : papier bogolan (crème), indigo profond, ocre doré
+   Type    : serif système (titres), sans système (corps),
+             mono système (montants — lecture "livre de comptes")
+   Signature : liseré tissé (motif bogolan) + chiffres tabulaires
+   ============================================================ */
+:root{
+  --paper:#F7F1E1;
+  --paper-2:#EFE6CC;
+  --ink:#241B10;
+  --ink-soft:#5B4E3A;
+  --indigo:#1B3358;
+  --indigo-deep:#12233E;
+  --ochre:#C08A28;
+  --ochre-soft:#E7C978;
+  --clay:#8B3A2B;
+  --success:#2F6B44;
+  --line:#D9CBA0;
+  --white:#FFFDF6;
+  --radius:10px;
+  --display: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+  --body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --mono: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+:root[data-theme="dark"]{
+  --paper:#171310;
+  --paper-2:#221C15;
+  --ink:#F3ECDC;
+  --ink-soft:#C4B89C;
+  --indigo:#3E5C89;
+  --indigo-deep:#5B7CAE;
+  --ochre:#E0AA45;
+  --ochre-soft:#8A6A2A;
+  --clay:#D97F66;
+  --success:#5FAE79;
+  --line:#3A3226;
+  --white:#231C14;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--body);
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:74px;
+  transition:background .2s, color .2s;
+}
+h1,h2,h3{font-family:var(--display); font-weight:600; margin:0 0 4px;}
+.mono, .amount{font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:-0.2px;}
+button{font-family:inherit;}
+::selection{background:var(--ochre-soft);}
+
+/* woven divider — the signature motif */
+.weave{
+  height:8px;
+  background-image: repeating-linear-gradient(135deg, var(--indigo) 0 3px, transparent 3px 8px),
+                     repeating-linear-gradient(45deg, var(--ochre) 0 3px, transparent 3px 8px);
+  background-size: 16px 16px, 16px 16px;
+  background-position: 0 0, 0 0;
+  opacity:.85;
+}
+
+/* header */
+header.top{
+  background:var(--indigo-deep);
+  color:#fff;
+  padding:14px 18px 14px;
+  position:sticky; top:0; z-index:20;
+}
+.top-row{display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}
+header.top .brand{
+  display:flex; align-items:baseline; gap:8px;
+}
+header.top .brand .mark{
+  font-family:var(--display); font-size:22px; font-weight:700; letter-spacing:.5px;
+}
+header.top .brand .tag{font-size:11px; color:var(--ochre-soft); text-transform:uppercase; letter-spacing:1.5px;}
+header.top .company{margin-top:6px; font-size:13px; color:#D9CFE0; display:flex; align-items:center; gap:8px;}
+header.top .company img{width:22px;height:22px;border-radius:5px;object-fit:cover;background:#fff;}
+.theme-toggle{
+  flex-shrink:0; width:34px; height:34px; border-radius:50%; border:none;
+  background:rgba(255,255,255,.12); color:#fff; font-size:15px; cursor:pointer;
+}
+.theme-toggle:hover{background:rgba(255,255,255,.2);}
+
+main{max-width:640px; margin:0 auto; padding:16px;}
+.view{display:none;}
+.view.active{display:block; animation:fade .18s ease;}
+@keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+
+.card{
+  background:var(--white);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:16px;
+  margin-bottom:14px;
+}
+.card h2{font-size:17px; color:var(--indigo-deep);}
+.card .sub{font-size:12.5px; color:var(--ink-soft); margin-bottom:12px;}
+
+label{display:block; font-size:12.5px; color:var(--ink-soft); margin:10px 0 4px; font-weight:600;}
+input[type=text], input[type=tel], input[type=number], input[type=date], textarea, select{
+  width:100%; padding:10px 11px; border:1px solid var(--line); border-radius:8px;
+  background:var(--paper); color:var(--ink); font-size:14.5px; font-family:var(--body);
+}
+input.mono-input{font-family:var(--mono);}
+textarea{resize:vertical; min-height:56px;}
+input:focus, textarea:focus, select:focus, button:focus-visible{
+  outline:2px solid var(--ochre); outline-offset:1px; border-color:var(--ochre);
+}
+
+.row{display:flex; gap:8px;}
+.row > *{flex:1;}
+
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  padding:11px 16px; border-radius:8px; border:1px solid transparent;
+  font-size:14px; font-weight:600; cursor:pointer; text-decoration:none;
+}
+.btn-primary{background:var(--indigo); color:#fff;}
+.btn-primary:hover{background:var(--indigo-deep);}
+.btn-ochre{background:var(--ochre); color:#241B10;}
+.btn-ochre:hover{filter:brightness(1.05);}
+.btn-ghost{background:transparent; border-color:var(--line); color:var(--ink);}
+.btn-ghost:hover{background:var(--paper-2);}
+.btn-danger{background:transparent; border-color:var(--clay); color:var(--clay);}
+.btn-block{width:100%;}
+.btn-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;}
+.btn:disabled{opacity:.4; cursor:not-allowed;}
+
+.segmented{display:flex; border:1px solid var(--indigo); border-radius:8px; overflow:hidden;}
+.segmented button{flex:1; padding:9px; border:none; background:var(--white); color:var(--indigo); font-weight:700; font-size:13.5px; cursor:pointer;}
+.segmented button.active{background:var(--indigo); color:#fff;}
+
+table.items{width:100%; border-collapse:collapse; margin-top:6px;}
+table.items th{font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--ink-soft); text-align:left; padding:6px 4px; border-bottom:1px solid var(--line);}
+table.items td{padding:6px 4px; border-bottom:1px solid #EFE6CC; vertical-align:middle;}
+table.items td input{padding:7px 8px; font-size:13.5px;}
+table.items td.qty input, table.items td.price input{text-align:right;}
+table.items td.amount{text-align:right; font-size:13.5px; white-space:nowrap;}
+.rm-row{background:none;border:none;color:var(--clay);font-size:16px;cursor:pointer;padding:2px 6px;}
+
+.totals{margin-top:10px; padding-top:10px; border-top:1px dashed var(--line);}
+.totals .line{display:flex; justify-content:space-between; padding:3px 0; font-size:13.5px;}
+.totals .line.total{font-size:18px; font-weight:700; color:var(--indigo-deep); border-top:2px solid var(--ink); margin-top:6px; padding-top:8px;}
+
+.badge{display:inline-block; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; padding:3px 8px; border-radius:99px;}
+.badge.facture{background:#E2ECE3; color:var(--success);}
+.badge.devis{background:#E8E1F3; color:#4B3585;}
+.badge.pro{background:var(--ochre-soft); color:#5A3E00;}
+.badge.free{background:var(--paper-2); color:var(--ink-soft);}
+
+.hist-item{display:flex; justify-content:space-between; align-items:center; padding:12px 4px; border-bottom:1px solid var(--line); cursor:pointer;}
+.hist-item:last-child{border-bottom:none;}
+.hist-item .meta{display:flex; flex-direction:column; gap:2px;}
+.hist-item .meta .num{font-weight:700; font-size:14px;}
+.hist-item .meta .client{font-size:12.5px; color:var(--ink-soft);}
+.hist-item .right{text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:3px;}
+.empty{text-align:center; padding:34px 10px; color:var(--ink-soft);}
+.empty .glyph{font-size:30px; margin-bottom:8px; opacity:.6;}
+
+.paywall{border:1px solid var(--ochre); background:#FBF3DE;}
+.paywall h2{color:#5A3E00;}
+.result-box{background:var(--paper-2); border-radius:8px; padding:14px; margin-top:12px;}
+.result-box .big{font-size:24px; font-weight:700; color:var(--indigo-deep);}
+.result-box .small{font-size:12px; color:var(--ink-soft); margin-top:2px;}
+
+.hint{font-size:12px; color:var(--ink-soft); margin-top:6px; line-height:1.5;}
+.notice{font-size:12px; background:#EFE6CC; border-left:3px solid var(--ochre); padding:8px 10px; border-radius:6px; margin-top:10px; color:var(--ink-soft);}
+
+nav.bottom{
+  position:fixed; bottom:0; left:0; right:0; z-index:30;
+  background:var(--indigo); border-top:1px solid var(--indigo-deep);
+  display:flex; padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+}
+nav.bottom button{
+  flex:1; background:none; border:none; color:#B9C3D6; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 2px; font-size:10.5px; border-radius:8px;
+}
+nav.bottom button .ic{font-size:18px;}
+nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
+
+.logo-preview{width:52px; height:52px; border-radius:8px; object-fit:cover; border:1px solid var(--line); background:var(--paper-2);}
+
+#print-area{display:none;}
+@media print{
+  body *{visibility:hidden;}
+  #print-area, #print-area *{visibility:visible;}
+  #print-area{display:block; position:absolute; top:0; left:0; width:100%; padding:24px; font-family:var(--body); color:#000;}
+  nav.bottom, header.top{display:none;}
+}
+@media (max-width:400px){
+  table.items th:nth-child(1), table.items td:nth-child(1){display:none;}
+}
+
+/* pied de page — contact partenariat */
+.site-footer{margin:26px 0 18px; padding-top:18px; border-top:1px dashed var(--line);}
+.foot-title{font-family:var(--display); font-size:15.5px; font-weight:700; color:var(--indigo-deep);}
+.foot-sub{font-size:12.5px; color:var(--ink-soft); margin:4px 0 12px;}
+.foot-links{display:flex; gap:10px; flex-wrap:wrap;}
+.foot-btn{
+  display:inline-flex; align-items:center; gap:8px; padding:9px 15px;
+  border-radius:99px; border:1px solid var(--line); background:var(--white);
+  text-decoration:none; color:var(--ink); font-size:13.5px; font-weight:600;
+  transition:border-color .15s, background .15s;
+}
+.foot-btn:hover{background:var(--paper-2); border-color:var(--ochre);}
+.foot-btn svg{flex-shrink:0;}
+.foot-note{margin-top:10px; font-size:11.5px; color:var(--ink-soft); font-family:var(--mono);}
+.legal-footer-links{margin-top:12px; font-size:11px; color:var(--ink-soft);}
+.legal-footer-links a{color:var(--ink-soft); text-decoration:underline; cursor:pointer;}
+.powered-by{margin-top:8px; font-size:11px; color:var(--ink-soft);}
+.powered-by strong{color:var(--ink);}
+
+/* modale CGU / mentions / politique / à propos */
+.legal-overlay{
+  position:fixed; inset:0; background:rgba(18,14,8,.6); z-index:100;
+  display:flex; align-items:flex-end; justify-content:center;
+}
+.legal-modal{
+  background:var(--white); width:100%; max-width:640px; max-height:86vh;
+  border-radius:16px 16px 0 0; display:flex; flex-direction:column; overflow:hidden;
+  box-shadow:0 -8px 30px rgba(0,0,0,.25);
+}
+.legal-modal-header{
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+  padding:14px 16px; background:var(--indigo-deep); color:#fff; flex-shrink:0;
+}
+.legal-modal-header span{font-family:var(--display); font-weight:700; font-size:15.5px;}
+.legal-modal-header button{
+  background:rgba(255,255,255,.15); border:none; color:#fff; width:30px; height:30px;
+  border-radius:50%; cursor:pointer; font-size:13px; flex-shrink:0;
+}
+.legal-modal-body{padding:16px 18px 34px; overflow-y:auto; font-size:13px; line-height:1.65; color:var(--ink);}
+.legal-modal-body h3{font-family:var(--body); font-size:13.5px; font-weight:700; margin:18px 0 6px; color:var(--indigo-deep);}
+.legal-modal-body h3:first-child{margin-top:0;}
+.legal-modal-body p{margin:0 0 10px;}
+.legal-modal-body ul{margin:0 0 10px; padding-left:20px;}
+.legal-modal-body li{margin-bottom:4px;}
+.legal-modal-body .legal-meta{font-size:11px; color:var(--ink-soft); margin-bottom:14px;}
+
+/* historique — actions */
+.hist-actions{display:flex; gap:10px; font-size:11px; margin-top:2px;}
+.edit-doc{color:var(--ochre); cursor:pointer; font-weight:600;}
+.img-doc{color:var(--indigo); cursor:pointer; font-weight:600;}
+.del-doc{color:var(--clay); cursor:pointer; font-weight:600;}
+.del-doc.confirming{color:#fff; background:var(--clay); padding:2px 7px; border-radius:99px;}
+
+/* plans d'abonnement */
+.plans{display:flex; flex-direction:column; gap:8px; margin:12px 0;}
+.plan-card{border:1.5px solid var(--line); border-radius:10px; padding:10px 12px; cursor:pointer; background:var(--paper);}
+.plan-card.selected{border-color:var(--indigo); background:var(--white); box-shadow:0 0 0 1.5px var(--indigo) inset;}
+.plan-top{display:flex; justify-content:space-between; align-items:center; gap:8px;}
+.plan-label{font-weight:700; font-size:13.5px;}
+.plan-badge{font-size:9.5px; text-transform:uppercase; letter-spacing:.4px; background:var(--ochre); color:#241B10; padding:2px 7px; border-radius:99px; font-weight:700; white-space:nowrap;}
+.plan-price{font-size:17px; font-weight:700; color:var(--indigo-deep); margin-top:3px;}
+.plan-sub{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-row">
+    <div class="brand"><span class="mark">Kalcul</span><span class="tag">Facture · Devis · Marge</span></div>
+    <button type="button" id="themeToggleBtn" class="theme-toggle" aria-label="Changer de thème">🌙</button>
+  </div>
+  <div class="company" id="companyStrip">
+    <span id="companyName">Configurez votre entreprise dans Réglages</span>
+  </div>
+</header>
+<div class="weave"></div>
+
+<main>
+
+  <!-- ===== VUE : NOUVEAU DOCUMENT ===== -->
+  <section class="view active" id="view-new">
+    <div class="card" id="quotaCard" style="display:none;"></div>
+
+    <div class="card" id="editorCard">
+      <div class="notice" id="currencyInputHintNew" style="display:none;">Saisissez vos prix en FCFA — l'affichage ci-dessous suit la devise choisie dans Réglages.</div>
+      <div class="segmented" role="tablist" aria-label="Type de document">
+        <button type="button" data-doctype="facture" class="active">Facture</button>
+        <button type="button" data-doctype="devis">Devis</button>
+      </div>
+
+      <label for="clientName">Client</label>
+      <input type="text" id="clientName" placeholder="Nom du client ou de l'entreprise">
+
+      <div class="row">
+        <div>
+          <label for="clientPhone">Téléphone client</label>
+          <input type="tel" id="clientPhone" placeholder="+229 ...">
+        </div>
+        <div>
+          <label for="docDate">Date</label>
+          <input type="date" id="docDate">
+        </div>
+      </div>
+
+      <label style="margin-top:16px;">Articles / prestations</label>
+      <table class="items">
+        <thead>
+          <tr><th style="width:44%;">Description</th><th style="width:16%;">Qté</th><th style="width:24%;">Prix U.</th><th style="width:24%;">Montant</th><th></th></tr>
+        </thead>
+        <tbody id="itemsBody"></tbody>
+      </table>
+      <button type="button" class="btn btn-ghost" id="addItemBtn" style="margin-top:8px;">+ Ajouter une ligne</button>
+
+      <div class="row" style="margin-top:14px;">
+        <div>
+          <label for="discountPct">Remise (%)</label>
+          <input type="number" id="discountPct" class="mono-input" min="0" max="100" value="0">
+        </div>
+        <div>
+          <label for="taxPct">TVA (%)</label>
+          <input type="number" id="taxPct" class="mono-input" min="0" max="100" value="0">
+        </div>
+      </div>
+
+      <label for="notes">Notes / conditions</label>
+      <textarea id="notes" placeholder="Ex : Paiement à réception, validité du devis 15 jours..."></textarea>
+
+      <div class="totals">
+        <div class="line"><span>Sous-total</span><span class="amount" id="tSubtotal">0</span></div>
+        <div class="line"><span>Remise</span><span class="amount" id="tDiscount">0</span></div>
+        <div class="line"><span>TVA</span><span class="amount" id="tTax">0</span></div>
+        <div class="line total"><span>Total</span><span class="amount" id="tTotal">0 F CFA</span></div>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" id="saveDocBtn">Enregistrer</button>
+        <button type="button" class="btn btn-ghost" id="printDocBtn" disabled>Imprimer / PDF</button>
+        <button type="button" class="btn btn-ghost" id="imageDocBtn" disabled>Télécharger en image</button>
+        <button type="button" class="btn btn-ghost" id="resetDocBtn">Nouveau</button>
+      </div>
+      <p class="hint">Enregistrez d'abord le document : Imprimer/PDF et Télécharger en image s'activent juste après. L'export PDF utilise la fonction « Imprimer » de votre navigateur — aucune connexion requise.</p>
+    </div>
+  </section>
+
+  <!-- ===== VUE : CALCUL DE MARGE ===== -->
+  <section class="view" id="view-margin">
+    <div class="notice" id="currencyInputHintMargin" style="display:none;">Saisissez vos montants en FCFA — les résultats ci-dessous suivent la devise choisie dans Réglages.</div>
+    <div class="card">
+      <h2>Prix de vente conseillé</h2>
+      <div class="sub">À partir de votre coût, obtenez le prix qui garantit votre marge cible.</div>
+      <label for="mCost">Prix d'achat (unitaire)</label>
+      <input type="number" id="mCost" class="mono-input" min="0" placeholder="0">
+      <label for="mExtra">Frais additionnels (transport, douane...)</label>
+      <input type="number" id="mExtra" class="mono-input" min="0" placeholder="0">
+      <label for="mTargetMargin">Marge cible (%)</label>
+      <input type="number" id="mTargetMargin" class="mono-input" min="0" max="95" placeholder="30">
+      <button type="button" class="btn btn-primary btn-block" id="calcSuggestBtn" style="margin-top:12px;">Calculer le prix de vente</button>
+      <div class="result-box" id="suggestResult" style="display:none;"></div>
+    </div>
+
+    <div class="card">
+      <h2>Marge réalisée</h2>
+      <div class="sub">Vous connaissez déjà votre prix de vente ? Vérifiez votre marge réelle.</div>
+      <label for="rCost">Coût total (achat + frais)</label>
+      <input type="number" id="rCost" class="mono-input" min="0" placeholder="0">
+      <label for="rPrice">Prix de vente</label>
+      <input type="number" id="rPrice" class="mono-input" min="0" placeholder="0">
+      <button type="button" class="btn btn-primary btn-block" id="calcRealBtn" style="margin-top:12px;">Calculer la marge</button>
+      <div class="result-box" id="realResult" style="display:none;"></div>
+    </div>
+  </section>
+
+  <!-- ===== VUE : HISTORIQUE ===== -->
+  <section class="view" id="view-history">
+    <div class="card">
+      <h2>Historique</h2>
+      <div class="sub">Toutes vos factures et devis, enregistrés uniquement sur cet appareil.</div>
+      <div id="historyList"></div>
+    </div>
+  </section>
+
+  <!-- ===== VUE : REGLAGES ===== -->
+  <section class="view" id="view-settings">
+    <div class="card" id="installCard" style="display:none;">
+      <h2>Installer l'application</h2>
+      <div class="sub">Ajoutez Kalcul à votre écran d'accueil pour l'ouvrir comme une vraie application, en un tap, même hors connexion.</div>
+      <button type="button" class="btn btn-primary btn-block" id="installAppBtn">📲 Installer Kalcul</button>
+    </div>
+
+    <div class="card">
+      <h2>Mon entreprise</h2>
+      <div class="sub">Ces informations apparaissent sur vos factures et devis.</div>
+
+      <label for="setName">Nom de l'entreprise</label>
+      <input type="text" id="setName" placeholder="Ex : Boutique Awa">
+
+      <label for="setAddress">Adresse</label>
+      <input type="text" id="setAddress" placeholder="Ville, quartier...">
+
+      <label for="setCountry">Pays</label>
+      <select id="setCountry">
+        <option value="BJ">Bénin</option>
+        <option value="TG">Togo</option>
+        <option value="CI">Côte d'Ivoire</option>
+        <option value="SN">Sénégal</option>
+        <option value="NE">Niger</option>
+        <option value="ML">Mali</option>
+        <option value="BF">Burkina Faso</option>
+      </select>
+
+      <label for="setPhone">Téléphone</label>
+      <input type="tel" id="setPhone" placeholder="+229...">
+      <div class="hint" id="phoneExampleHint">Exemple pour le Bénin : +2290190000000</div>
+
+      <label>Logo (optionnel)</label>
+      <div class="row" style="align-items:center;">
+        <img id="logoPreview" class="logo-preview" alt="">
+        <input type="file" id="logoInput" accept="image/*">
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" id="saveSettingsBtn">Enregistrer</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Devise d'affichage</h2>
+      <div class="sub">Les montants saisis restent en FCFA. Cette devise ne change que l'affichage — la conversion est automatique et instantanée.</div>
+      <select id="setCurrency">
+        <option value="XOF">FCFA (F CFA)</option>
+        <option value="EUR">Euro (€)</option>
+        <option value="USD">Dollar US ($)</option>
+      </select>
+      <div class="hint" id="rateStatusHint"></div>
+    </div>
+
+    <div class="card">
+      <h2>Sauvegarde &amp; restauration</h2>
+      <div class="sub">Changez de téléphone sans rien perdre : factures, devis, réglages et abonnement Kalcul Pro.</div>
+
+      <button type="button" class="btn btn-primary btn-block" id="exportBackupBtn">⬇️ Télécharger une sauvegarde</button>
+      <p class="hint">Envoyez ce fichier vers votre nouveau téléphone (WhatsApp, email, Bluetooth ou Google Drive), puis ouvrez Kalcul dessus et utilisez « Restaurer » ci-dessous.</p>
+
+      <label for="restoreFileInput" style="margin-top:16px;">Fichier de sauvegarde</label>
+      <input type="file" id="restoreFileInput" accept="application/json,.json">
+      <button type="button" class="btn btn-ochre btn-block" id="restoreBackupBtn" style="margin-top:10px;">⬆️ Restaurer cette sauvegarde</button>
+      <div class="notice">La restauration remplace toutes les données présentes sur cet appareil par celles du fichier choisi — y compris le statut Kalcul Pro, reconnu automatiquement, sans nous contacter.</div>
+    </div>
+  </section>
+
+  <!-- ===== VUE : ABONNEMENT ===== -->
+  <section class="view" id="view-pro">
+    <div class="card">
+      <h2>Kalcul Pro</h2>
+      <div class="sub" id="proStatusLine">Chargement du statut...</div>
+      <div id="proDetails"></div>
+
+      <div class="plans" id="plansList"></div>
+
+      <div class="btn-row">
+        <button id="pay-btn" type="button" class="btn btn-ochre btn-block">Payer et débloquer — <span id="payAmountLabel"></span></button>
+      </div>
+      <p class="hint">Paiement unique via FedaPay (Mobile Money) — aucun prélèvement automatique, aucune carte ni numéro enregistré chez nous. À la fin de la période, revenez ici et repayez le plan de votre choix pour continuer. C'est le seul moment où une connexion est nécessaire.</p>
+      <div class="notice">Le déverrouillage est enregistré sur cet appareil. Pour le retrouver sur un nouveau téléphone, utilisez Réglages → Sauvegarde &amp; restauration — aucun contact nécessaire.</div>
+    </div>
+  </section>
+
+  <!-- ===== PIED DE PAGE : PARTENARIAT / OUTILS SUR MESURE ===== -->
+  <footer class="site-footer">
+    <div class="foot-title">Partenariat &amp; outils personnalisés</div>
+    <div class="foot-sub">Une idée d'outil sur mesure pour votre activité ? Écrivez-nous.</div>
+    <div class="foot-links">
+      <a class="foot-btn wa" href="https://wa.me/2290196809106?text=Bonjour%2C%20je%20vous%20contacte%20depuis%20Kalcul." target="_blank" rel="noopener noreferrer" aria-label="Contacter sur WhatsApp">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <circle cx="12" cy="12" r="12" fill="#25D366"/>
+          <path fill="#fff" d="M12 6.2a5.8 5.8 0 0 0-5 8.7l-.8 2.9 3-.8a5.8 5.8 0 1 0 2.8-10.8Zm0 1.3a4.5 4.5 0 0 1 3.9 6.8 4.5 4.5 0 0 1-7 1.1l-.2-.1-1.7.4.5-1.6-.1-.2a4.5 4.5 0 0 1 4.6-6.4Zm-2.1 2.3c-.1 0-.3 0-.4.2-.2.2-.6.6-.6 1.4s.6 1.7.7 1.8c.1.1 1.2 2 3 2.6.4.2.8.3 1 .3.5.1.9.1 1.2-.1.3-.2.6-.6.7-.9l.1-.4-1.6-.8-.5.6c0 .1-.1.1-.3 0-.2-.1-.7-.3-1.3-.9-.5-.4-.9-1-1-1.2-.1-.2 0-.2 0-.3l.4-.5c.1-.1.1-.2 0-.3l-.6-1.3c-.1-.2-.2-.2-.4-.2h-.3Z"/>
+        </svg>
+        <span>WhatsApp</span>
+      </a>
+      <a class="foot-btn mail" href="mailto:empiredonko@gmail.com?subject=Partenariat%20%2F%20outil%20personnalis%C3%A9%20-%20Kalcul" aria-label="Contacter par email">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <circle cx="12" cy="12" r="12" fill="#1B3358"/>
+          <path fill="#fff" d="M6.5 8.3h11c.6 0 1 .4 1 1v5.4c0 .6-.4 1-1 1h-11c-.6 0-1-.4-1-1V9.3c0-.6.4-1 1-1Zm.7 1.1L12 12.9l4.8-3.5H7.2Z"/>
+        </svg>
+        <span>Email</span>
+      </a>
+    </div>
+    <div class="foot-note">+229 01 96 80 91 06 · empiredonko@gmail.com</div>
+    <div class="legal-footer-links">
+      <a href="#" data-legal="cgu">CGU</a> · <a href="#" data-legal="mentions">Mentions légales</a> · <a href="#" data-legal="politique">Politique d'utilisation</a> · <a href="#" data-legal="apropos">À propos</a>
+    </div>
+    <div class="powered-by">Powered by <strong>EMPIRE DONKO</strong></div>
+  </footer>
+
+  <div id="legalModalOverlay" class="legal-overlay" style="display:none;">
+    <div class="legal-modal">
+      <div class="legal-modal-header">
+        <span id="legalModalTitle">Titre</span>
+        <button type="button" id="legalModalClose" aria-label="Fermer">✕</button>
+      </div>
+      <div class="legal-modal-body" id="legalModalBody"></div>
+    </div>
+  </div>
+
+</main>
+
+<div id="print-area"></div>
+
+<nav class="bottom">
+  <button data-view="view-new" class="active"><span class="ic">🧾</span>Document</button>
+  <button data-view="view-margin"><span class="ic">➗</span>Marge</button>
+  <button data-view="view-history"><span class="ic">🗂️</span>Historique</button>
+  <button data-view="view-settings"><span class="ic">⚙️</span>Réglages</button>
+  <button data-view="view-pro"><span class="ic">★</span>Pro</button>
+</nav>
+
+<!-- FedaPay Checkout.js — chargé uniquement pour le paiement de l'abonnement -->
+<script src="https://cdn.fedapay.com/checkout.js?v=1.1.7"></script>
+
+<script>
+(function(){
+"use strict";
+
+console.log(
+  "%cArrêtez !",
+  "color:#8B3A2B; font-size:28px; font-weight:bold;"
+);
+console.log(
+  "%cCette console est un outil pour développeurs. Coller ici du code fourni par une autre personne peut compromettre vos données locales (factures, réglages) ou votre statut Kalcul Pro. Ne collez rien ici si vous n'êtes pas sûr de ce que ça fait.\n\nKalcul — © Empire Donko. Code protégé par le droit d'auteur (voir Mentions Légales dans l'application).",
+  "font-size:13px;"
+);
+
+/* ============================================================
+   CONFIGURATION — à personnaliser avant mise en ligne
+   ============================================================ */
+const CONFIG = {
+  FEDAPAY_PUBLIC_KEY: "pk_live_9iYiCnrfVLTqtOQ6-aDRynRV", // ⚠️ clé PUBLIQUE uniquement, jamais la clé secrète
+  FEDAPAY_ENV: "live",       // "sandbox" pour tester, "live" en production
+  CURRENCY: "XOF",          // devise réelle du prélèvement FedaPay — reste XOF (Mobile Money local), quelle que soit la devise d'affichage choisie
+  FREE_DOCS_LIMIT: 3         // documents gratuits avant paiement requis
+};
+
+// Plans d'abonnement — prix en FCFA (devise réelle du prélèvement).
+// "days: null" = plan à vie, jamais d'expiration. Modifiable librement ici.
+const PLANS = [
+  { id:"month1",   label:"Mensuel",     days:30,   price:2000  },
+  { id:"month2",   label:"Bimestriel",  days:60,   price:3600  },
+  { id:"month3",   label:"Trimestriel", days:90,   price:5000  },
+  { id:"month6",   label:"Semestriel",  days:180,  price:9000  },
+  { id:"year1",    label:"Annuel",      days:365,  price:15000, badge:"Meilleure offre" },
+  { id:"year2",    label:"2 ans",       days:730,  price:25000 },
+  { id:"year3",    label:"3 ans",       days:1095, price:33000 },
+  { id:"lifetime", label:"À vie",       days:null, price:50000 }
+];
+
+// Devises d'affichage — le FCFA reste la seule unité de saisie/stockage.
+const CURRENCIES = {
+  XOF: {symbol:"F CFA", decimals:0, position:"after"},
+  EUR: {symbol:"€",     decimals:2, position:"after"},
+  USD: {symbol:"$",     decimals:2, position:"before"}
+};
+const FIXED_XOF_PER_EUR = 655.957; // parité légale fixe (BCEAO/Trésor français) — ne varie jamais
+const FALLBACK_EUR_USD = 1.14;     // valeur de secours si aucune connexion n'a encore permis de récupérer le taux réel
+
+const KEYS = {
+  settings: "kalcul_settings_v1",
+  docs: "kalcul_docs_v1",
+  pro: "kalcul_pro_v1",
+  counters: "kalcul_counters_v1",
+  currency: "kalcul_currency_v1",
+  rates: "kalcul_rates_v1",
+  theme: "kalcul_theme_v1"
+};
+
+/* ============================================================
+   STOCKAGE LOCAL
+   ============================================================ */
+function load(key, fallback){
+  try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch(e){ return fallback; }
+}
+function save(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
+
+let settings = load(KEYS.settings, {name:"", address:"", phone:"", country:"BJ", logo:""});
+let docs = load(KEYS.docs, []);
+let pro = load(KEYS.pro, {active:false, expiresAt:null, planId:null});
+let counters = load(KEYS.counters, {facture:0, devis:0});
+let currency = load(KEYS.currency, "XOF");
+let rates = load(KEYS.rates, {EUR_USD:null, updatedAt:null});
+let selectedPlanId = "month1";
+let editingDocId = null;   // null = nouveau document ; sinon id du document en cours de modification
+let isDocSaved = false;    // true seulement si le formulaire correspond exactement à un document déjà enregistré
+
+function isPro(){
+  if(!pro.active) return false;
+  if(pro.expiresAt === null) return true; // plan à vie
+  if(!pro.expiresAt) return false;
+  return new Date(pro.expiresAt).getTime() > Date.now();
+}
+
+/* Imprimer/PDF et Télécharger en image exigent un document déjà enregistré :
+   sans ce verrou, un utilisateur pouvait générer un nombre illimité de reçus
+   sans jamais entamer son quota gratuit. */
+function setDocSaved(val){
+  isDocSaved = val;
+  const printBtn = document.getElementById("printDocBtn");
+  const imgBtn = document.getElementById("imageDocBtn");
+  if(printBtn) printBtn.disabled = !val;
+  if(imgBtn) imgBtn.disabled = !val;
+}
+function markDirty(){
+  if(isDocSaved) setDocSaved(false);
+}
+function getCurrentSavedDoc(){
+  if(!isDocSaved || editingDocId===null) return null;
+  return docs.find(d=>d.id===editingDocId) || null;
+}
+
+/* ============================================================
+   DEVISES — le FCFA est toujours l'unité de saisie et de stockage.
+   La devise choisie ne change que l'AFFICHAGE, converti en direct.
+   EUR est un taux fixe légal (jamais d'appel réseau nécessaire).
+   USD dépend d'un taux réel, récupéré quand une connexion existe,
+   mis en cache localement, et sinon estimé avec FALLBACK_EUR_USD.
+   ============================================================ */
+function xofToDisplay(xofAmount){
+  if(currency === "XOF") return xofAmount;
+  if(currency === "EUR") return xofAmount / FIXED_XOF_PER_EUR;
+  if(currency === "USD"){
+    const eurUsd = (rates && rates.EUR_USD) ? rates.EUR_USD : FALLBACK_EUR_USD;
+    const xofPerUsd = FIXED_XOF_PER_EUR / eurUsd;
+    return xofAmount / xofPerUsd;
+  }
+  return xofAmount;
+}
+function fmtNum(xofAmount){
+  const c = CURRENCIES[currency];
+  const val = xofToDisplay(xofAmount||0);
+  const rounded = c.decimals===0 ? Math.round(val) : Math.round(val*100)/100;
+  return rounded.toLocaleString("fr-FR", {minimumFractionDigits:c.decimals, maximumFractionDigits:c.decimals});
+}
+function fmt(xofAmount){
+  const c = CURRENCIES[currency];
+  const numStr = fmtNum(xofAmount);
+  return c.position === "before" ? `${c.symbol}${numStr}` : `${numStr} ${c.symbol}`;
+}
+async function refreshUsdRate(){
+  try{
+    const res = await fetch("https://api.frankfurter.dev/v2/rate/EUR/USD");
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    if(data && typeof data.rate === "number"){
+      rates = {EUR_USD:data.rate, updatedAt:new Date().toISOString()};
+      save(KEYS.rates, rates);
+    }
+  }catch(e){
+    // Pas grave : pas de connexion ou service indisponible — on garde le taux en cache / de secours.
+  }
+  renderRateStatus();
+  refreshAllDisplayedAmounts();
+}
+function renderRateStatus(){
+  const el = document.getElementById("rateStatusHint");
+  if(!el) return;
+  if(currency === "XOF"){
+    el.textContent = "";
+  } else if(currency === "EUR"){
+    el.textContent = "Taux fixe et légal : 1 € = 655,957 FCFA (parité BCEAO, ne varie jamais).";
+  } else {
+    const eurUsd = (rates && rates.EUR_USD) ? rates.EUR_USD : FALLBACK_EUR_USD;
+    const xofPerUsd = (FIXED_XOF_PER_EUR/eurUsd).toFixed(1);
+    const when = rates.updatedAt ? new Date(rates.updatedAt).toLocaleString("fr-FR") : "estimation, en attente d'une connexion";
+    el.innerHTML = `Taux actuel : 1 $ ≈ ${xofPerUsd} FCFA · mis à jour : ${when} — <span id="refreshRateBtn" style="color:var(--indigo);text-decoration:underline;cursor:pointer;">Actualiser</span>`;
+    const rb = document.getElementById("refreshRateBtn");
+    if(rb) rb.addEventListener("click", refreshUsdRate);
+  }
+}
+function updateCurrencyHints(){
+  const show = currency !== "XOF";
+  ["currencyInputHintNew","currencyInputHintMargin"].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.style.display = show ? "block" : "none";
+  });
+}
+function refreshAllDisplayedAmounts(){
+  computeTotals();
+  renderHistory();
+  if(document.getElementById("view-pro").classList.contains("active")) renderProView();
+  if(document.getElementById("suggestResult").style.display !== "none") document.getElementById("calcSuggestBtn").click();
+  if(document.getElementById("realResult").style.display !== "none") document.getElementById("calcRealBtn").click();
+  updateCurrencyHints();
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+const navButtons = document.querySelectorAll("nav.bottom button");
+navButtons.forEach(btn=>{
+  btn.addEventListener("click", ()=> showView(btn.dataset.view));
+});
+function showView(id){
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active", v.id===id));
+  navButtons.forEach(b=>b.classList.toggle("active", b.dataset.view===id));
+  if(id==="view-history") renderHistory();
+  if(id==="view-pro") renderProView();
+  if(id==="view-new") renderQuota();
+}
+
+/* ============================================================
+   ENTETE / REGLAGES ENTREPRISE
+   ============================================================ */
+function renderHeader(){
+  const el = document.getElementById("companyStrip");
+  if(settings.name){
+    el.innerHTML = (settings.logo ? `<img src="${settings.logo}" alt="">` : "") +
+      `<span>${escapeHtml(settings.name)}${settings.address ? " — " + escapeHtml(settings.address) : ""}</span>`;
+  } else {
+    el.innerHTML = `<span>Configurez votre entreprise dans Réglages</span>`;
+  }
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+document.getElementById("setName").value = settings.name;
+document.getElementById("setAddress").value = settings.address;
+document.getElementById("setPhone").value = settings.phone;
+document.getElementById("setCountry").value = settings.country || "BJ";
+if(settings.logo){ document.getElementById("logoPreview").src = settings.logo; }
+
+/* Exemples de format local par pays (indicatif + numéro), affichés quand
+   l'utilisateur choisit son pays dans Réglages. */
+const COUNTRY_PHONE = {
+  BJ: {name:"Bénin",         example:"+2290190000000"},
+  TG: {name:"Togo",          example:"+22890000000"},
+  CI: {name:"Côte d'Ivoire", example:"+2250100000000"},
+  SN: {name:"Sénégal",       example:"+221771234567"},
+  NE: {name:"Niger",         example:"+22790000000"},
+  ML: {name:"Mali",          example:"+22370000000"},
+  BF: {name:"Burkina Faso",  example:"+22670000000"}
+};
+function updatePhoneExample(){
+  const info = COUNTRY_PHONE[document.getElementById("setCountry").value] || COUNTRY_PHONE.BJ;
+  document.getElementById("phoneExampleHint").textContent = `Exemple pour le ${info.name} : ${info.example}`;
+  document.getElementById("setPhone").placeholder = info.example;
+}
+document.getElementById("setCountry").addEventListener("change", updatePhoneExample);
+updatePhoneExample();
+
+document.getElementById("setCurrency").value = currency;
+document.getElementById("setCurrency").addEventListener("change", ()=>{
+  currency = document.getElementById("setCurrency").value;
+  save(KEYS.currency, currency);
+  renderRateStatus();
+  refreshAllDisplayedAmounts();
+});
+
+/* ============================================================
+   THÈME CLAIR / SOMBRE
+   ============================================================ */
+function applyTheme(theme){
+  document.documentElement.setAttribute("data-theme", theme);
+  const btn = document.getElementById("themeToggleBtn");
+  if(btn) btn.textContent = theme === "dark" ? "☀️" : "🌙";
+  save(KEYS.theme, theme);
+}
+document.getElementById("themeToggleBtn").addEventListener("click", ()=>{
+  const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  applyTheme(next);
+});
+
+document.getElementById("logoInput").addEventListener("change", (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    document.getElementById("logoPreview").src = reader.result;
+    settings._pendingLogo = reader.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById("saveSettingsBtn").addEventListener("click", ()=>{
+  settings.name = document.getElementById("setName").value.trim();
+  settings.address = document.getElementById("setAddress").value.trim();
+  settings.phone = document.getElementById("setPhone").value.trim();
+  settings.country = document.getElementById("setCountry").value;
+  if(settings._pendingLogo){ settings.logo = settings._pendingLogo; delete settings._pendingLogo; }
+  save(KEYS.settings, settings);
+  renderHeader();
+  alert("Informations enregistrées.");
+});
+
+/* ============================================================
+   SAUVEGARDE / RESTAURATION — pour changer d'appareil sans contact
+   ============================================================ */
+function buildBackupPayload(){
+  return {
+    app: "kalcul",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    data: {
+      settings: load(KEYS.settings, settings),
+      docs: load(KEYS.docs, docs),
+      counters: load(KEYS.counters, counters),
+      pro: load(KEYS.pro, pro)
+    }
+  };
+}
+
+document.getElementById("exportBackupBtn").addEventListener("click", ()=>{
+  const payload = buildBackupPayload();
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const dateStr = new Date().toISOString().slice(0,10);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `kalcul-sauvegarde-${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById("restoreBackupBtn").addEventListener("click", ()=>{
+  const input = document.getElementById("restoreFileInput");
+  const file = input.files[0];
+  if(!file){ alert("Choisissez d'abord un fichier de sauvegarde (.json)."); return; }
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    let parsed;
+    try{ parsed = JSON.parse(reader.result); }
+    catch(e){ alert("Ce fichier n'est pas une sauvegarde Kalcul valide."); return; }
+    if(!parsed || parsed.app !== "kalcul" || !parsed.data){
+      alert("Ce fichier n'est pas une sauvegarde Kalcul valide.");
+      return;
+    }
+    const ok = confirm("Cela va remplacer toutes les données actuelles de cet appareil (factures, devis, réglages, abonnement) par celles du fichier. Continuer ?");
+    if(!ok) return;
+    const d = parsed.data;
+    if(d.settings) save(KEYS.settings, d.settings);
+    if(d.docs) save(KEYS.docs, d.docs);
+    if(d.counters) save(KEYS.counters, d.counters);
+    if(d.pro) save(KEYS.pro, d.pro);
+    alert("Sauvegarde restaurée avec succès. L'application va se recharger.");
+    location.reload();
+  };
+  reader.onerror = ()=> alert("Impossible de lire ce fichier.");
+  reader.readAsText(file);
+});
+
+/* ============================================================
+   PAGES LÉGALES — CGU, Mentions légales, Politique d'utilisation, À propos
+   Contenu affiché dans une fenêtre modale, ouverte depuis le pied de page.
+   ============================================================ */
+const LEGAL_CONTENT = {
+
+  cgu: { title:"Conditions Générales d'Utilisation", html: `
+    <h3>Article 1 — Objet</h3>
+    <p>Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation de l'application Kalcul (ci-après « l'Application » ou « le Service »), éditée par Empire Donko, destinée à la facturation, à l'établissement de devis et au calcul de marge commerciale pour les commerçants, artisans et indépendants au Bénin, au Togo, en Côte d'Ivoire, au Sénégal, au Niger, au Mali et au Burkina Faso.</p>
+
+    <h3>Article 2 — Description du Service</h3>
+    <p>Kalcul fonctionne entièrement en local, directement dans le navigateur de l'utilisateur, sans serveur distant ni base de données externe. Aucune inscription ni création de compte n'est nécessaire. Une connexion internet n'est requise qu'au moment du paiement d'un plan Kalcul Pro via FedaPay (Mobile Money), ou ponctuellement pour l'actualisation du taux de change USD affiché.</p>
+
+    <h3>Article 3 — Accès au Service</h3>
+    <p>L'accès à Kalcul est libre et gratuit dans la limite de l'offre d'essai définie dans l'Application. L'utilisateur est seul responsable de disposer d'un appareil et d'un navigateur compatibles, ainsi que d'une connexion internet lorsque celle-ci est nécessaire.</p>
+
+    <h3>Article 4 — Absence de compte et stockage des données</h3>
+    <p>Kalcul ne crée aucun compte utilisateur. Toutes les données saisies (informations de l'entreprise, factures, devis, historique) sont conservées uniquement sur l'appareil de l'utilisateur. Empire Donko n'a accès à aucune de ces données et ne peut ni les consulter, ni les récupérer, ni les restaurer en cas de perte. Il appartient à l'utilisateur d'effectuer régulièrement une sauvegarde via Réglages → Sauvegarde &amp; restauration.</p>
+
+    <h3>Article 5 — Abonnement Kalcul Pro et paiement</h3>
+    <p>Au-delà du nombre de documents gratuits, l'utilisation illimitée de Kalcul est soumise à l'achat d'un plan payant (Mensuel, Bimestriel, Trimestriel, Semestriel, Annuel, 2 ans, 3 ans ou À vie), dont la durée et le tarif sont affichés dans l'Application au moment de l'achat.</p>
+    <ul>
+      <li>Chaque plan correspond à un paiement unique via FedaPay. Aucun prélèvement automatique ou récurrent n'est mis en place : à l'échéance, l'utilisateur doit revenir volontairement payer à nouveau s'il souhaite continuer.</li>
+      <li>Le débit réel s'effectue toujours en Francs CFA (XOF), quelle que soit la devise d'affichage choisie dans les Réglages, celle-ci n'étant qu'une conversion informative.</li>
+      <li>Sauf défaillance technique avérée empêchant l'accès au Service après paiement confirmé, les sommes versées ne sont pas remboursables, le déverrouillage étant immédiat.</li>
+      <li>EMPIRE DONKO peut modifier les tarifs et durées des plans proposés ; toute modification s'applique aux achats futurs uniquement.</li>
+    </ul>
+
+    <h3>Article 6 — Obligations de l'utilisateur</h3>
+    <p>L'utilisateur s'engage à utiliser Kalcul conformément à la loi, notamment à ne pas produire de documents commerciaux frauduleux ni usurper l'identité d'un tiers. Il demeure seul responsable de l'exactitude des informations saisies dans ses factures et devis, ainsi que du respect des obligations fiscales, comptables et réglementaires applicables à son activité.</p>
+
+    <h3>Article 7 — Propriété intellectuelle</h3>
+    <p>L'Application Kalcul, son nom, son design, ses textes et son code source constituent des créations protégées. Toute reproduction ou exploitation commerciale non autorisée est interdite sans l'accord préalable d'Empire Donko.</p>
+
+    <h3>Article 8 — Limitation de responsabilité</h3>
+    <p>Kalcul est fourni « en l'état ». L'Application ne remplace pas les conseils d'un comptable ou d'un conseiller fiscal. Empire Donko ne saurait être tenu responsable des pertes de données locales, des interruptions liées à l'hébergement, ni des dysfonctionnements imputables à FedaPay ou à l'opérateur Mobile Money de l'utilisateur.</p>
+
+    <h3>Article 9 — Disponibilité du Service</h3>
+    <p>L'Application dépend de l'hébergement GitHub Pages et, pour les paiements, du service FedaPay. EMPIRE DONKO ne garantit pas une disponibilité continue de ces services tiers.</p>
+
+    <h3>Article 10 — Modification des CGU</h3>
+    <p>EMPIRE DONKO peut modifier les présentes CGU à tout moment. La version en vigueur est celle affichée dans l'Application au moment de la consultation.</p>
+
+    <h3>Article 11 — Droit applicable et juridiction</h3>
+    <p>Les présentes CGU sont soumises au droit béninois ainsi qu'aux dispositions communes de l'espace OHADA, sans préjudice des règles d'ordre public applicables dans le pays de résidence de l'utilisateur. À défaut de résolution amiable, tout litige relève des juridictions compétentes du Bénin.</p>
+    <p class="legal-meta">Le siège de juridiction ci-dessus est indiqué à titre indicatif d'après les coordonnées de contact d'Empire Donko ; à confirmer selon le pays d'établissement réel de l'entreprise.</p>
+  `},
+
+  mentions: { title:"Mentions Légales", html: `
+    <h3>Éditeur</h3>
+    <p>L'application Kalcul est éditée par <strong>Empire Donko , enregistré sous la dénomination : TransTech Dynamic</strong>.</p>
+    <ul>
+      <li>Forme juridique : Établissement</li>
+      <li>Numéro d'immatriculation  : RB/COT/24 A 104475</li>
+      <li>Identifiant fiscal  : 0202112291540</li>
+      <li>Siège / adresse : Îlot : 3291, AGLA FIGARO, COTONOU</li>
+      <li>Pays d'établissement présumé : Bénin </li>
+    </ul>
+
+    <h3>Directeur de la publication</h3>
+    <p>Le responsable de la publication de l'Application est le représentant d'EMPIRE DONKO, joignable via les coordonnées ci-dessous.</p>
+
+    <h3>Contact</h3>
+    <ul>
+      <li>WhatsApp : +229 01 96 80 91 06</li>
+      <li>Email : empiredonko@gmail.com</li>
+    </ul>
+
+    <h3>Hébergement</h3>
+    <p>L'Application est hébergée par GitHub, Inc. (GitHub Pages), 88 Colin P. Kelly Jr Street, San Francisco, CA 94107, États-Unis.</p>
+
+    <h3>Paiement</h3>
+    <p>Les paiements d'abonnement sont traités par FedaPay, prestataire tiers indépendant spécialisé dans l'agrégation Mobile Money en Afrique de l'Ouest. EMPIRE DONKO ne stocke, ne voit ni ne conserve aucune information bancaire ou de paiement.</p>
+
+    <h3>Propriété intellectuelle</h3>
+    <p>Le nom « Kalcul », le contenu et le code de l'Application sont la propriété d'Empire Donko, sauf mention contraire. Toute reproduction non autorisée est interdite.</p>
+
+    <p class="legal-meta">Les mentions indiquées sont renseignées par EMPIRE DONKO avec les informations réelles d'immatriculation, conformément aux obligations légales du pays d'établissement.</p>
+  `},
+
+  politique: { title:"Politique d'Utilisation", html: `
+    <h3>1. Une application pensée pour ne rien collecter</h3>
+    <p>Kalcul fonctionne entièrement sur l'appareil de l'utilisateur. Il n'existe ni serveur, ni base de données distante, ni compte utilisateur. Cette page décrit précisément ce que cela signifie en pratique.</p>
+
+    <h3>2. Ce que Kalcul ne fait jamais</h3>
+    <ul>
+      <li>Aucune collecte de données personnelles vers un serveur ;</li>
+      <li>Aucun compte, aucun mot de passe, aucune inscription ;</li>
+      <li>Aucun cookie de suivi, aucun outil d'analyse d'audience, aucune publicité ;</li>
+      <li>Aucune transmission des informations de l'entreprise, des factures, devis ou clients à un tiers, à Empire Donko ou à quiconque.</li>
+    </ul>
+
+    <h3>3. Ce qui est stocké, et où</h3>
+    <p>Les éléments suivants restent uniquement dans la mémoire locale du navigateur de l'appareil utilisé :</p>
+    <ul>
+      <li>Les informations de l'entreprise (nom, adresse, téléphone, logo) ;</li>
+      <li>L'historique des factures et devis ;</li>
+      <li>Le statut de l'abonnement Kalcul Pro ;</li>
+      <li>La devise d'affichage et le thème choisi.</li>
+    </ul>
+    <p>Ces données disparaissent si l'utilisateur vide le cache de son navigateur, désinstalle l'application, ou change d'appareil sans utiliser la fonction de sauvegarde. Réglages → Sauvegarde &amp; restauration est donc fortement recommandé avant tout changement de téléphone.</p>
+
+    <h3>4. Le seul moment où une connexion est utilisée</h3>
+    <p>Une connexion internet n'est nécessaire que pour deux actions : le paiement d'un plan Kalcul Pro via FedaPay, et l'actualisation ponctuelle et optionnelle du taux de change USD. En dehors de ces deux cas, Kalcul fonctionne intégralement hors ligne.</p>
+
+    <h3>5. FedaPay, un service tiers indépendant</h3>
+    <p>Le paiement est assuré par FedaPay, qui applique sa propre politique de confidentialité et ses propres conditions, indépendantes de Kalcul. Pour toute question relative au traitement de ses données de paiement, l'utilisateur est invité à s'y référer directement.</p>
+
+    <h3>6. Usages interdits</h3>
+    <p>Il est interdit d'utiliser Kalcul pour établir des documents commerciaux frauduleux, usurper l'identité d'un tiers, contourner une obligation fiscale ou légale, ou pour toute activité illicite. Il est également interdit de décompiler, revendre ou redistribuer l'Application sans l'autorisation D'EMPIRE DONKO.</p>
+
+    <h3>7. Évolution de cette politique</h3>
+    <p>Cette politique peut évoluer si de nouvelles fonctionnalités venaient à modifier le fonctionnement décrit ci-dessus. La version affichée dans l'Application fait foi.</p>
+  `},
+
+  apropos: { title:"À Propos", html: `
+    <h3>Kalcul, un outil pensé pour le commerce local</h3>
+    <p>Kalcul est une application de facturation, de devis et de calcul de marge, conçue pour les commerçants, artisans et indépendants du Bénin, du Togo, de la Côte d'Ivoire, du Sénégal, du Niger, du Mali et du Burkina Faso.</p>
+
+    <h3>Pourquoi Kalcul existe</h3>
+    <p>Beaucoup de commerçants de la zone UEMOA gèrent encore leurs factures sur papier ou via WhatsApp, et fixent leurs prix sans réellement calculer leur marge. Kalcul répond à ce besoin avec un outil simple et rapide, accessible sans connexion internet permanente ni matériel coûteux : un simple navigateur suffit.</p>
+
+    <h3>Une application pensée pour le terrain</h3>
+    <ul>
+      <li>Fonctionne sans connexion internet, à l'exception du paiement de l'abonnement ;</li>
+      <li>Ne demande aucune inscription ni compte ;</li>
+      <li>Conserve toutes les données directement sur l'appareil de l'utilisateur ;</li>
+      <li>Propose un paiement unique et transparent via FedaPay (Mobile Money), sans prélèvement automatique.</li>
+    </ul>
+
+    <h3>Qui est derrière Kalcul</h3>
+    <p>Kalcul est développé et édité par <strong>Empire Donko</strong>.</p>
+
+    <h3>Nous contacter</h3>
+    <p>Pour un partenariat, une commande d'outil personnalisé, ou toute question :</p>
+    <ul>
+      <li>WhatsApp : +229 01 96 80 91 06</li>
+      <li>Email : empiredonko@gmail.com</li>
+    </ul>
+  `}
+};
+
+function openInfoModal(title, html){
+  document.getElementById("legalModalTitle").textContent = title;
+  document.getElementById("legalModalBody").innerHTML = html;
+  document.getElementById("legalModalBody").scrollTop = 0;
+  document.getElementById("legalModalOverlay").style.display = "flex";
+}
+function openLegalModal(key){
+  const data = LEGAL_CONTENT[key];
+  if(!data) return;
+  openInfoModal(data.title, data.html);
+}
+function closeLegalModal(){
+  document.getElementById("legalModalOverlay").style.display = "none";
+}
+document.getElementById("legalModalClose").addEventListener("click", closeLegalModal);
+document.getElementById("legalModalOverlay").addEventListener("click", (e)=>{
+  if(e.target.id === "legalModalOverlay") closeLegalModal();
+});
+document.querySelectorAll("[data-legal]").forEach(a=>{
+  a.addEventListener("click", (e)=>{
+    e.preventDefault();
+    openLegalModal(a.dataset.legal);
+  });
+});
+
+/* ============================================================
+   PWA — installation ("Ajouter à l'écran d'accueil") et
+   fonctionnement garanti hors connexion, y compris après une
+   actualisation de la page.
+   ============================================================ */
+let deferredInstallPrompt = null;
+
+function isStandaloneMode(){
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+function updateInstallUI(){
+  const card = document.getElementById("installCard");
+  if(card) card.style.display = isStandaloneMode() ? "none" : "block";
+}
+
+window.addEventListener("beforeinstallprompt", (e)=>{
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  updateInstallUI();
+});
+window.addEventListener("appinstalled", ()=>{
+  deferredInstallPrompt = null;
+  updateInstallUI();
+});
+
+function getInstallInstructionsHTML(){
+  const ua = navigator.userAgent || "";
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  if(isIOS){
+    return `<p>Sur iPhone / iPad (Safari) :</p>
+    <ol style="padding-left:20px; margin:0 0 10px;">
+      <li>Appuyez sur l'icône <strong>Partager</strong> (le carré avec une flèche vers le haut), en bas de l'écran.</li>
+      <li>Faites défiler et choisissez <strong>« Sur l'écran d'accueil »</strong>.</li>
+      <li>Appuyez sur <strong>Ajouter</strong>, en haut à droite.</li>
+    </ol>
+    <p class="legal-meta">Kalcul s'ouvrira ensuite comme une vraie application, avec sa propre icône.</p>`;
+  }
+  return `<p>Sur Chrome, Edge ou la plupart des navigateurs Android :</p>
+  <ol style="padding-left:20px; margin:0 0 10px;">
+    <li>Ouvrez le menu du navigateur (généralement ⋮ en haut à droite).</li>
+    <li>Choisissez <strong>« Installer l'application »</strong> ou <strong>« Ajouter à l'écran d'accueil »</strong>.</li>
+    <li>Confirmez l'installation.</li>
+  </ol>
+  <p class="legal-meta">Si aucune de ces options n'apparaît, le navigateur utilisé ne prend pas en charge l'installation — Kalcul reste utilisable normalement depuis le navigateur.</p>`;
+}
+
+document.getElementById("installAppBtn").addEventListener("click", async ()=>{
+  if(deferredInstallPrompt){
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    updateInstallUI();
+  } else {
+    openInfoModal("Installer Kalcul", getInstallInstructionsHTML());
+  }
+});
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("sw.js").catch(()=>{
+      // Échec silencieux (ex. ouverture locale via file://) : l'app continue de
+      // fonctionner normalement, simplement sans le cache hors-ligne renforcé.
+    });
+  });
+}
+
+/* ============================================================
+   EDITEUR DE DOCUMENT (facture / devis)
+   ============================================================ */
+let currentType = "facture";
+let itemSeq = 0;
+
+document.querySelectorAll('[data-doctype]').forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll('[data-doctype]').forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    currentType = btn.dataset.doctype;
+    markDirty();
+  });
+});
+
+function addItemRow(desc, qty, price){
+  itemSeq++;
+  const tbody = document.getElementById("itemsBody");
+  const tr = document.createElement("tr");
+  tr.dataset.id = itemSeq;
+  tr.innerHTML = `
+    <td><input type="text" class="it-desc" value="${desc?escapeHtml(desc):""}" placeholder="Article ou service"></td>
+    <td class="qty"><input type="number" class="it-qty mono-input" min="0" value="${qty!=null?qty:1}"></td>
+    <td class="price"><input type="number" class="it-price mono-input" min="0" value="${price!=null?price:0}"></td>
+    <td class="amount"><span class="it-amount">0</span></td>
+    <td><button type="button" class="rm-row" aria-label="Supprimer">✕</button></td>
+  `;
+  tbody.appendChild(tr);
+  tr.querySelectorAll("input").forEach(inp=> inp.addEventListener("input", ()=>{ computeTotals(); markDirty(); }));
+  tr.querySelector(".rm-row").addEventListener("click", ()=>{ tr.remove(); computeTotals(); markDirty(); });
+  computeTotals();
+}
+document.getElementById("addItemBtn").addEventListener("click", ()=>{ addItemRow(); markDirty(); });
+
+function computeTotals(){
+  let subtotal = 0;
+  document.querySelectorAll("#itemsBody tr").forEach(tr=>{
+    const qty = parseFloat(tr.querySelector(".it-qty").value) || 0;
+    const price = parseFloat(tr.querySelector(".it-price").value) || 0;
+    const amt = qty * price;
+    tr.querySelector(".it-amount").textContent = fmtNum(amt);
+    subtotal += amt;
+  });
+  const discountPct = parseFloat(document.getElementById("discountPct").value) || 0;
+  const taxPct = parseFloat(document.getElementById("taxPct").value) || 0;
+  const discountAmt = subtotal * discountPct/100;
+  const taxable = subtotal - discountAmt;
+  const taxAmt = taxable * taxPct/100;
+  const total = taxable + taxAmt;
+
+  document.getElementById("tSubtotal").textContent = fmt(subtotal);
+  document.getElementById("tDiscount").textContent = "-" + fmt(discountAmt);
+  document.getElementById("tTax").textContent = fmt(taxAmt);
+  document.getElementById("tTotal").textContent = fmt(total);
+  return {subtotal, discountAmt, taxAmt, total};
+}
+["discountPct","taxPct"].forEach(id=> document.getElementById(id).addEventListener("input", ()=>{ computeTotals(); markDirty(); }));
+["clientName","clientPhone","docDate","notes"].forEach(id=> document.getElementById(id).addEventListener("input", markDirty));
+
+function resetEditor(){
+  document.getElementById("itemsBody").innerHTML = "";
+  document.getElementById("clientName").value = "";
+  document.getElementById("clientPhone").value = "";
+  document.getElementById("docDate").value = new Date().toISOString().slice(0,10);
+  document.getElementById("discountPct").value = 0;
+  document.getElementById("taxPct").value = 0;
+  document.getElementById("notes").value = "";
+  currentType = "facture";
+  document.querySelectorAll('[data-doctype]').forEach(b=> b.classList.toggle("active", b.dataset.doctype==="facture"));
+  editingDocId = null;
+  setDocSaved(false);
+  addItemRow();
+}
+document.getElementById("resetDocBtn").addEventListener("click", ()=>{ resetEditor(); renderQuota(); });
+
+/* Charge un document déjà enregistré dans l'éditeur, pour le bouton "Modifier"
+   de l'historique. Le document reste marqué comme enregistré tant qu'aucun
+   champ n'est retouché : Imprimer/Image restent donc utilisables tout de suite. */
+function loadDocIntoEditor(doc){
+  currentType = doc.type;
+  document.querySelectorAll('[data-doctype]').forEach(b=> b.classList.toggle("active", b.dataset.doctype===doc.type));
+  document.getElementById("clientName").value = doc.clientName || "";
+  document.getElementById("clientPhone").value = doc.clientPhone || "";
+  document.getElementById("docDate").value = doc.date || new Date().toISOString().slice(0,10);
+  document.getElementById("discountPct").value = doc.discountPct || 0;
+  document.getElementById("taxPct").value = doc.taxPct || 0;
+  document.getElementById("notes").value = doc.notes || "";
+  document.getElementById("itemsBody").innerHTML = "";
+  if(doc.items && doc.items.length){
+    doc.items.forEach(it=> addItemRow(it.desc, it.qty, it.price));
+  } else {
+    addItemRow();
+  }
+  editingDocId = doc.id;
+  setDocSaved(true);
+  computeTotals();
+}
+
+function currentDocFromForm(){
+  const items = [];
+  document.querySelectorAll("#itemsBody tr").forEach(tr=>{
+    items.push({
+      desc: tr.querySelector(".it-desc").value.trim(),
+      qty: parseFloat(tr.querySelector(".it-qty").value)||0,
+      price: parseFloat(tr.querySelector(".it-price").value)||0
+    });
+  });
+  const totals = computeTotals();
+  return {
+    type: currentType,
+    clientName: document.getElementById("clientName").value.trim(),
+    clientPhone: document.getElementById("clientPhone").value.trim(),
+    date: document.getElementById("docDate").value,
+    items,
+    discountPct: parseFloat(document.getElementById("discountPct").value)||0,
+    taxPct: parseFloat(document.getElementById("taxPct").value)||0,
+    notes: document.getElementById("notes").value.trim(),
+    totals
+  };
+}
+
+function renderQuota(){
+  const card = document.getElementById("quotaCard");
+  const editor = document.getElementById("editorCard");
+  if(isPro()){
+    card.style.display = "none";
+    editor.style.display = "block";
+    return;
+  }
+  const used = docs.length;
+  const remaining = Math.max(0, CONFIG.FREE_DOCS_LIMIT - used);
+  if(remaining > 0){
+    card.style.display = "block";
+    card.className = "card";
+    card.innerHTML = `<span class="badge free">Gratuit</span> <span class="hint" style="display:inline;">${remaining} document(s) gratuit(s) restant(s) sur ${CONFIG.FREE_DOCS_LIMIT}.</span>`;
+    editor.style.display = "block";
+  } else if(editingDocId !== null){
+    // Quota épuisé, mais on modifie un document déjà enregistré : ça ne compte pas comme une création.
+    card.style.display = "block";
+    card.className = "card";
+    card.innerHTML = `<span class="badge free">Document enregistré</span> <span class="hint" style="display:inline;">Vous pouvez l'imprimer ou le télécharger librement. Débloquez Kalcul Pro pour en créer de nouveaux.</span>`;
+    editor.style.display = "block";
+  } else {
+    card.style.display = "block";
+    card.className = "card paywall";
+    card.innerHTML = `<h2>Limite gratuite atteinte</h2>
+      <div class="sub">Vous avez utilisé vos ${CONFIG.FREE_DOCS_LIMIT} documents gratuits. Débloquez Kalcul Pro pour continuer.</div>
+      <button type="button" class="btn btn-ochre" id="goProBtn">Débloquer Kalcul Pro</button>`;
+    editor.style.display = "none";
+    document.getElementById("goProBtn").addEventListener("click", ()=> showView("view-pro"));
+  }
+}
+
+document.getElementById("saveDocBtn").addEventListener("click", ()=>{
+  const isNew = (editingDocId === null);
+  if(isNew && !isPro() && docs.length >= CONFIG.FREE_DOCS_LIMIT){
+    renderQuota();
+    return;
+  }
+  const doc = currentDocFromForm();
+  if(!doc.clientName){ alert("Indiquez le nom du client."); return; }
+  if(doc.items.length===0 || doc.items.every(i=>!i.desc)){ alert("Ajoutez au moins un article."); return; }
+
+  if(!isNew){
+    const idx = docs.findIndex(d=>d.id===editingDocId);
+    if(idx !== -1){
+      doc.id = editingDocId;
+      doc.number = docs[idx].number;
+      doc.createdAt = docs[idx].createdAt;
+      doc.updatedAt = new Date().toISOString();
+      docs[idx] = doc;
+      save(KEYS.docs, docs);
+      setDocSaved(true);
+      renderHistory();
+      alert(`${doc.type === "facture" ? "Facture" : "Devis"} ${doc.number} mis à jour.`);
+      return;
+    }
+    // Le document n'existe plus (supprimé entre-temps) : on l'enregistre comme un nouveau document ci-dessous.
+  }
+
+  counters[doc.type] = (counters[doc.type]||0) + 1;
+  save(KEYS.counters, counters);
+  const prefix = doc.type === "facture" ? "FA" : "DV";
+  doc.number = `${prefix}-${String(counters[doc.type]).padStart(4,"0")}`;
+  doc.id = "d_" + Date.now();
+  doc.createdAt = new Date().toISOString();
+
+  docs.unshift(doc);
+  save(KEYS.docs, docs);
+  editingDocId = doc.id;
+  setDocSaved(true);
+  alert(`${doc.type === "facture" ? "Facture" : "Devis"} ${doc.number} enregistré. Vous pouvez maintenant l'imprimer ou le télécharger.`);
+  renderHistory();
+  renderQuota();
+});
+
+document.getElementById("printDocBtn").addEventListener("click", ()=>{
+  const doc = getCurrentSavedDoc();
+  if(!doc){ alert("Enregistrez d'abord ce document avant de l'imprimer."); return; }
+  printDocument(doc);
+});
+
+document.getElementById("imageDocBtn").addEventListener("click", ()=>{
+  const doc = getCurrentSavedDoc();
+  if(!doc){ alert("Enregistrez d'abord ce document avant de télécharger l'image."); return; }
+  downloadDocAsImage(doc);
+});
+
+function printDocument(doc){
+  const area = document.getElementById("print-area");
+  const rows = doc.items.map(i=>`
+    <tr>
+      <td style="padding:6px 4px;border-bottom:1px solid #ddd;">${escapeHtml(i.desc||"")}</td>
+      <td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:right;">${i.qty}</td>
+      <td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:right;">${fmtNum(i.price)}</td>
+      <td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:right;">${fmtNum(i.qty*i.price)}</td>
+    </tr>`).join("");
+  const t = doc.totals || computeTotals();
+  area.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1B3358;padding-bottom:14px;margin-bottom:18px;">
+      <div>
+        ${settings.logo ? `<img src="${settings.logo}" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:6px;margin-bottom:6px;">` : ""}
+        <div style="font-size:20px;font-weight:700;">${escapeHtml(settings.name||"Mon entreprise")}</div>
+        <div style="font-size:12px;color:#555;">${escapeHtml(settings.address||"")}</div>
+        <div style="font-size:12px;color:#555;">${escapeHtml(settings.phone||"")}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:18px;font-weight:700;text-transform:uppercase;">${doc.type==="facture"?"Facture":"Devis"}</div>
+        <div style="font-size:13px;">N° ${escapeHtml(doc.number)}</div>
+        <div style="font-size:13px;">${escapeHtml(doc.date||"")}</div>
+      </div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;text-transform:uppercase;color:#888;">Client</div>
+      <div style="font-size:14px;font-weight:600;">${escapeHtml(doc.clientName||"")}</div>
+      <div style="font-size:12px;color:#555;">${escapeHtml(doc.clientPhone||"")}</div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead><tr>
+        <th style="text-align:left;padding:6px 4px;border-bottom:2px solid #1B3358;">Description</th>
+        <th style="text-align:right;padding:6px 4px;border-bottom:2px solid #1B3358;">Qté</th>
+        <th style="text-align:right;padding:6px 4px;border-bottom:2px solid #1B3358;">P.U.</th>
+        <th style="text-align:right;padding:6px 4px;border-bottom:2px solid #1B3358;">Montant</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="margin-top:14px;margin-left:auto;width:260px;font-size:13px;">
+      <div style="display:flex;justify-content:space-between;padding:2px 0;"><span>Sous-total</span><span>${fmt(t.subtotal)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:2px 0;"><span>Remise</span><span>-${fmt(t.discountAmt)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:2px 0;"><span>TVA</span><span>${fmt(t.taxAmt)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;font-weight:700;font-size:16px;border-top:2px solid #000;margin-top:4px;"><span>Total</span><span>${fmt(t.total)}</span></div>
+    </div>
+    ${doc.notes ? `<div style="margin-top:20px;font-size:12px;color:#555;white-space:pre-wrap;">${escapeHtml(doc.notes)}</div>` : ""}
+    <div style="margin-top:30px;font-size:10px;color:#999;text-align:center;">Généré avec Kalcul</div>
+  `;
+  window.print();
+}
+
+/* ============================================================
+   EXPORT EN IMAGE (PNG) — dessiné directement sur <canvas>,
+   sans aucune librairie externe, donc fonctionne hors ligne.
+   ============================================================ */
+const IMG_BODY_FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif";
+const IMG_DISPLAY_FONT = "Georgia, 'Iowan Old Style', serif";
+
+function wrapCanvasText(ctx, text, maxWidth){
+  const words = String(text||"").split(/\s+/).filter(Boolean);
+  const lines = [];
+  let current = "";
+  words.forEach(w=>{
+    const test = current ? current + " " + w : w;
+    if(ctx.measureText(test).width > maxWidth && current){
+      lines.push(current);
+      current = w;
+    } else {
+      current = test;
+    }
+  });
+  if(current) lines.push(current);
+  return lines.length ? lines : [""];
+}
+function loadImage(src){
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    img.onload = ()=> resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+async function downloadDocAsImage(doc){
+  const scale = 2;
+  const W = 900;
+  const marginX = 40;
+  const contentW = W - marginX*2;
+  const descColW = contentW*0.44;
+
+  const meas = document.createElement("canvas").getContext("2d");
+  meas.font = "13px " + IMG_BODY_FONT;
+  const rowsLayout = doc.items.map(it=>{
+    const lines = wrapCanvasText(meas, it.desc || "", descColW-10);
+    return {item: it, lines, height: Math.max(lines.length,1)*17 + 14};
+  });
+  const itemsBlockH = rowsLayout.reduce((s,r)=>s+r.height, 0);
+  meas.font = "11px " + IMG_BODY_FONT;
+  const notesLines = doc.notes ? wrapCanvasText(meas, doc.notes, contentW) : [];
+
+  const headerH = 110, clientH = 60, tableHeadH = 34, totalsH = 116;
+  const notesH = notesLines.length ? (notesLines.length*15 + 26) : 0;
+  const footerH = 34;
+  const H = headerH + clientH + tableHeadH + itemsBlockH + totalsH + notesH + footerH + 40;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = W*scale;
+  canvas.height = H*scale;
+  const ctx = canvas.getContext("2d");
+  ctx.scale(scale, scale);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, W, H);
+
+  let y = 30;
+  let textX = marginX;
+  if(settings.logo){
+    try{
+      const img = await loadImage(settings.logo);
+      ctx.drawImage(img, marginX, y-6, 48, 48);
+      textX = marginX + 58;
+    }catch(e){ /* logo illisible : on continue sans */ }
+  }
+  ctx.fillStyle = "#241B10";
+  ctx.textAlign = "left";
+  ctx.font = "bold 20px " + IMG_DISPLAY_FONT;
+  ctx.fillText(settings.name || "Mon entreprise", textX, y+10);
+  ctx.font = "12px " + IMG_BODY_FONT;
+  ctx.fillStyle = "#5B4E3A";
+  ctx.fillText(settings.address || "", textX, y+28);
+  ctx.fillText(settings.phone || "", textX, y+44);
+
+  ctx.textAlign = "right";
+  ctx.fillStyle = "#241B10";
+  ctx.font = "bold 18px " + IMG_BODY_FONT;
+  ctx.fillText(doc.type==="facture" ? "FACTURE" : "DEVIS", W-marginX, y+8);
+  ctx.font = "13px " + IMG_BODY_FONT;
+  ctx.fillStyle = "#5B4E3A";
+  ctx.fillText("N° " + doc.number, W-marginX, y+26);
+  ctx.fillText(doc.date || "", W-marginX, y+42);
+
+  y += headerH - 30;
+  ctx.strokeStyle = "#1B3358"; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(marginX, y); ctx.lineTo(W-marginX, y); ctx.stroke();
+  y += 24;
+
+  ctx.textAlign = "left";
+  ctx.fillStyle = "#888"; ctx.font = "10px " + IMG_BODY_FONT;
+  ctx.fillText("CLIENT", marginX, y);
+  ctx.fillStyle = "#241B10"; ctx.font = "bold 14px " + IMG_BODY_FONT;
+  ctx.fillText(doc.clientName || "", marginX, y+18);
+  ctx.font = "12px " + IMG_BODY_FONT; ctx.fillStyle = "#5B4E3A";
+  ctx.fillText(doc.clientPhone || "", marginX, y+34);
+  y += clientH;
+
+  const col = { desc:marginX, qty:marginX+contentW*0.50, price:marginX+contentW*0.72, amount:W-marginX };
+  ctx.strokeStyle = "#1B3358"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(marginX, y); ctx.lineTo(W-marginX, y); ctx.stroke();
+  y += 18;
+  ctx.font = "bold 11px " + IMG_BODY_FONT; ctx.fillStyle = "#5B4E3A";
+  ctx.textAlign = "left"; ctx.fillText("DESCRIPTION", col.desc, y);
+  ctx.textAlign = "right";
+  ctx.fillText("QTÉ", col.qty, y);
+  ctx.fillText("P.U.", col.price, y);
+  ctx.fillText("MONTANT", col.amount, y);
+  y += 10;
+  ctx.beginPath(); ctx.moveTo(marginX, y); ctx.lineTo(W-marginX, y); ctx.stroke();
+  y += 6;
+
+  ctx.font = "13px " + IMG_BODY_FONT;
+  rowsLayout.forEach(r=>{
+    const rowTop = y;
+    ctx.fillStyle = "#241B10";
+    ctx.textAlign = "left";
+    r.lines.forEach((line,i)=> ctx.fillText(line, col.desc, rowTop+14+i*17));
+    ctx.textAlign = "right";
+    const midY = rowTop + (r.height/2) + 4;
+    ctx.fillText(String(r.item.qty), col.qty, midY);
+    ctx.fillText(fmtNum(r.item.price), col.price, midY);
+    ctx.fillText(fmtNum(r.item.qty*r.item.price), col.amount, midY);
+    y += r.height;
+    ctx.strokeStyle = "#EFE6CC"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(marginX, y-2); ctx.lineTo(W-marginX, y-2); ctx.stroke();
+  });
+
+  y += 16;
+  const t = doc.totals || computeTotals();
+  const drawTotalLine = (label, valStr, bold)=>{
+    ctx.textAlign = "left"; ctx.font = (bold?"bold ":"") + "13px " + IMG_BODY_FONT;
+    ctx.fillStyle = "#241B10";
+    ctx.fillText(label, W-marginX-220, y);
+    ctx.textAlign = "right";
+    ctx.fillText(valStr, W-marginX, y);
+    y += 20;
+  };
+  drawTotalLine("Sous-total", fmt(t.subtotal));
+  drawTotalLine("Remise", "-" + fmt(t.discountAmt));
+  drawTotalLine("TVA", fmt(t.taxAmt));
+  ctx.strokeStyle = "#000"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(W-marginX-220, y); ctx.lineTo(W-marginX, y); ctx.stroke();
+  y += 22;
+  ctx.font = "bold 16px " + IMG_BODY_FONT;
+  drawTotalLine("TOTAL", fmt(t.total), true);
+
+  if(notesLines.length){
+    y += 8;
+    ctx.font = "11px " + IMG_BODY_FONT; ctx.fillStyle = "#5B4E3A"; ctx.textAlign = "left";
+    notesLines.forEach(l=>{ ctx.fillText(l, marginX, y); y += 15; });
+  }
+
+  ctx.textAlign = "center"; ctx.font = "10px " + IMG_BODY_FONT; ctx.fillStyle = "#999";
+  ctx.fillText("Généré avec Kalcul", W/2, H-18);
+
+  const url = canvas.toDataURL("image/png");
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = (doc.number || "document") + ".png";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+/* ============================================================
+   HISTORIQUE
+   ============================================================ */
+function renderHistory(){
+  const list = document.getElementById("historyList");
+  if(docs.length===0){
+    list.innerHTML = `<div class="empty"><div class="glyph">🗂️</div>Aucun document pour l'instant.</div>`;
+    return;
+  }
+  list.innerHTML = docs.map(d=>`
+    <div class="hist-item" data-id="${d.id}">
+      <div class="meta">
+        <span class="num">${escapeHtml(d.number)} <span class="badge ${d.type}">${d.type==="facture"?"Facture":"Devis"}</span></span>
+        <span class="client">${escapeHtml(d.clientName)} · ${escapeHtml(d.date||"")}</span>
+      </div>
+      <div class="right">
+        <span class="amount">${fmt(d.totals ? d.totals.total : 0)}</span>
+        <div class="hist-actions">
+          <span class="edit-doc" data-id="${d.id}">Modifier</span>
+          <span class="img-doc" data-id="${d.id}">Image</span>
+          <span class="del-doc" data-id="${d.id}" data-state="idle">Supprimer</span>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+/* Délégation d'événements unique — attachée une seule fois (voir INITIALISATION),
+   donc elle continue de fonctionner après chaque renderHistory() sans jamais se
+   décrocher. La suppression demande une double confirmation tactile (pas de
+   window.confirm, plus fiable sur mobile). */
+function initHistoryEvents(){
+  document.getElementById("historyList").addEventListener("click", (e)=>{
+    const editBtn = e.target.closest(".edit-doc");
+    if(editBtn){
+      e.stopPropagation();
+      const doc = docs.find(d=>d.id===editBtn.dataset.id);
+      if(doc){
+        loadDocIntoEditor(doc);
+        showView("view-new");
+      }
+      return;
+    }
+    const delBtn = e.target.closest(".del-doc");
+    if(delBtn){
+      e.stopPropagation();
+      const id = delBtn.dataset.id;
+      if(delBtn.dataset.state === "confirm"){
+        docs = docs.filter(d=>d.id!==id);
+        save(KEYS.docs, docs);
+        if(editingDocId === id){ editingDocId = null; setDocSaved(false); }
+        renderHistory();
+      } else {
+        clearTimeout(delBtn._resetTimer);
+        delBtn.dataset.state = "confirm";
+        delBtn.textContent = "Confirmer ?";
+        delBtn.classList.add("confirming");
+        delBtn._resetTimer = setTimeout(()=>{
+          delBtn.dataset.state = "idle";
+          delBtn.textContent = "Supprimer";
+          delBtn.classList.remove("confirming");
+        }, 3000);
+      }
+      return;
+    }
+    const imgBtn = e.target.closest(".img-doc");
+    if(imgBtn){
+      e.stopPropagation();
+      const doc = docs.find(d=>d.id===imgBtn.dataset.id);
+      if(doc) downloadDocAsImage(doc);
+      return;
+    }
+    const item = e.target.closest(".hist-item");
+    if(item){
+      const doc = docs.find(d=>d.id===item.dataset.id);
+      if(doc) printDocument(doc);
+    }
+  });
+}
+
+/* ============================================================
+   CALCUL DE MARGE
+   ============================================================ */
+document.getElementById("calcSuggestBtn").addEventListener("click", ()=>{
+  const cost = parseFloat(document.getElementById("mCost").value)||0;
+  const extra = parseFloat(document.getElementById("mExtra").value)||0;
+  const marginPct = parseFloat(document.getElementById("mTargetMargin").value)||0;
+  const totalCost = cost + extra;
+  const box = document.getElementById("suggestResult");
+  if(marginPct >= 100){
+    box.style.display="block";
+    box.innerHTML = `<div class="small">La marge doit être inférieure à 100%.</div>`;
+    return;
+  }
+  const price = totalCost / (1 - marginPct/100);
+  const marginAmt = price - totalCost;
+  box.style.display = "block";
+  box.innerHTML = `
+    <div class="big amount">${fmt(price)}</div>
+    <div class="small">Prix de vente conseillé pour une marge de ${marginPct}%</div>
+    <div class="small">Marge réalisée : <span class="amount">${fmt(marginAmt)}</span> par unité</div>
+  `;
+});
+
+document.getElementById("calcRealBtn").addEventListener("click", ()=>{
+  const cost = parseFloat(document.getElementById("rCost").value)||0;
+  const price = parseFloat(document.getElementById("rPrice").value)||0;
+  const box = document.getElementById("realResult");
+  if(price<=0){ box.style.display="block"; box.innerHTML = `<div class="small">Indiquez un prix de vente valide.</div>`; return; }
+  const marginAmt = price - cost;
+  const marginPct = (marginAmt / price) * 100;
+  box.style.display = "block";
+  const color = marginPct < 0 ? "#8B3A2B" : "#1B3358";
+  box.innerHTML = `
+    <div class="big amount" style="color:${color};">${marginPct.toFixed(1)}%</div>
+    <div class="small">Marge réalisée sur le prix de vente</div>
+    <div class="small">Gain : <span class="amount">${fmt(marginAmt)}</span> par unité</div>
+  `;
+});
+
+/* ============================================================
+   ABONNEMENT / FEDAPAY — plans multiples
+   ============================================================ */
+function getSelectedPlan(){
+  return PLANS.find(p=>p.id===selectedPlanId) || PLANS[0];
+}
+
+function renderPlans(){
+  const el = document.getElementById("plansList");
+  el.innerHTML = PLANS.map(p=>{
+    const perMonth = (p.days && p.days > 30) ? Math.round(p.price/(p.days/30)) : null;
+    return `
+    <div class="plan-card ${p.id===selectedPlanId?'selected':''}" data-plan="${p.id}">
+      <div class="plan-top">
+        <span class="plan-label">${p.label}</span>
+        ${p.badge ? `<span class="plan-badge">${p.badge}</span>` : ""}
+      </div>
+      <div class="plan-price amount">${fmt(p.price)}</div>
+      <div class="plan-sub">${p.days ? `${p.days} jours d'accès` : "Accès illimité — paiement unique, aucun renouvellement"}${perMonth ? ` · ≈ ${fmt(perMonth)}/mois` : ""}</div>
+    </div>`;
+  }).join("");
+  el.querySelectorAll(".plan-card").forEach(card=>{
+    card.addEventListener("click", ()=>{
+      if(card.dataset.plan === selectedPlanId) return;
+      selectedPlanId = card.dataset.plan;
+      renderPlans();
+      document.getElementById("payAmountLabel").textContent = fmt(getSelectedPlan().price);
+      rebindFedaPay();
+    });
+  });
+}
+
+function renderProView(){
+  renderPlans();
+  const line = document.getElementById("proStatusLine");
+  const details = document.getElementById("proDetails");
+  document.getElementById("payAmountLabel").textContent = fmt(getSelectedPlan().price);
+  if(isPro()){
+    const planLabel = (PLANS.find(p=>p.id===pro.planId)||{}).label || "";
+    if(pro.expiresAt === null){
+      line.innerHTML = `<span class="badge pro">Pro actif</span> Plan à vie — accès illimité, aucun renouvellement.`;
+    } else {
+      const exp = new Date(pro.expiresAt);
+      line.innerHTML = `<span class="badge pro">Pro actif</span> Plan ${escapeHtml(planLabel)} — valide jusqu'au ${exp.toLocaleDateString("fr-FR")}.`;
+    }
+    details.innerHTML = `<div class="notice">Documents illimités débloqués sur cet appareil. Choisir un nouveau plan ci-dessous remplacera la durée restante.</div>`;
+  } else {
+    const used = docs.length;
+    line.innerHTML = `<span class="badge free">Gratuit</span> ${used}/${CONFIG.FREE_DOCS_LIMIT} documents gratuits utilisés.`;
+    details.innerHTML = `<div class="notice">Choisissez la durée qui vous convient ci-dessous.</div>`;
+  }
+}
+
+function activatePro(plan){
+  const expiresAt = plan.days === null ? null : new Date(Date.now() + plan.days*24*60*60*1000).toISOString();
+  pro = {active:true, expiresAt, planId:plan.id};
+  save(KEYS.pro, pro);
+  renderProView();
+  renderQuota();
+  const msg = plan.days === null
+    ? "Paiement confirmé. Kalcul Pro à vie est actif — aucun renouvellement nécessaire."
+    : "Paiement confirmé. Plan " + plan.label + " actif jusqu'au " + new Date(expiresAt).toLocaleDateString("fr-FR") + ".";
+  alert(msg);
+}
+
+function initFedaPay(){
+  if(typeof FedaPay === "undefined"){
+    const btn = document.getElementById("pay-btn");
+    if(btn) btn.addEventListener("click", ()=>{
+      alert("Le module de paiement n'a pas pu se charger. Vérifiez votre connexion internet et réessayez.");
+    });
+    return;
+  }
+  const plan = getSelectedPlan();
+  FedaPay.init("#pay-btn", {
+    public_key: CONFIG.FEDAPAY_PUBLIC_KEY,
+    environment: CONFIG.FEDAPAY_ENV,
+    transaction: {
+      amount: plan.price,
+      description: "Abonnement Kalcul Pro — " + plan.label
+    },
+    currency: { iso: CONFIG.CURRENCY },
+    customer: {
+      lastname: (settings.name || "Client Kalcul"),
+      phone_number: {
+        number: settings.phone || "",
+        country: settings.country || "BJ"
+      }
+    },
+    onComplete: function(resp){
+      if(resp.transaction && resp.transaction.status === "approved"){
+        activatePro(plan);
+      } else {
+        alert("Paiement non confirmé. Réessayez si vous pensez qu'il s'agit d'une erreur.");
+      }
+    }
+  });
+}
+
+function rebindFedaPay(){
+  // Reclone le bouton pour repartir d'un nœud sans écouteur avant de
+  // réinitialiser FedaPay avec le montant du plan nouvellement choisi.
+  const oldBtn = document.getElementById("pay-btn");
+  const newBtn = oldBtn.cloneNode(true);
+  oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+  initFedaPay();
+}
+
+/* ============================================================
+   INITIALISATION
+   ============================================================ */
+document.getElementById("docDate").value = new Date().toISOString().slice(0,10);
+addItemRow();
+setDocSaved(false);
+renderHeader();
+renderQuota();
+initHistoryEvents();
+initFedaPay();
+applyTheme(load(KEYS.theme, "light"));
+renderRateStatus();
+updateCurrencyHints();
+updateInstallUI();
+refreshUsdRate(); // tentative silencieuse — échoue proprement hors ligne, garde le taux en cache
+
+})();
+</script>
+</body>
+</html>

@@ -97,8 +97,9 @@ header.top{
 }
 .top-row{display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}
 header.top .brand{
-  display:flex; align-items:baseline; gap:8px;
+  display:flex; align-items:center; gap:9px;
 }
+header.top .brand .brand-logo{flex-shrink:0;}
 header.top .brand .mark{
   font-family:var(--display); font-size:22px; font-weight:700; letter-spacing:.5px;
 }
@@ -151,6 +152,9 @@ input:focus, textarea:focus, select:focus, button:focus-visible{
 .btn-ochre:hover{filter:brightness(1.05);}
 .btn-ghost{background:transparent; border-color:var(--line); color:var(--ink);}
 .btn-ghost:hover{background:var(--paper-2);}
+.btn-wa{background:transparent; border-color:#25D366; color:var(--ink);}
+.btn-wa:hover{background:rgba(37,211,102,.1);}
+.btn-wa svg{flex-shrink:0;}
 .btn-danger{background:transparent; border-color:var(--clay); color:var(--clay);}
 .btn-block{width:100%;}
 .btn-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;}
@@ -187,6 +191,45 @@ table.items td.amount{text-align:right; font-size:13.5px; white-space:nowrap;}
 .empty{text-align:center; padding:34px 10px; color:var(--ink-soft);}
 .empty .glyph{font-size:30px; margin-bottom:8px; opacity:.6;}
 
+/* Caisse (POS) */
+.pos-product-list{margin-top:10px; max-height:340px; overflow-y:auto;}
+.pos-item{
+  display:flex; justify-content:space-between; align-items:center; gap:8px;
+  padding:11px 8px; border-bottom:1px solid var(--line); cursor:pointer;
+}
+.pos-item:last-child{border-bottom:none;}
+.pos-item:active{background:var(--paper-2);}
+.pos-item .name{font-weight:600; font-size:13.5px;}
+.pos-item .ref{font-size:11px; color:var(--ink-soft); font-family:var(--mono);}
+.pos-item .price{font-weight:700; color:var(--indigo-deep); white-space:nowrap;}
+.pos-item.out-of-stock{opacity:.4; cursor:not-allowed;}
+.pos-item .info-row{display:flex; align-items:center; gap:9px;}
+.item-thumb{width:36px; height:36px; border-radius:8px; object-fit:cover; background:var(--paper-2); border:1px solid var(--line); flex-shrink:0;}
+.photo-grid{display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;}
+.photo-thumb-wrap{position:relative;}
+.photo-thumb-wrap img{width:62px; height:62px; border-radius:9px; object-fit:cover; border:1px solid var(--line); display:block;}
+.photo-thumb-wrap .rm-photo{position:absolute; top:-6px; right:-6px; width:20px; height:20px; border-radius:50%; background:var(--clay); color:#fff; border:2px solid var(--white); font-size:11px; line-height:1; cursor:pointer; padding:0;}
+.stock-item .thumb-stack{position:relative; flex-shrink:0;}
+.stock-item .thumb-count{position:absolute; bottom:-4px; right:-4px; background:var(--indigo); color:#fff; font-size:9px; font-weight:700; border-radius:99px; padding:1px 5px; border:1.5px solid var(--white);}
+
+.cart-item{display:flex; justify-content:space-between; align-items:center; gap:8px; padding:9px 2px; border-bottom:1px solid var(--line);}
+.cart-item:last-child{border-bottom:none;}
+.cart-item .name{font-size:13px; font-weight:600;}
+.cart-item .stepper{display:flex; align-items:center; gap:8px;}
+.cart-item .stepper button{width:26px; height:26px; border-radius:50%; border:1px solid var(--line); background:var(--white); font-size:14px; cursor:pointer;}
+.cart-item .qty{min-width:18px; text-align:center; font-family:var(--mono);}
+.cart-item .line-total{font-family:var(--mono); font-weight:700; min-width:70px; text-align:right;}
+
+/* Stock */
+.stock-item{padding:12px 4px; border-bottom:1px solid var(--line);}
+.stock-item:last-child{border-bottom:none;}
+.stock-item .top-line{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
+.stock-item .info-row{display:flex; align-items:center; gap:10px;}
+.stock-item .name{font-weight:700; font-size:14px;}
+.stock-item .ref{font-size:11px; color:var(--ink-soft); font-family:var(--mono);}
+.stock-item .prices{display:flex; gap:14px; margin-top:4px; font-size:12px; color:var(--ink-soft);}
+.stock-item .prices b{color:var(--ink); font-family:var(--mono);}
+
 .paywall{border:1px solid var(--ochre); background:#FBF3DE;}
 .paywall h2{color:#5A3E00;}
 .result-box{background:var(--paper-2); border-radius:8px; padding:14px; margin-top:12px;}
@@ -222,10 +265,10 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
 }
 
 /* pied de page — contact partenariat */
-.site-footer{margin:26px 0 18px; padding-top:18px; border-top:1px dashed var(--line);}
+.site-footer{margin:26px 0 18px; padding-top:18px; border-top:1px dashed var(--line); text-align:center;}
 .foot-title{font-family:var(--display); font-size:15.5px; font-weight:700; color:var(--indigo-deep);}
 .foot-sub{font-size:12.5px; color:var(--ink-soft); margin:4px 0 12px;}
-.foot-links{display:flex; gap:10px; flex-wrap:wrap;}
+.foot-links{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
 .foot-btn{
   display:inline-flex; align-items:center; gap:8px; padding:9px 15px;
   border-radius:99px; border:1px solid var(--line); background:var(--white);
@@ -235,10 +278,25 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
 .foot-btn:hover{background:var(--paper-2); border-color:var(--ochre);}
 .foot-btn svg{flex-shrink:0;}
 .foot-note{margin-top:10px; font-size:11.5px; color:var(--ink-soft); font-family:var(--mono);}
-.legal-footer-links{margin-top:12px; font-size:11px; color:var(--ink-soft);}
+.legal-footer-links{margin-top:12px; font-size:11px; color:var(--ink-soft); text-align:center;}
 .legal-footer-links a{color:var(--ink-soft); text-decoration:underline; cursor:pointer;}
-.powered-by{margin-top:8px; font-size:11px; color:var(--ink-soft);}
+.powered-by{margin-top:8px; font-size:11px; color:var(--ink-soft); text-align:center;}
 .powered-by strong{color:var(--ink);}
+
+.store-cta-btn{
+  display:inline-flex; align-items:center; gap:8px;
+  margin-top:16px; padding:12px 22px;
+  border-radius:99px; border:2px solid #241B10;
+  background:linear-gradient(135deg, var(--ochre), #E7C978);
+  color:#241B10; font-weight:800; font-size:12.5px; letter-spacing:.3px;
+  text-decoration:none; white-space:nowrap;
+  animation:store-cta-pulse 2.2s ease-in-out infinite;
+}
+.store-cta-dot{width:8px; height:8px; border-radius:50%; background:#241B10; flex-shrink:0;}
+@keyframes store-cta-pulse{
+  0%, 100%{ box-shadow:0 0 0 0 rgba(192,138,40,.55); transform:scale(1); }
+  50%{ box-shadow:0 0 0 10px rgba(192,138,40,0); transform:scale(1.035); }
+}
 
 /* modale CGU / mentions / politique / à propos */
 .legal-overlay{
@@ -267,10 +325,22 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
 .legal-modal-body li{margin-bottom:4px;}
 .legal-modal-body .legal-meta{font-size:11px; color:var(--ink-soft); margin-bottom:14px;}
 
+.plus-list{display:flex; flex-direction:column; gap:8px;}
+.plus-item{
+  display:flex; align-items:center; gap:12px; width:100%; text-align:left;
+  padding:13px 14px; border-radius:10px; border:1px solid var(--line); background:var(--paper);
+  font-size:14.5px; font-weight:600; color:var(--ink); cursor:pointer;
+}
+.plus-item:hover{background:var(--paper-2);}
+.plus-item .ic{font-size:18px;}
+
+.badge.lowstock{background:#F6D9D2; color:var(--clay);}
+
 /* historique — actions */
 .hist-actions{display:flex; gap:10px; font-size:11px; margin-top:2px;}
 .edit-doc{color:var(--ochre); cursor:pointer; font-weight:600;}
 .img-doc{color:var(--indigo); cursor:pointer; font-weight:600;}
+.wa-doc{color:#1F9E52; cursor:pointer; font-weight:600;}
 .del-doc{color:var(--clay); cursor:pointer; font-weight:600;}
 .del-doc.confirming{color:#fff; background:var(--clay); padding:2px 7px; border-radius:99px;}
 
@@ -281,7 +351,8 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
 .plan-top{display:flex; justify-content:space-between; align-items:center; gap:8px;}
 .plan-label{font-weight:700; font-size:13.5px;}
 .plan-badge{font-size:9.5px; text-transform:uppercase; letter-spacing:.4px; background:var(--ochre); color:#241B10; padding:2px 7px; border-radius:99px; font-weight:700; white-space:nowrap;}
-.plan-price{font-size:17px; font-weight:700; color:var(--indigo-deep); margin-top:3px;}
+.plan-old-price{font-size:12.5px; color:var(--ink-soft); text-decoration:line-through; margin-top:5px;}
+.plan-price{font-size:17px; font-weight:700; color:var(--indigo-deep); margin-top:1px;}
 .plan-sub{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
 </style>
 </head>
@@ -289,7 +360,14 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
 
 <header class="top">
   <div class="top-row">
-    <div class="brand"><span class="mark">Kalcul</span><span class="tag">Facture · Devis · Marge</span></div>
+    <div class="brand">
+      <svg class="brand-logo" viewBox="0 0 100 130" width="34" height="44" role="img" aria-label="Kalcul">
+        <rect x="0" y="0" width="100" height="100" rx="24" fill="#0F1D33"/>
+        <text x="50" y="77" font-family="Georgia, 'Iowan Old Style', serif" font-size="68" font-weight="700" fill="#D9A544" text-anchor="middle">K</text>
+        <text x="50" y="123" font-family="-apple-system, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="1.5" fill="#F7F1E1" text-anchor="middle">KALCUL</text>
+      </svg>
+      <span class="tag" id="brandTag">Facture · Devis · Marge</span>
+    </div>
     <button type="button" id="themeToggleBtn" class="theme-toggle" aria-label="Changer de thème">🌙</button>
   </div>
   <div class="company" id="companyStrip">
@@ -300,95 +378,155 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
 
 <main>
 
+  <!-- ===== VUE : CAISSE (POS) ===== -->
+  <section class="view active" id="view-pos">
+    <div class="card">
+      <h2 data-i18n="caisse_t">Caisse</h2>
+      <div class="sub" data-i18n="caisse_s">Vente rapide au comptoir, à partir de votre stock.</div>
+      <input type="text" id="posSearch" data-i18n-placeholder="search_placeholder" placeholder="Rechercher un produit...">
+      <div id="posProductList" class="pos-product-list"></div>
+      <div class="empty" id="posEmptyHint" style="display:none;">
+        <div class="glyph">📦</div>
+        <span data-i18n="no_products_hint">Aucun produit dans votre stock. Ajoutez-en dans l'onglet Stock pour commencer à vendre.</span>
+      </div>
+    </div>
+
+    <div class="card" id="cartCard" style="display:none;">
+      <h2 data-i18n="cart_t">Panier actuel</h2>
+      <div id="cartList"></div>
+      <div class="totals">
+        <div class="line total"><span data-i18n="cart_total">Total</span><span class="amount" id="cartTotal">0</span></div>
+      </div>
+      <button type="button" class="btn btn-primary btn-block" id="validateSaleBtn" style="margin-top:12px;" data-i18n="validate_sale_btn">Valider la vente</button>
+    </div>
+  </section>
+
+  <!-- ===== VUE : STOCK ===== -->
+  <section class="view" id="view-stock">
+    <div class="card">
+      <h2 data-i18n="add_product_t">Ajouter un produit</h2>
+      <label for="prodName" data-i18n="prod_name_label">Nom de l'article</label>
+      <input type="text" id="prodName">
+      <label for="prodRef" data-i18n="prod_ref_label">Référence / Code-barres</label>
+      <input type="text" id="prodRef">
+      <div class="row">
+        <div>
+          <label for="prodBuy" data-i18n="prod_buy_label">Prix d'achat</label>
+          <input type="number" id="prodBuy" class="mono-input" min="0">
+        </div>
+        <div>
+          <label for="prodSell" data-i18n="prod_sell_label">Prix de vente</label>
+          <input type="number" id="prodSell" class="mono-input" min="0">
+        </div>
+      </div>
+      <label for="prodQty" data-i18n="prod_qty_label">Quantité en stock</label>
+      <input type="number" id="prodQty" class="mono-input" min="0">
+      <label data-i18n="prod_photos_label">Photos (jusqu'à 4)</label>
+      <input type="file" id="prodPhotoInput" accept="image/*" multiple>
+      <div class="photo-grid" id="prodPhotoGrid"></div>
+      <button type="button" class="btn btn-primary btn-block" id="saveProductBtn" style="margin-top:12px;" data-i18n="save_product_btn">Enregistrer le produit</button>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="stock_t">Stock</h2>
+      <div class="sub" data-i18n="stock_s">Votre catalogue de produits — utilisé aussi par la Caisse.</div>
+      <div id="stockList"></div>
+    </div>
+  </section>
+
   <!-- ===== VUE : NOUVEAU DOCUMENT ===== -->
-  <section class="view active" id="view-new">
+  <section class="view" id="view-new">
     <div class="card" id="quotaCard" style="display:none;"></div>
 
     <div class="card" id="editorCard">
-      <div class="notice" id="currencyInputHintNew" style="display:none;">Saisissez vos prix en FCFA — l'affichage ci-dessous suit la devise choisie dans Réglages.</div>
+      <div class="notice" id="currencyInputHintNew" style="display:none;" data-i18n="currency_hint_new">Saisissez vos prix en FCFA — l'affichage ci-dessous suit la devise choisie dans Réglages.</div>
       <div class="segmented" role="tablist" aria-label="Type de document">
-        <button type="button" data-doctype="facture" class="active">Facture</button>
-        <button type="button" data-doctype="devis">Devis</button>
+        <button type="button" data-doctype="facture" class="active" data-i18n="doctype_facture">Facture</button>
+        <button type="button" data-doctype="devis" data-i18n="doctype_devis">Devis</button>
       </div>
 
-      <label for="clientName">Client</label>
-      <input type="text" id="clientName" placeholder="Nom du client ou de l'entreprise">
+      <label for="clientName" data-i18n="client_label">Client</label>
+      <input type="text" id="clientName" data-i18n-placeholder="client_placeholder" placeholder="Nom du client ou de l'entreprise">
 
       <div class="row">
         <div>
-          <label for="clientPhone">Téléphone client</label>
+          <label for="clientPhone" data-i18n="client_phone_label">Téléphone client</label>
           <input type="tel" id="clientPhone" placeholder="+229 ...">
         </div>
         <div>
-          <label for="docDate">Date</label>
+          <label for="docDate" data-i18n="date_label">Date</label>
           <input type="date" id="docDate">
         </div>
       </div>
 
-      <label style="margin-top:16px;">Articles / prestations</label>
+      <label style="margin-top:16px;" data-i18n="items_label">Articles / prestations</label>
       <table class="items">
         <thead>
-          <tr><th style="width:44%;">Description</th><th style="width:16%;">Qté</th><th style="width:24%;">Prix U.</th><th style="width:24%;">Montant</th><th></th></tr>
+          <tr><th style="width:44%;" data-i18n="th_desc">Description</th><th style="width:16%;" data-i18n="th_qty">Qté</th><th style="width:24%;" data-i18n="th_price">Prix U.</th><th style="width:24%;" data-i18n="th_amount">Montant</th><th></th></tr>
         </thead>
         <tbody id="itemsBody"></tbody>
       </table>
-      <button type="button" class="btn btn-ghost" id="addItemBtn" style="margin-top:8px;">+ Ajouter une ligne</button>
+      <button type="button" class="btn btn-ghost" id="addItemBtn" style="margin-top:8px;" data-i18n="add_item_btn">+ Ajouter une ligne</button>
 
       <div class="row" style="margin-top:14px;">
         <div>
-          <label for="discountPct">Remise (%)</label>
+          <label for="discountPct" data-i18n="discount_label">Remise (%)</label>
           <input type="number" id="discountPct" class="mono-input" min="0" max="100" value="0">
         </div>
         <div>
-          <label for="taxPct">TVA (%)</label>
+          <label for="taxPct" data-i18n="tax_label">TVA (%)</label>
           <input type="number" id="taxPct" class="mono-input" min="0" max="100" value="0">
         </div>
       </div>
 
-      <label for="notes">Notes / conditions</label>
-      <textarea id="notes" placeholder="Ex : Paiement à réception, validité du devis 15 jours..."></textarea>
+      <label for="notes" data-i18n="notes_label">Notes / conditions</label>
+      <textarea id="notes" data-i18n-placeholder="notes_placeholder" placeholder="Ex : Paiement à réception, validité du devis 15 jours..."></textarea>
 
       <div class="totals">
-        <div class="line"><span>Sous-total</span><span class="amount" id="tSubtotal">0</span></div>
-        <div class="line"><span>Remise</span><span class="amount" id="tDiscount">0</span></div>
-        <div class="line"><span>TVA</span><span class="amount" id="tTax">0</span></div>
-        <div class="line total"><span>Total</span><span class="amount" id="tTotal">0 F CFA</span></div>
+        <div class="line"><span data-i18n="sub_subtotal">Sous-total</span><span class="amount" id="tSubtotal">0</span></div>
+        <div class="line"><span data-i18n="sub_discount">Remise</span><span class="amount" id="tDiscount">0</span></div>
+        <div class="line"><span data-i18n="sub_tax">TVA</span><span class="amount" id="tTax">0</span></div>
+        <div class="line total"><span data-i18n="sub_total">Total</span><span class="amount" id="tTotal">0 F CFA</span></div>
       </div>
 
       <div class="btn-row">
-        <button type="button" class="btn btn-primary" id="saveDocBtn">Enregistrer</button>
-        <button type="button" class="btn btn-ghost" id="printDocBtn" disabled>Imprimer / PDF</button>
-        <button type="button" class="btn btn-ghost" id="imageDocBtn" disabled>Télécharger en image</button>
-        <button type="button" class="btn btn-ghost" id="resetDocBtn">Nouveau</button>
+        <button type="button" class="btn btn-primary" id="saveDocBtn" data-i18n="save_btn">Enregistrer</button>
+        <button type="button" class="btn btn-ghost" id="printDocBtn" disabled data-i18n="print_btn">Imprimer / PDF</button>
+        <button type="button" class="btn btn-ghost" id="imageDocBtn" disabled data-i18n="image_btn">Télécharger en image</button>
+        <button type="button" class="btn btn-wa" id="waDocBtn" disabled>
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#25D366"/><path fill="#fff" d="M12 6.2a5.8 5.8 0 0 0-5 8.7l-.8 2.9 3-.8a5.8 5.8 0 1 0 2.8-10.8Zm0 1.3a4.5 4.5 0 0 1 3.9 6.8 4.5 4.5 0 0 1-7 1.1l-.2-.1-1.7.4.5-1.6-.1-.2a4.5 4.5 0 0 1 4.6-6.4Zm-2.1 2.3c-.1 0-.3 0-.4.2-.2.2-.6.6-.6 1.4s.6 1.7.7 1.8c.1.1 1.2 2 3 2.6.4.2.8.3 1 .3.5.1.9.1 1.2-.1.3-.2.6-.6.7-.9l.1-.4-1.6-.8-.5.6c0 .1-.1.1-.3 0-.2-.1-.7-.3-1.3-.9-.5-.4-.9-1-1-1.2-.1-.2 0-.2 0-.3l.4-.5c.1-.1.1-.2 0-.3l-.6-1.3c-.1-.2-.2-.2-.4-.2h-.3Z"/></svg>
+          <span data-i18n="wa_send_btn">Envoyer via WhatsApp</span>
+        </button>
+        <button type="button" class="btn btn-ghost" id="resetDocBtn" data-i18n="new_btn">Nouveau</button>
       </div>
-      <p class="hint">Enregistrez d'abord le document : Imprimer/PDF et Télécharger en image s'activent juste après. L'export PDF utilise la fonction « Imprimer » de votre navigateur — aucune connexion requise.</p>
+      <p class="hint" data-i18n="save_first_hint">Enregistrez d'abord le document : Imprimer/PDF et Télécharger en image s'activent juste après. L'export PDF utilise la fonction « Imprimer » de votre navigateur — aucune connexion requise.</p>
     </div>
   </section>
 
   <!-- ===== VUE : CALCUL DE MARGE ===== -->
   <section class="view" id="view-margin">
-    <div class="notice" id="currencyInputHintMargin" style="display:none;">Saisissez vos montants en FCFA — les résultats ci-dessous suivent la devise choisie dans Réglages.</div>
+    <div class="notice" id="currencyInputHintMargin" style="display:none;" data-i18n="currency_hint_margin">Saisissez vos montants en FCFA — les résultats ci-dessous suivent la devise choisie dans Réglages.</div>
     <div class="card">
-      <h2>Prix de vente conseillé</h2>
-      <div class="sub">À partir de votre coût, obtenez le prix qui garantit votre marge cible.</div>
-      <label for="mCost">Prix d'achat (unitaire)</label>
+      <h2 data-i18n="margin_t1">Prix de vente conseillé</h2>
+      <div class="sub" data-i18n="margin_s1">À partir de votre coût, obtenez le prix qui garantit votre marge cible.</div>
+      <label for="mCost" data-i18n="cost_label">Prix d'achat (unitaire)</label>
       <input type="number" id="mCost" class="mono-input" min="0" placeholder="0">
-      <label for="mExtra">Frais additionnels (transport, douane...)</label>
+      <label for="mExtra" data-i18n="extra_label">Frais additionnels (transport, douane...)</label>
       <input type="number" id="mExtra" class="mono-input" min="0" placeholder="0">
-      <label for="mTargetMargin">Marge cible (%)</label>
+      <label for="mTargetMargin" data-i18n="target_margin_label">Marge cible (%)</label>
       <input type="number" id="mTargetMargin" class="mono-input" min="0" max="95" placeholder="30">
-      <button type="button" class="btn btn-primary btn-block" id="calcSuggestBtn" style="margin-top:12px;">Calculer le prix de vente</button>
+      <button type="button" class="btn btn-primary btn-block" id="calcSuggestBtn" style="margin-top:12px;" data-i18n="calc_suggest_btn">Calculer le prix de vente</button>
       <div class="result-box" id="suggestResult" style="display:none;"></div>
     </div>
 
     <div class="card">
-      <h2>Marge réalisée</h2>
-      <div class="sub">Vous connaissez déjà votre prix de vente ? Vérifiez votre marge réelle.</div>
-      <label for="rCost">Coût total (achat + frais)</label>
+      <h2 data-i18n="margin_t2">Marge réalisée</h2>
+      <div class="sub" data-i18n="margin_s2">Vous connaissez déjà votre prix de vente ? Vérifiez votre marge réelle.</div>
+      <label for="rCost" data-i18n="real_cost_label">Coût total (achat + frais)</label>
       <input type="number" id="rCost" class="mono-input" min="0" placeholder="0">
-      <label for="rPrice">Prix de vente</label>
+      <label for="rPrice" data-i18n="real_price_label">Prix de vente</label>
       <input type="number" id="rPrice" class="mono-input" min="0" placeholder="0">
-      <button type="button" class="btn btn-primary btn-block" id="calcRealBtn" style="margin-top:12px;">Calculer la marge</button>
+      <button type="button" class="btn btn-primary btn-block" id="calcRealBtn" style="margin-top:12px;" data-i18n="calc_real_btn">Calculer la marge</button>
       <div class="result-box" id="realResult" style="display:none;"></div>
     </div>
   </section>
@@ -396,59 +534,77 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
   <!-- ===== VUE : HISTORIQUE ===== -->
   <section class="view" id="view-history">
     <div class="card">
-      <h2>Historique</h2>
-      <div class="sub">Toutes vos factures et devis, enregistrés uniquement sur cet appareil.</div>
-      <div id="historyList"></div>
+      <h2 data-i18n="hist_t">Historique</h2>
+      <div class="sub" data-i18n="hist_s">Toutes vos ventes, factures et devis, enregistrés uniquement sur cet appareil.</div>
+
+      <div class="segmented" style="margin-top:4px;">
+        <button type="button" class="rep-filter active" data-period="today" data-i18n="filter_today">Aujourd'hui</button>
+        <button type="button" class="rep-filter" data-period="month" data-i18n="filter_month">Ce mois</button>
+      </div>
+      <div class="totals" style="margin-top:12px;">
+        <div class="line"><span data-i18n="rep_ca">Chiffre d'affaires</span><span class="amount" id="repCA">0</span></div>
+        <div class="line"><span data-i18n="rep_cost">Coût d'achat</span><span class="amount" id="repCost">0</span></div>
+        <div class="line total"><span data-i18n="rep_profit">Bénéfice net</span><span class="amount" id="repProfit">0</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="segmented">
+        <button type="button" class="hist-tab active" data-histtab="ventes" data-i18n="tab_ventes">Ventes caisse</button>
+        <button type="button" class="hist-tab" data-histtab="docs" data-i18n="tab_docs">Factures & devis</button>
+      </div>
+      <div id="salesList" style="margin-top:10px;"></div>
+      <div id="historyList" style="margin-top:10px; display:none;"></div>
     </div>
   </section>
 
   <!-- ===== VUE : REGLAGES ===== -->
   <section class="view" id="view-settings">
     <div class="card" id="installCard" style="display:none;">
-      <h2>Installer l'application</h2>
-      <div class="sub">Ajoutez Kalcul à votre écran d'accueil pour l'ouvrir comme une vraie application, en un tap, même hors connexion.</div>
-      <button type="button" class="btn btn-primary btn-block" id="installAppBtn">📲 Installer Kalcul</button>
+      <h2 data-i18n="settings_install_t">Installer l'application</h2>
+      <div class="sub" data-i18n="settings_install_s">Ajoutez Kalcul à votre écran d'accueil pour l'ouvrir comme une vraie application, en un tap, même hors connexion.</div>
+      <button type="button" class="btn btn-primary btn-block" id="installAppBtn" data-i18n="install_btn">📲 Installer Kalcul</button>
     </div>
 
     <div class="card">
-      <h2>Mon entreprise</h2>
-      <div class="sub">Ces informations apparaissent sur vos factures et devis.</div>
+      <h2 data-i18n="company_t">Mon entreprise</h2>
+      <div class="sub" data-i18n="company_s">Ces informations apparaissent sur vos factures et devis.</div>
 
-      <label for="setName">Nom de l'entreprise</label>
+      <label for="setName" data-i18n="name_label">Nom de l'entreprise</label>
       <input type="text" id="setName" placeholder="Ex : Boutique Awa">
 
-      <label for="setAddress">Adresse</label>
+      <label for="setAddress" data-i18n="address_label">Adresse</label>
       <input type="text" id="setAddress" placeholder="Ville, quartier...">
 
-      <label for="setCountry">Pays</label>
+      <label for="setCountry" data-i18n="country_label">Pays</label>
       <select id="setCountry">
-        <option value="BJ">Bénin</option>
-        <option value="TG">Togo</option>
-        <option value="CI">Côte d'Ivoire</option>
-        <option value="SN">Sénégal</option>
-        <option value="NE">Niger</option>
-        <option value="ML">Mali</option>
-        <option value="BF">Burkina Faso</option>
+        <option value="BJ" data-i18n="country_bj">Bénin</option>
+        <option value="TG" data-i18n="country_tg">Togo</option>
+        <option value="CI" data-i18n="country_ci">Côte d'Ivoire</option>
+        <option value="SN" data-i18n="country_sn">Sénégal</option>
+        <option value="NE" data-i18n="country_ne">Niger</option>
+        <option value="ML" data-i18n="country_ml">Mali</option>
+        <option value="BF" data-i18n="country_bf">Burkina Faso</option>
       </select>
 
-      <label for="setPhone">Téléphone</label>
+      <label for="setPhone" data-i18n="phone_label">Téléphone</label>
       <input type="tel" id="setPhone" placeholder="+229...">
       <div class="hint" id="phoneExampleHint">Exemple pour le Bénin : +2290190000000</div>
 
-      <label>Logo (optionnel)</label>
+      <label data-i18n="logo_label">Logo (optionnel)</label>
       <div class="row" style="align-items:center;">
         <img id="logoPreview" class="logo-preview" alt="">
         <input type="file" id="logoInput" accept="image/*">
       </div>
 
       <div class="btn-row">
-        <button type="button" class="btn btn-primary" id="saveSettingsBtn">Enregistrer</button>
+        <button type="button" class="btn btn-primary" id="saveSettingsBtn" data-i18n="save_settings_btn">Enregistrer</button>
       </div>
     </div>
 
     <div class="card">
-      <h2>Devise d'affichage</h2>
-      <div class="sub">Les montants saisis restent en FCFA. Cette devise ne change que l'affichage — la conversion est automatique et instantanée.</div>
+      <h2 data-i18n="currency_t">Devise d'affichage</h2>
+      <div class="sub" data-i18n="currency_s">Les montants saisis restent en FCFA. Cette devise ne change que l'affichage — la conversion est automatique et instantanée.</div>
       <select id="setCurrency">
         <option value="XOF">FCFA (F CFA)</option>
         <option value="EUR">Euro (€)</option>
@@ -458,61 +614,74 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
     </div>
 
     <div class="card">
-      <h2>Sauvegarde &amp; restauration</h2>
-      <div class="sub">Changez de téléphone sans rien perdre : factures, devis, réglages et abonnement Kalcul Pro.</div>
+      <h2 data-i18n="lang_t">Langue</h2>
+      <div class="sub" data-i18n="lang_s">Cette langue s'applique à toute l'application et à vos documents générés.</div>
+      <select id="setLang">
+        <option value="fr">Français</option>
+        <option value="en">English</option>
+      </select>
+    </div>
 
-      <button type="button" class="btn btn-primary btn-block" id="exportBackupBtn">⬇️ Télécharger une sauvegarde</button>
-      <p class="hint">Envoyez ce fichier vers votre nouveau téléphone (WhatsApp, email, Bluetooth ou Google Drive), puis ouvrez Kalcul dessus et utilisez « Restaurer » ci-dessous.</p>
+    <div class="card">
+      <h2 data-i18n="backup_t">Sauvegarde &amp; restauration</h2>
+      <div class="sub" data-i18n="backup_s">Changez de téléphone sans rien perdre : factures, devis, réglages et abonnement Kalcul Pro.</div>
 
-      <label for="restoreFileInput" style="margin-top:16px;">Fichier de sauvegarde</label>
+      <button type="button" class="btn btn-primary btn-block" id="exportBackupBtn" data-i18n="export_backup_btn">⬇️ Télécharger une sauvegarde</button>
+      <p class="hint" data-i18n="backup_hint">Envoyez ce fichier vers votre nouveau téléphone (WhatsApp, email, Bluetooth ou Google Drive), puis ouvrez Kalcul dessus et utilisez « Restaurer » ci-dessous.</p>
+
+      <label for="restoreFileInput" style="margin-top:16px;" data-i18n="restore_file_label">Fichier de sauvegarde</label>
       <input type="file" id="restoreFileInput" accept="application/json,.json">
-      <button type="button" class="btn btn-ochre btn-block" id="restoreBackupBtn" style="margin-top:10px;">⬆️ Restaurer cette sauvegarde</button>
-      <div class="notice">La restauration remplace toutes les données présentes sur cet appareil par celles du fichier choisi — y compris le statut Kalcul Pro, reconnu automatiquement, sans nous contacter.</div>
+      <button type="button" class="btn btn-ochre btn-block" id="restoreBackupBtn" style="margin-top:10px;" data-i18n="restore_btn">⬆️ Restaurer cette sauvegarde</button>
+      <div class="notice" data-i18n="restore_notice">La restauration remplace toutes les données présentes sur cet appareil par celles du fichier choisi — y compris le statut Kalcul Pro, reconnu automatiquement, sans nous contacter.</div>
     </div>
   </section>
 
   <!-- ===== VUE : ABONNEMENT ===== -->
   <section class="view" id="view-pro">
     <div class="card">
-      <h2>Kalcul Pro</h2>
-      <div class="sub" id="proStatusLine">Chargement du statut...</div>
+      <h2 data-i18n="pro_t">Kalcul Pro</h2>
+      <div class="sub" id="proStatusLine" data-i18n="pro_loading">Chargement du statut...</div>
       <div id="proDetails"></div>
 
       <div class="plans" id="plansList"></div>
 
       <div class="btn-row">
-        <button id="pay-btn" type="button" class="btn btn-ochre btn-block">Payer et débloquer — <span id="payAmountLabel"></span></button>
+        <button id="pay-btn" type="button" class="btn btn-ochre btn-block"><span data-i18n="pay_btn">Payer et débloquer —</span> <span id="payAmountLabel"></span></button>
       </div>
-      <p class="hint">Paiement unique via FedaPay (Mobile Money) — aucun prélèvement automatique, aucune carte ni numéro enregistré chez nous. À la fin de la période, revenez ici et repayez le plan de votre choix pour continuer. C'est le seul moment où une connexion est nécessaire.</p>
-      <div class="notice">Le déverrouillage est enregistré sur cet appareil. Pour le retrouver sur un nouveau téléphone, utilisez Réglages → Sauvegarde &amp; restauration — aucun contact nécessaire.</div>
+      <p class="hint" data-i18n="pay_hint">Paiement unique via FedaPay (Mobile Money) — aucun prélèvement automatique, aucune carte ni numéro enregistré chez nous. À la fin de la période, revenez ici et repayez le plan de votre choix pour continuer. C'est le seul moment où une connexion est nécessaire.</p>
+      <div class="notice" data-i18n="pay_notice">Le déverrouillage est enregistré sur cet appareil. Pour le retrouver sur un nouveau téléphone, utilisez Réglages → Sauvegarde &amp; restauration — aucun contact nécessaire.</div>
     </div>
   </section>
 
   <!-- ===== PIED DE PAGE : PARTENARIAT / OUTILS SUR MESURE ===== -->
   <footer class="site-footer">
-    <div class="foot-title">Partenariat &amp; outils personnalisés</div>
-    <div class="foot-sub">Une idée d'outil sur mesure pour votre activité ? Écrivez-nous.</div>
+    <div class="foot-title" data-i18n="footer_partner_t">Partenariat &amp; outils personnalisés</div>
+    <div class="foot-sub" data-i18n="footer_partner_s">Une idée d'outil sur mesure pour votre activité ? Écrivez-nous.</div>
     <div class="foot-links">
       <a class="foot-btn wa" href="https://wa.me/2290196809106?text=Bonjour%2C%20je%20vous%20contacte%20depuis%20Kalcul." target="_blank" rel="noopener noreferrer" aria-label="Contacter sur WhatsApp">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
           <circle cx="12" cy="12" r="12" fill="#25D366"/>
           <path fill="#fff" d="M12 6.2a5.8 5.8 0 0 0-5 8.7l-.8 2.9 3-.8a5.8 5.8 0 1 0 2.8-10.8Zm0 1.3a4.5 4.5 0 0 1 3.9 6.8 4.5 4.5 0 0 1-7 1.1l-.2-.1-1.7.4.5-1.6-.1-.2a4.5 4.5 0 0 1 4.6-6.4Zm-2.1 2.3c-.1 0-.3 0-.4.2-.2.2-.6.6-.6 1.4s.6 1.7.7 1.8c.1.1 1.2 2 3 2.6.4.2.8.3 1 .3.5.1.9.1 1.2-.1.3-.2.6-.6.7-.9l.1-.4-1.6-.8-.5.6c0 .1-.1.1-.3 0-.2-.1-.7-.3-1.3-.9-.5-.4-.9-1-1-1.2-.1-.2 0-.2 0-.3l.4-.5c.1-.1.1-.2 0-.3l-.6-1.3c-.1-.2-.2-.2-.4-.2h-.3Z"/>
         </svg>
-        <span>WhatsApp</span>
+        <span data-i18n="footer_whatsapp">WhatsApp</span>
       </a>
       <a class="foot-btn mail" href="mailto:empiredonko@gmail.com?subject=Partenariat%20%2F%20outil%20personnalis%C3%A9%20-%20Kalcul" aria-label="Contacter par email">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
           <circle cx="12" cy="12" r="12" fill="#1B3358"/>
           <path fill="#fff" d="M6.5 8.3h11c.6 0 1 .4 1 1v5.4c0 .6-.4 1-1 1h-11c-.6 0-1-.4-1-1V9.3c0-.6.4-1 1-1Zm.7 1.1L12 12.9l4.8-3.5H7.2Z"/>
         </svg>
-        <span>Email</span>
+        <span data-i18n="footer_email">Email</span>
       </a>
     </div>
     <div class="foot-note">+229 01 96 80 91 06 · empiredonko@gmail.com</div>
+    <a class="store-cta-btn" href="https://majesticfordonko.mychariow.shop" target="_blank" rel="noopener noreferrer">
+      <span class="store-cta-dot"></span>
+      🛍️ EMPIRE DONKO TOOLS STORE
+    </a>
     <div class="legal-footer-links">
-      <a href="#" data-legal="cgu">CGU</a> · <a href="#" data-legal="mentions">Mentions légales</a> · <a href="#" data-legal="politique">Politique d'utilisation</a> · <a href="#" data-legal="apropos">À propos</a>
+      <a href="#" data-legal="cgu" data-i18n="legal_cgu">CGU</a> · <a href="#" data-legal="mentions" data-i18n="legal_mentions">Mentions légales</a> · <a href="#" data-legal="politique" data-i18n="legal_politique">Politique d'utilisation</a> · <a href="#" data-legal="guide" data-i18n="legal_guide">Guide d'utilisation</a> · <a href="#" data-legal="apropos" data-i18n="legal_apropos">À propos</a>
     </div>
-    <div class="powered-by">Powered by <strong>EMPIRE DONKO</strong></div>
+    <div class="powered-by"><span data-i18n="powered_by">Propulsé par</span> <strong>EMPIRE DONKO</strong></div>
   </footer>
 
   <div id="legalModalOverlay" class="legal-overlay" style="display:none;">
@@ -529,12 +698,28 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
 
 <div id="print-area"></div>
 
+<div id="plusSheetOverlay" class="legal-overlay" style="display:none;">
+  <div class="legal-modal" style="max-height:50vh;">
+    <div class="legal-modal-header">
+      <span data-i18n="plus_title">Plus</span>
+      <button type="button" id="plusSheetClose" aria-label="Fermer">✕</button>
+    </div>
+    <div class="legal-modal-body">
+      <div class="plus-list">
+        <button type="button" class="plus-item" data-view="view-margin"><span class="ic">➗</span><span data-i18n="plus_marge">Calcul de marge</span></button>
+        <button type="button" class="plus-item" data-view="view-settings"><span class="ic">⚙️</span><span data-i18n="plus_reglages">Réglages</span></button>
+        <button type="button" class="plus-item" data-view="view-pro"><span class="ic">★</span><span data-i18n="plus_pro">Kalcul Pro</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <nav class="bottom">
-  <button data-view="view-new" class="active"><span class="ic">🧾</span>Document</button>
-  <button data-view="view-margin"><span class="ic">➗</span>Marge</button>
-  <button data-view="view-history"><span class="ic">🗂️</span>Historique</button>
-  <button data-view="view-settings"><span class="ic">⚙️</span>Réglages</button>
-  <button data-view="view-pro"><span class="ic">★</span>Pro</button>
+  <button data-view="view-pos" class="active"><span class="ic">🧺</span><span data-i18n="nav_caisse">Caisse</span></button>
+  <button data-view="view-stock"><span class="ic">📦</span><span data-i18n="nav_stock">Stock</span></button>
+  <button data-view="view-new"><span class="ic">🧾</span><span data-i18n="nav_document">Document</span></button>
+  <button data-view="view-history"><span class="ic">🗂️</span><span data-i18n="nav_historique">Historique</span></button>
+  <button id="navPlusBtn"><span class="ic">⋯</span><span data-i18n="nav_plus">Plus</span></button>
 </nav>
 
 <!-- FedaPay Checkout.js — chargé uniquement pour le paiement de l'abonnement -->
@@ -544,20 +729,272 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
 (function(){
 "use strict";
 
-console.log(
-  "%cArrêtez !",
-  "color:#8B3A2B; font-size:28px; font-weight:bold;"
-);
-console.log(
-  "%cCette console est un outil pour développeurs. Coller ici du code fourni par une autre personne peut compromettre vos données locales (factures, réglages) ou votre statut Kalcul Pro. Ne collez rien ici si vous n'êtes pas sûr de ce que ça fait.\n\nKalcul — © Empire Donko. Code protégé par le droit d'auteur (voir Mentions Légales dans l'application).",
-  "font-size:13px;"
-);
+console.log("=== ARRÊTEZ ! ===");
+console.log("Cette console est un outil pour développeurs. Coller ici du code fourni par une autre personne peut compromettre vos données locales (factures, réglages) ou votre statut Kalcul Pro. Ne collez rien ici si vous n'êtes pas sûr de ce que ça fait.");
+console.log("Kalcul — © Empire Donko. Code protégé par le droit d'auteur (voir Mentions Légales dans l'application).");
 
 /* ============================================================
    CONFIGURATION — à personnaliser avant mise en ligne
    ============================================================ */
+/* ============================================================
+   I18N — Français / English. S'applique à toute l'interface ET
+   aux documents générés (facture, devis, ticket de caisse).
+   ============================================================ */
+const I18N = {
+fr: {
+  app_tag:"Facture · Devis · Stock · Caisse",
+  company_placeholder:"Configurez votre entreprise dans Réglages",
+  nav_caisse:"Caisse", nav_stock:"Stock", nav_document:"Document", nav_historique:"Historique", nav_plus:"Plus",
+  plus_title:"Plus", plus_marge:"Calcul de marge", plus_reglages:"Réglages", plus_pro:"Kalcul Pro", plus_close:"Fermer",
+
+  quota_remaining:"document(s) gratuit(s) restant(s) sur",
+  quota_saved_hint:"Document déjà enregistré — imprimez ou téléchargez-le librement. Débloquez Kalcul Pro pour en créer de nouveaux.",
+  quota_limit_title:"Limite gratuite atteinte",
+  quota_limit_sub:"Vous avez utilisé vos {n} documents gratuits. Débloquez Kalcul Pro pour continuer.",
+  quota_unlock_btn:"Débloquer Kalcul Pro",
+
+  doctype_facture:"Facture", doctype_devis:"Devis",
+  client_label:"Client", client_placeholder:"Nom du client ou de l'entreprise",
+  client_phone_label:"Téléphone client", date_label:"Date",
+  items_label:"Articles / prestations", item_placeholder:"Article ou service",
+  th_desc:"Description", th_qty:"Qté", th_price:"Prix U.", th_amount:"Montant", th_actions:"Actions",
+  add_item_btn:"+ Ajouter une ligne",
+  discount_label:"Remise (%)", tax_label:"TVA (%)",
+  notes_label:"Notes / conditions", notes_placeholder:"Ex : Paiement à réception, validité du devis 15 jours...",
+  sub_subtotal:"Sous-total", sub_discount:"Remise", sub_tax:"TVA", sub_total:"Total",
+  save_btn:"Enregistrer", print_btn:"Imprimer / PDF", image_btn:"Télécharger en image", new_btn:"Nouveau",
+  save_first_hint:"Enregistrez d'abord le document : Imprimer/PDF et Télécharger en image s'activent juste après. L'export PDF utilise la fonction « Imprimer » de votre navigateur — aucune connexion requise. L'image est générée directement sur l'appareil.",
+  currency_hint_new:"Saisissez vos prix en FCFA — l'affichage ci-dessous suit la devise choisie dans Réglages.",
+  need_client_alert:"Indiquez le nom du client.", need_item_alert:"Ajoutez au moins un article.",
+  saved_alert:"enregistré. Vous pouvez maintenant l'imprimer ou le télécharger.", updated_alert:"mis à jour.",
+  print_locked_alert:"Enregistrez d'abord ce document avant de l'imprimer.",
+  image_locked_alert:"Enregistrez d'abord ce document avant de télécharger l'image.",
+
+  margin_t1:"Prix de vente conseillé", margin_s1:"À partir de votre coût, obtenez le prix qui garantit votre marge cible.",
+  cost_label:"Prix d'achat (unitaire)", extra_label:"Frais additionnels (transport, douane...)", target_margin_label:"Marge cible (%)",
+  calc_suggest_btn:"Calculer le prix de vente",
+  suggest_result_sub:"Prix de vente conseillé pour une marge de {pct}%", suggest_result_margin:"Marge réalisée : {amt} par unité",
+  margin_t2:"Marge réalisée", margin_s2:"Vous connaissez déjà votre prix de vente ? Vérifiez votre marge réelle.",
+  real_cost_label:"Coût total (achat + frais)", real_price_label:"Prix de vente",
+  calc_real_btn:"Calculer la marge",
+  real_result_sub:"Marge réalisée sur le prix de vente", real_result_gain:"Gain : {amt} par unité",
+  margin_bad_pct:"La marge doit être inférieure à 100%.", margin_bad_price:"Indiquez un prix de vente valide.",
+  currency_hint_margin:"Saisissez vos montants en FCFA — les résultats ci-dessous suivent la devise choisie dans Réglages.",
+
+  stock_t:"Stock", stock_s:"Votre catalogue de produits — utilisé aussi par la Caisse.",
+  add_product_t:"Ajouter un produit",
+  prod_name_label:"Nom de l'article", prod_ref_label:"Référence / Code-barres",
+  prod_buy_label:"Prix d'achat", prod_sell_label:"Prix de vente", prod_qty_label:"Quantité en stock", prod_photos_label:"Photos (jusqu'à 4, 3 conseillées)",
+  save_product_btn:"Enregistrer le produit",
+  stock_th_ref:"Réf", stock_th_name:"Article", stock_th_buy:"Achat", stock_th_sell:"Vente", stock_th_qty:"Stock",
+  stock_empty:"Aucun produit pour l'instant. Ajoutez-en un ci-dessus.",
+  confirm_delete_product:"Supprimer ce produit du stock ?",
+  need_product_fields:"Remplissez le nom, la référence, les prix et la quantité.",
+  product_saved_alert:"Produit enregistré.",
+
+  caisse_t:"Caisse", caisse_s:"Vente rapide au comptoir, à partir de votre stock.",
+  search_placeholder:"Rechercher un produit...",
+  no_products_hint:"Aucun produit dans votre stock. Ajoutez-en dans l'onglet Stock pour commencer à vendre.",
+  cart_t:"Panier actuel", cart_empty:"Le panier est vide",
+  cart_total:"Total", validate_sale_btn:"Valider la vente",
+  sale_success:"Vente validée avec succès !", print_ticket_q:"Imprimer le reçu ?",
+  low_stock_badge:"Stock bas",
+
+  hist_t:"Historique", hist_s:"Toutes vos ventes, factures et devis, enregistrés uniquement sur cet appareil.",
+  tab_ventes:"Ventes caisse", tab_docs:"Factures & devis",
+  filter_today:"Aujourd'hui", filter_month:"Ce mois",
+  rep_ca:"Chiffre d'affaires", rep_cost:"Coût d'achat", rep_profit:"Bénéfice net",
+  empty_sales:"Aucune vente pour l'instant.", empty_docs:"Aucun document pour l'instant.",
+  action_edit:"Modifier", action_image:"Image", action_delete:"Supprimer", action_confirm:"Confirmer ?",
+  confirm_delete_sale:"Supprimer cette vente de l'historique ?",
+
+  settings_install_t:"Installer l'application", settings_install_s:"Ajoutez Kalcul à votre écran d'accueil pour l'ouvrir comme une vraie application, en un tap, même hors connexion.",
+  install_btn:"📲 Installer Kalcul",
+  company_t:"Mon entreprise", company_s:"Ces informations apparaissent sur vos factures, devis et reçus.",
+  name_label:"Nom de l'entreprise", address_label:"Adresse", country_label:"Pays", phone_label:"Téléphone",
+  country_bj:"Bénin", country_tg:"Togo", country_ci:"Côte d'Ivoire", country_sn:"Sénégal", country_ne:"Niger", country_ml:"Mali", country_bf:"Burkina Faso",
+  logo_label:"Logo (optionnel)", save_settings_btn:"Enregistrer", settings_saved_alert:"Informations enregistrées.",
+  currency_t:"Devise d'affichage", currency_s:"Les montants saisis restent en FCFA. Cette devise ne change que l'affichage — la conversion est automatique et instantanée.",
+  lang_t:"Langue", lang_s:"Cette langue s'applique à toute l'application et à vos documents générés.",
+  backup_t:"Sauvegarde & restauration", backup_s:"Changez de téléphone sans rien perdre : produits, ventes, factures, devis, réglages et abonnement Kalcul Pro.",
+  export_backup_btn:"⬇️ Télécharger une sauvegarde",
+  backup_hint:"Envoyez ce fichier vers votre nouveau téléphone (WhatsApp, email, Bluetooth ou Google Drive), puis ouvrez Kalcul dessus et utilisez « Restaurer » ci-dessous.",
+  restore_file_label:"Fichier de sauvegarde", restore_btn:"⬆️ Restaurer cette sauvegarde",
+  restore_notice:"La restauration remplace toutes les données présentes sur cet appareil par celles du fichier choisi — y compris le statut Kalcul Pro, reconnu automatiquement, sans nous contacter.",
+  backup_choose_file:"Choisissez d'abord un fichier de sauvegarde (.json).",
+  backup_invalid_file:"Ce fichier n'est pas une sauvegarde Kalcul valide.",
+  backup_confirm_restore:"Cela va remplacer toutes les données actuelles de cet appareil (factures, devis, réglages, abonnement) par celles du fichier. Continuer ?",
+  backup_restored:"Sauvegarde restaurée avec succès. L'application va se recharger.",
+  backup_read_error:"Impossible de lire ce fichier.",
+  phone_example_prefix:"Exemple pour le {country} :",
+  rate_fixed_eur:"Taux fixe et légal : 1 € = 655,957 FCFA (parité BCEAO, ne varie jamais).",
+  rate_current_usd:"Taux actuel : 1 $ ≈ {rate} FCFA · mis à jour : {when}",
+  rate_pending:"estimation, en attente d'une connexion",
+  rate_refresh_btn:"Actualiser",
+  wa_send_btn:"Envoyer via WhatsApp",
+  wa_share_message:"{label} {number} — {company}\nTotal : {total}\n\nEnvoyé avec Kalcul.",
+  wa_fallback_hint:"L'image a été téléchargée. WhatsApp s'ouvre à côté — joignez l'image dans la conversation.",
+  wa_locked_alert:"Enregistrez d'abord ce document avant de l'envoyer.",
+
+  pro_t:"Kalcul Pro", pro_loading:"Chargement du statut...",
+  badge_free_label:"Gratuit", badge_pro_label:"Pro actif",
+  plan_month1:"Mensuel", plan_month2:"Bimestriel", plan_month3:"Trimestriel", plan_month6:"Semestriel",
+  plan_year1:"Annuel", plan_year2:"2 ans", plan_year3:"3 ans", plan_lifetime:"À vie",
+  plan_badge_best:"Meilleure offre",
+  pro_confirmed_lifetime:"Paiement confirmé. Kalcul Pro à vie est actif — aucun renouvellement nécessaire.",
+  pro_confirmed_plan:"Paiement confirmé. Plan {plan} actif jusqu'au {date}.",
+  pro_free_used:"documents gratuits utilisés",
+  pro_active_lifetime:"Plan à vie — accès illimité, aucun renouvellement.",
+  pro_active_until:"Plan {plan} — valide jusqu'au {date}.",
+  pro_details_active:"Documents illimités débloqués sur cet appareil. Choisir un nouveau plan ci-dessous remplacera la durée restante.",
+  pro_details_free:"Choisissez la durée qui vous convient ci-dessous.",
+  pay_btn:"Payer et débloquer —",
+  pay_hint:"Paiement unique via FedaPay (Mobile Money) — aucun prélèvement automatique, aucune carte ni numéro enregistré chez nous. À la fin de la période, revenez ici et repayez le plan de votre choix pour continuer. C'est le seul moment où une connexion est nécessaire.",
+  pay_notice:"Le déverrouillage est enregistré sur cet appareil. Pour le retrouver sur un nouveau téléphone, utilisez Réglages → Sauvegarde & restauration — aucun contact nécessaire.",
+  plan_days_access:"jours d'accès", plan_lifetime_access:"Accès illimité — paiement unique",
+  per_month:"/mois",
+
+  footer_partner_t:"Partenariat & outils personnalisés", footer_partner_s:"Une idée d'outil sur mesure pour votre activité ? Écrivez-nous.",
+  footer_whatsapp:"WhatsApp", footer_email:"Email",
+  legal_cgu:"CGU", legal_mentions:"Mentions légales", legal_politique:"Politique d'utilisation", legal_apropos:"À propos", legal_guide:"Guide d'utilisation",
+  powered_by:"Propulsé par", theme_toggle_label:"Changer de thème",
+
+  tpl_facture:"FACTURE", tpl_devis:"DEVIS", tpl_ticket:"TICKET",
+  tpl_client:"Client", tpl_no:"N°", tpl_generated:"Généré avec Kalcul",
+  tpl_thanks:"MERCI DE VOTRE VISITE !",
+},
+en: {
+  app_tag:"Invoice · Quote · Stock · POS",
+  company_placeholder:"Set up your company in Settings",
+  nav_caisse:"POS", nav_stock:"Stock", nav_document:"Document", nav_historique:"History", nav_plus:"More",
+  plus_title:"More", plus_marge:"Margin calculator", plus_reglages:"Settings", plus_pro:"Kalcul Pro", plus_close:"Close",
+
+  quota_remaining:"free document(s) left out of",
+  quota_saved_hint:"Document already saved — print or download it freely. Unlock Kalcul Pro to create new ones.",
+  quota_limit_title:"Free limit reached",
+  quota_limit_sub:"You've used your {n} free documents. Unlock Kalcul Pro to continue.",
+  quota_unlock_btn:"Unlock Kalcul Pro",
+
+  doctype_facture:"Invoice", doctype_devis:"Quote",
+  client_label:"Client", client_placeholder:"Client or company name",
+  client_phone_label:"Client phone", date_label:"Date",
+  items_label:"Items / services", item_placeholder:"Item or service",
+  th_desc:"Description", th_qty:"Qty", th_price:"Unit price", th_amount:"Amount", th_actions:"Actions",
+  add_item_btn:"+ Add a line",
+  discount_label:"Discount (%)", tax_label:"Tax (%)",
+  notes_label:"Notes / terms", notes_placeholder:"E.g.: Payment on receipt, quote valid 15 days...",
+  sub_subtotal:"Subtotal", sub_discount:"Discount", sub_tax:"Tax", sub_total:"Total",
+  save_btn:"Save", print_btn:"Print / PDF", image_btn:"Download as image", new_btn:"New",
+  save_first_hint:"Save the document first: Print/PDF and Download as image switch on right after. PDF export uses your browser's Print function — no connection needed. The image is generated directly on the device.",
+  currency_hint_new:"Enter your prices in FCFA — the display below follows the currency chosen in Settings.",
+  need_client_alert:"Enter the client's name.", need_item_alert:"Add at least one item.",
+  saved_alert:"saved. You can now print or download it.", updated_alert:"updated.",
+  print_locked_alert:"Save this document first before printing it.",
+  image_locked_alert:"Save this document first before downloading the image.",
+
+  margin_t1:"Suggested selling price", margin_s1:"From your cost, get the price that guarantees your target margin.",
+  cost_label:"Purchase price (unit)", extra_label:"Additional costs (shipping, customs...)", target_margin_label:"Target margin (%)",
+  calc_suggest_btn:"Calculate selling price",
+  suggest_result_sub:"Suggested selling price for a {pct}% margin", suggest_result_margin:"Margin achieved: {amt} per unit",
+  margin_t2:"Actual margin", margin_s2:"Already know your selling price? Check your real margin.",
+  real_cost_label:"Total cost (purchase + fees)", real_price_label:"Selling price",
+  calc_real_btn:"Calculate margin",
+  real_result_sub:"Margin achieved on the selling price", real_result_gain:"Gain: {amt} per unit",
+  margin_bad_pct:"The margin must be under 100%.", margin_bad_price:"Enter a valid selling price.",
+  currency_hint_margin:"Enter your amounts in FCFA — the results below follow the currency chosen in Settings.",
+
+  stock_t:"Stock", stock_s:"Your product catalog — also used by the POS.",
+  add_product_t:"Add a product",
+  prod_name_label:"Item name", prod_ref_label:"Reference / Barcode",
+  prod_buy_label:"Purchase price", prod_sell_label:"Selling price", prod_qty_label:"Quantity in stock", prod_photos_label:"Photos (up to 4, 3 recommended)",
+  save_product_btn:"Save product",
+  stock_th_ref:"Ref", stock_th_name:"Item", stock_th_buy:"Buy", stock_th_sell:"Sell", stock_th_qty:"Stock",
+  stock_empty:"No products yet. Add one above.",
+  confirm_delete_product:"Delete this product from stock?",
+  need_product_fields:"Fill in the name, reference, prices and quantity.",
+  product_saved_alert:"Product saved.",
+
+  caisse_t:"POS", caisse_s:"Quick counter sale, straight from your stock.",
+  search_placeholder:"Search for a product...",
+  no_products_hint:"No products in your stock. Add some in the Stock tab to start selling.",
+  cart_t:"Current cart", cart_empty:"Cart is empty",
+  cart_total:"Total", validate_sale_btn:"Validate sale",
+  sale_success:"Sale successfully completed!", print_ticket_q:"Print the receipt?",
+  low_stock_badge:"Low stock",
+
+  hist_t:"History", hist_s:"All your sales, invoices and quotes, saved only on this device.",
+  tab_ventes:"POS sales", tab_docs:"Invoices & quotes",
+  filter_today:"Today", filter_month:"This month",
+  rep_ca:"Revenue", rep_cost:"Purchase cost", rep_profit:"Net profit",
+  empty_sales:"No sales yet.", empty_docs:"No documents yet.",
+  action_edit:"Edit", action_image:"Image", action_delete:"Delete", action_confirm:"Confirm?",
+  confirm_delete_sale:"Delete this sale from history?",
+
+  settings_install_t:"Install the app", settings_install_s:"Add Kalcul to your home screen to open it like a real app, in one tap, even offline.",
+  install_btn:"📲 Install Kalcul",
+  company_t:"My business", company_s:"This information appears on your invoices, quotes and receipts.",
+  name_label:"Business name", address_label:"Address", country_label:"Country", phone_label:"Phone",
+  country_bj:"Benin", country_tg:"Togo", country_ci:"Ivory Coast", country_sn:"Senegal", country_ne:"Niger", country_ml:"Mali", country_bf:"Burkina Faso",
+  logo_label:"Logo (optional)", save_settings_btn:"Save", settings_saved_alert:"Information saved.",
+  currency_t:"Display currency", currency_s:"Amounts entered stay in FCFA. This currency only changes the display — conversion is automatic and instant.",
+  lang_t:"Language", lang_s:"This language applies to the whole app and to your generated documents.",
+  backup_t:"Backup & restore", backup_s:"Switch phones without losing anything: products, sales, invoices, quotes, settings and Kalcul Pro subscription.",
+  export_backup_btn:"⬇️ Download a backup",
+  backup_hint:"Send this file to your new phone (WhatsApp, email, Bluetooth or Google Drive), then open Kalcul there and use \"Restore\" below.",
+  restore_file_label:"Backup file", restore_btn:"⬆️ Restore this backup",
+  restore_notice:"Restoring replaces all data currently on this device with the data from the chosen file — including Kalcul Pro status, recognized automatically, without contacting us.",
+  backup_choose_file:"Choose a backup file first (.json).",
+  backup_invalid_file:"This file is not a valid Kalcul backup.",
+  backup_confirm_restore:"This will replace all current data on this device (invoices, quotes, settings, subscription) with the file's data. Continue?",
+  backup_restored:"Backup restored successfully. The app will reload.",
+  backup_read_error:"Could not read this file.",
+  phone_example_prefix:"Example for {country}:",
+  rate_fixed_eur:"Fixed legal rate: 1 € = 655.957 FCFA (BCEAO parity, never changes).",
+  rate_current_usd:"Current rate: 1 $ ≈ {rate} FCFA · updated: {when}",
+  rate_pending:"estimate, awaiting a connection",
+  rate_refresh_btn:"Refresh",
+  wa_send_btn:"Send via WhatsApp",
+  wa_share_message:"{label} {number} — {company}\nTotal: {total}\n\nSent with Kalcul.",
+  wa_fallback_hint:"The image was downloaded. WhatsApp is opening alongside — attach the image in the conversation.",
+  wa_locked_alert:"Save this document first before sending it.",
+
+  pro_t:"Kalcul Pro", pro_loading:"Loading status...",
+  badge_free_label:"Free", badge_pro_label:"Pro active",
+  plan_month1:"Monthly", plan_month2:"Bimonthly", plan_month3:"Quarterly", plan_month6:"Biannual",
+  plan_year1:"Annual", plan_year2:"2 years", plan_year3:"3 years", plan_lifetime:"Lifetime",
+  plan_badge_best:"Best value",
+  pro_confirmed_lifetime:"Payment confirmed. Kalcul Pro lifetime is active — no renewal needed.",
+  pro_confirmed_plan:"Payment confirmed. {plan} plan active until {date}.",
+  pro_free_used:"free documents used",
+  pro_active_lifetime:"Lifetime plan — unlimited access, no renewal.",
+  pro_active_until:"{plan} plan — valid until {date}.",
+  pro_details_active:"Unlimited documents unlocked on this device. Choosing a new plan below will replace the remaining time.",
+  pro_details_free:"Choose the duration that suits you below.",
+  pay_btn:"Pay and unlock —",
+  pay_hint:"One-time payment via FedaPay (Mobile Money) — no automatic debit, no card or number stored with us. When the period ends, come back here and pay again for the plan of your choice. This is the only time a connection is needed.",
+  pay_notice:"The unlock is saved on this device. To find it on a new phone, use Settings → Backup & restore — no need to contact us.",
+  plan_days_access:"days of access", plan_lifetime_access:"Unlimited access — one-time payment",
+  per_month:"/mo",
+
+  footer_partner_t:"Partnership & custom tools", footer_partner_s:"Have an idea for a custom tool for your business? Write to us.",
+  footer_whatsapp:"WhatsApp", footer_email:"Email",
+  legal_cgu:"Terms of use", legal_mentions:"Legal notice", legal_politique:"Usage policy", legal_apropos:"About", legal_guide:"User guide",
+  powered_by:"Powered by", theme_toggle_label:"Toggle theme",
+
+  tpl_facture:"INVOICE", tpl_devis:"QUOTE", tpl_ticket:"RECEIPT",
+  tpl_client:"Client", tpl_no:"No.", tpl_generated:"Generated with Kalcul",
+  tpl_thanks:"THANK YOU FOR YOUR VISIT!",
+}
+};
+
+function t(key, vars){
+  let s = (I18N[lang] && I18N[lang][key]) || I18N.fr[key] || key;
+  if(vars) Object.keys(vars).forEach(k=> s = s.replace("{"+k+"}", vars[k]));
+  return s;
+}
+
 const CONFIG = {
-  FEDAPAY_PUBLIC_KEY: "pk_live_9iYiCnrfVLTqtOQ6-aDRynRV", // ⚠️ clé PUBLIQUE uniquement, jamais la clé secrète
+  FEDAPAY_PUBLIC_KEY: "pk_live_9iYiCnrfVLTqtOQ6-aDRynRV", // clé PUBLIQUE réelle (même compte marchand que Donko Gestion)
   FEDAPAY_ENV: "live",       // "sandbox" pour tester, "live" en production
   CURRENCY: "XOF",          // devise réelle du prélèvement FedaPay — reste XOF (Mobile Money local), quelle que soit la devise d'affichage choisie
   FREE_DOCS_LIMIT: 3         // documents gratuits avant paiement requis
@@ -566,14 +1003,14 @@ const CONFIG = {
 // Plans d'abonnement — prix en FCFA (devise réelle du prélèvement).
 // "days: null" = plan à vie, jamais d'expiration. Modifiable librement ici.
 const PLANS = [
-  { id:"month1",   label:"Mensuel",     days:30,   price:2000  },
-  { id:"month2",   label:"Bimestriel",  days:60,   price:3600  },
-  { id:"month3",   label:"Trimestriel", days:90,   price:5000  },
-  { id:"month6",   label:"Semestriel",  days:180,  price:9000  },
-  { id:"year1",    label:"Annuel",      days:365,  price:15000, badge:"Meilleure offre" },
-  { id:"year2",    label:"2 ans",       days:730,  price:25000 },
-  { id:"year3",    label:"3 ans",       days:1095, price:33000 },
-  { id:"lifetime", label:"À vie",       days:null, price:50000 }
+  { id:"month1",   label:"Mensuel",     days:30,   price:2000,  oldPrice:5000   },
+  { id:"month2",   label:"Bimestriel",  days:60,   price:3600,  oldPrice:9000   },
+  { id:"month3",   label:"Trimestriel", days:90,   price:5000,  oldPrice:12000  },
+  { id:"month6",   label:"Semestriel",  days:180,  price:9000,  oldPrice:20000  },
+  { id:"year1",    label:"Annuel",      days:365,  price:15000, oldPrice:35000, badge:"Meilleure offre" },
+  { id:"year2",    label:"2 ans",       days:730,  price:25000, oldPrice:55000  },
+  { id:"year3",    label:"3 ans",       days:1095, price:33000, oldPrice:70000  },
+  { id:"lifetime", label:"À vie",       days:null, price:75000, oldPrice:150000 }
 ];
 
 // Devises d'affichage — le FCFA reste la seule unité de saisie/stockage.
@@ -592,7 +1029,10 @@ const KEYS = {
   counters: "kalcul_counters_v1",
   currency: "kalcul_currency_v1",
   rates: "kalcul_rates_v1",
-  theme: "kalcul_theme_v1"
+  theme: "kalcul_theme_v1",
+  products: "kalcul_products_v1",
+  sales: "kalcul_sales_v1",
+  lang: "kalcul_lang_v1"
 };
 
 /* ============================================================
@@ -613,6 +1053,10 @@ let rates = load(KEYS.rates, {EUR_USD:null, updatedAt:null});
 let selectedPlanId = "month1";
 let editingDocId = null;   // null = nouveau document ; sinon id du document en cours de modification
 let isDocSaved = false;    // true seulement si le formulaire correspond exactement à un document déjà enregistré
+let products = load(KEYS.products, []);   // catalogue Stock : {id, name, ref, buyPrice, sellPrice, qty}
+let sales = load(KEYS.sales, []);         // historique Caisse : {id, timestamp, items[], totalCA, totalCost, profit}
+let cart = [];                            // panier Caisse en cours — jamais persisté (transitoire)
+let lang = load(KEYS.lang, "fr");         // langue d'affichage : "fr" ou "en"
 
 function isPro(){
   if(!pro.active) return false;
@@ -628,8 +1072,10 @@ function setDocSaved(val){
   isDocSaved = val;
   const printBtn = document.getElementById("printDocBtn");
   const imgBtn = document.getElementById("imageDocBtn");
+  const waBtn = document.getElementById("waDocBtn");
   if(printBtn) printBtn.disabled = !val;
   if(imgBtn) imgBtn.disabled = !val;
+  if(waBtn) waBtn.disabled = !val;
 }
 function markDirty(){
   if(isDocSaved) setDocSaved(false);
@@ -660,7 +1106,7 @@ function fmtNum(xofAmount){
   const c = CURRENCIES[currency];
   const val = xofToDisplay(xofAmount||0);
   const rounded = c.decimals===0 ? Math.round(val) : Math.round(val*100)/100;
-  return rounded.toLocaleString("fr-FR", {minimumFractionDigits:c.decimals, maximumFractionDigits:c.decimals});
+  return rounded.toLocaleString(lang==="en"?"en-US":"fr-FR", {minimumFractionDigits:c.decimals, maximumFractionDigits:c.decimals});
 }
 function fmt(xofAmount){
   const c = CURRENCIES[currency];
@@ -688,12 +1134,13 @@ function renderRateStatus(){
   if(currency === "XOF"){
     el.textContent = "";
   } else if(currency === "EUR"){
-    el.textContent = "Taux fixe et légal : 1 € = 655,957 FCFA (parité BCEAO, ne varie jamais).";
+    el.textContent = t("rate_fixed_eur");
   } else {
     const eurUsd = (rates && rates.EUR_USD) ? rates.EUR_USD : FALLBACK_EUR_USD;
     const xofPerUsd = (FIXED_XOF_PER_EUR/eurUsd).toFixed(1);
-    const when = rates.updatedAt ? new Date(rates.updatedAt).toLocaleString("fr-FR") : "estimation, en attente d'une connexion";
-    el.innerHTML = `Taux actuel : 1 $ ≈ ${xofPerUsd} FCFA · mis à jour : ${when} — <span id="refreshRateBtn" style="color:var(--indigo);text-decoration:underline;cursor:pointer;">Actualiser</span>`;
+    const dateLocale = lang==="en" ? "en-US" : "fr-FR";
+    const when = rates.updatedAt ? new Date(rates.updatedAt).toLocaleString(dateLocale) : t("rate_pending");
+    el.innerHTML = `${t("rate_current_usd", {rate: xofPerUsd, when})} — <span id="refreshRateBtn" style="color:var(--indigo);text-decoration:underline;cursor:pointer;">${t("rate_refresh_btn")}</span>`;
     const rb = document.getElementById("refreshRateBtn");
     if(rb) rb.addEventListener("click", refreshUsdRate);
   }
@@ -717,17 +1164,35 @@ function refreshAllDisplayedAmounts(){
 /* ============================================================
    NAVIGATION
    ============================================================ */
-const navButtons = document.querySelectorAll("nav.bottom button");
+const navButtons = document.querySelectorAll("nav.bottom button[data-view]");
 navButtons.forEach(btn=>{
   btn.addEventListener("click", ()=> showView(btn.dataset.view));
 });
 function showView(id){
   document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active", v.id===id));
   navButtons.forEach(b=>b.classList.toggle("active", b.dataset.view===id));
+  const plusViews = ["view-margin","view-settings","view-pro"];
+  document.getElementById("navPlusBtn").classList.toggle("active", plusViews.includes(id));
   if(id==="view-history") renderHistory();
   if(id==="view-pro") renderProView();
   if(id==="view-new") renderQuota();
+  if(id==="view-stock") renderStock();
+  if(id==="view-pos"){ renderPOSProducts(); renderCart(); }
 }
+
+function openPlusSheet(){ document.getElementById("plusSheetOverlay").style.display = "flex"; }
+function closePlusSheet(){ document.getElementById("plusSheetOverlay").style.display = "none"; }
+document.getElementById("navPlusBtn").addEventListener("click", openPlusSheet);
+document.getElementById("plusSheetClose").addEventListener("click", closePlusSheet);
+document.getElementById("plusSheetOverlay").addEventListener("click", (e)=>{
+  if(e.target.id === "plusSheetOverlay") closePlusSheet();
+});
+document.querySelectorAll(".plus-item").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    closePlusSheet();
+    showView(btn.dataset.view);
+  });
+});
 
 /* ============================================================
    ENTETE / REGLAGES ENTREPRISE
@@ -738,11 +1203,40 @@ function renderHeader(){
     el.innerHTML = (settings.logo ? `<img src="${settings.logo}" alt="">` : "") +
       `<span>${escapeHtml(settings.name)}${settings.address ? " — " + escapeHtml(settings.address) : ""}</span>`;
   } else {
-    el.innerHTML = `<span>Configurez votre entreprise dans Réglages</span>`;
+    el.innerHTML = `<span>${t("company_placeholder")}</span>`;
   }
+  const tagEl = document.getElementById("brandTag");
+  if(tagEl) tagEl.textContent = t("app_tag");
 }
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+/* ============================================================
+   APPLICATION DE LA LANGUE — balaie le DOM (data-i18n / data-i18n-placeholder)
+   et régénère tout le contenu construit dynamiquement en JS.
+   ============================================================ */
+function applyI18n(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{ el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>{ el.placeholder = t(el.dataset.i18nPlaceholder); });
+  const langSel = document.getElementById("setLang");
+  if(langSel) langSel.value = lang;
+  renderHeader();
+  computeTotals();
+  renderQuota();
+  if(document.getElementById("view-history").classList.contains("active")) renderHistory();
+  if(document.getElementById("view-pro").classList.contains("active")) renderProView();
+  if(document.getElementById("view-stock") && document.getElementById("view-stock").classList.contains("active")) renderStock();
+  if(document.getElementById("view-pos") && document.getElementById("view-pos").classList.contains("active")){ renderPOSProducts(); renderCart(); }
+  updateCurrencyHints();
+  if(typeof updatePhoneExample === "function") updatePhoneExample();
+  applyTheme(document.documentElement.getAttribute("data-theme") || "light");
+}
+function setLang(l){
+  lang = l;
+  save(KEYS.lang, lang);
+  applyI18n();
 }
 
 document.getElementById("setName").value = settings.name;
@@ -754,17 +1248,17 @@ if(settings.logo){ document.getElementById("logoPreview").src = settings.logo; }
 /* Exemples de format local par pays (indicatif + numéro), affichés quand
    l'utilisateur choisit son pays dans Réglages. */
 const COUNTRY_PHONE = {
-  BJ: {name:"Bénin",         example:"+2290190000000"},
-  TG: {name:"Togo",          example:"+22890000000"},
-  CI: {name:"Côte d'Ivoire", example:"+2250100000000"},
-  SN: {name:"Sénégal",       example:"+221771234567"},
-  NE: {name:"Niger",         example:"+22790000000"},
-  ML: {name:"Mali",          example:"+22370000000"},
-  BF: {name:"Burkina Faso",  example:"+22670000000"}
+  BJ: {key:"bj", example:"+2290190000000"},
+  TG: {key:"tg", example:"+22890000000"},
+  CI: {key:"ci", example:"+2250100000000"},
+  SN: {key:"sn", example:"+221771234567"},
+  NE: {key:"ne", example:"+22790000000"},
+  ML: {key:"ml", example:"+22370000000"},
+  BF: {key:"bf", example:"+22670000000"}
 };
 function updatePhoneExample(){
   const info = COUNTRY_PHONE[document.getElementById("setCountry").value] || COUNTRY_PHONE.BJ;
-  document.getElementById("phoneExampleHint").textContent = `Exemple pour le ${info.name} : ${info.example}`;
+  document.getElementById("phoneExampleHint").textContent = t("phone_example_prefix", {country: t("country_"+info.key)}) + " " + info.example;
   document.getElementById("setPhone").placeholder = info.example;
 }
 document.getElementById("setCountry").addEventListener("change", updatePhoneExample);
@@ -778,13 +1272,21 @@ document.getElementById("setCurrency").addEventListener("change", ()=>{
   refreshAllDisplayedAmounts();
 });
 
+document.getElementById("setLang").value = lang;
+document.getElementById("setLang").addEventListener("change", ()=>{
+  setLang(document.getElementById("setLang").value);
+});
+
 /* ============================================================
    THÈME CLAIR / SOMBRE
    ============================================================ */
 function applyTheme(theme){
   document.documentElement.setAttribute("data-theme", theme);
   const btn = document.getElementById("themeToggleBtn");
-  if(btn) btn.textContent = theme === "dark" ? "☀️" : "🌙";
+  if(btn){
+    btn.textContent = theme === "dark" ? "☀️" : "🌙";
+    btn.setAttribute("aria-label", t("theme_toggle_label"));
+  }
   save(KEYS.theme, theme);
 }
 document.getElementById("themeToggleBtn").addEventListener("click", ()=>{
@@ -811,7 +1313,7 @@ document.getElementById("saveSettingsBtn").addEventListener("click", ()=>{
   if(settings._pendingLogo){ settings.logo = settings._pendingLogo; delete settings._pendingLogo; }
   save(KEYS.settings, settings);
   renderHeader();
-  alert("Informations enregistrées.");
+  alert(t("settings_saved_alert"));
 });
 
 /* ============================================================
@@ -826,7 +1328,9 @@ function buildBackupPayload(){
       settings: load(KEYS.settings, settings),
       docs: load(KEYS.docs, docs),
       counters: load(KEYS.counters, counters),
-      pro: load(KEYS.pro, pro)
+      pro: load(KEYS.pro, pro),
+      products: load(KEYS.products, products),
+      sales: load(KEYS.sales, sales)
     }
   };
 }
@@ -848,27 +1352,29 @@ document.getElementById("exportBackupBtn").addEventListener("click", ()=>{
 document.getElementById("restoreBackupBtn").addEventListener("click", ()=>{
   const input = document.getElementById("restoreFileInput");
   const file = input.files[0];
-  if(!file){ alert("Choisissez d'abord un fichier de sauvegarde (.json)."); return; }
+  if(!file){ alert(t("backup_choose_file")); return; }
   const reader = new FileReader();
   reader.onload = ()=>{
     let parsed;
     try{ parsed = JSON.parse(reader.result); }
-    catch(e){ alert("Ce fichier n'est pas une sauvegarde Kalcul valide."); return; }
+    catch(e){ alert(t("backup_invalid_file")); return; }
     if(!parsed || parsed.app !== "kalcul" || !parsed.data){
-      alert("Ce fichier n'est pas une sauvegarde Kalcul valide.");
+      alert(t("backup_invalid_file"));
       return;
     }
-    const ok = confirm("Cela va remplacer toutes les données actuelles de cet appareil (factures, devis, réglages, abonnement) par celles du fichier. Continuer ?");
+    const ok = confirm(t("backup_confirm_restore"));
     if(!ok) return;
     const d = parsed.data;
     if(d.settings) save(KEYS.settings, d.settings);
     if(d.docs) save(KEYS.docs, d.docs);
     if(d.counters) save(KEYS.counters, d.counters);
     if(d.pro) save(KEYS.pro, d.pro);
-    alert("Sauvegarde restaurée avec succès. L'application va se recharger.");
+    if(d.products) save(KEYS.products, d.products);
+    if(d.sales) save(KEYS.sales, d.sales);
+    alert(t("backup_restored"));
     location.reload();
   };
-  reader.onerror = ()=> alert("Impossible de lire ce fichier.");
+  reader.onerror = ()=> alert(t("backup_read_error"));
   reader.readAsText(file);
 });
 
@@ -897,7 +1403,7 @@ const LEGAL_CONTENT = {
       <li>Chaque plan correspond à un paiement unique via FedaPay. Aucun prélèvement automatique ou récurrent n'est mis en place : à l'échéance, l'utilisateur doit revenir volontairement payer à nouveau s'il souhaite continuer.</li>
       <li>Le débit réel s'effectue toujours en Francs CFA (XOF), quelle que soit la devise d'affichage choisie dans les Réglages, celle-ci n'étant qu'une conversion informative.</li>
       <li>Sauf défaillance technique avérée empêchant l'accès au Service après paiement confirmé, les sommes versées ne sont pas remboursables, le déverrouillage étant immédiat.</li>
-      <li>EMPIRE DONKO peut modifier les tarifs et durées des plans proposés ; toute modification s'applique aux achats futurs uniquement.</li>
+      <li>Empire Donko peut modifier les tarifs et durées des plans proposés ; toute modification s'applique aux achats futurs uniquement.</li>
     </ul>
 
     <h3>Article 6 — Obligations de l'utilisateur</h3>
@@ -910,29 +1416,29 @@ const LEGAL_CONTENT = {
     <p>Kalcul est fourni « en l'état ». L'Application ne remplace pas les conseils d'un comptable ou d'un conseiller fiscal. Empire Donko ne saurait être tenu responsable des pertes de données locales, des interruptions liées à l'hébergement, ni des dysfonctionnements imputables à FedaPay ou à l'opérateur Mobile Money de l'utilisateur.</p>
 
     <h3>Article 9 — Disponibilité du Service</h3>
-    <p>L'Application dépend de l'hébergement GitHub Pages et, pour les paiements, du service FedaPay. EMPIRE DONKO ne garantit pas une disponibilité continue de ces services tiers.</p>
+    <p>L'Application dépend de l'hébergement GitHub Pages et, pour les paiements, du service FedaPay. Empire Donko ne garantit pas une disponibilité continue de ces services tiers.</p>
 
     <h3>Article 10 — Modification des CGU</h3>
-    <p>EMPIRE DONKO peut modifier les présentes CGU à tout moment. La version en vigueur est celle affichée dans l'Application au moment de la consultation.</p>
+    <p>Empire Donko peut modifier les présentes CGU à tout moment. La version en vigueur est celle affichée dans l'Application au moment de la consultation.</p>
 
     <h3>Article 11 — Droit applicable et juridiction</h3>
     <p>Les présentes CGU sont soumises au droit béninois ainsi qu'aux dispositions communes de l'espace OHADA, sans préjudice des règles d'ordre public applicables dans le pays de résidence de l'utilisateur. À défaut de résolution amiable, tout litige relève des juridictions compétentes du Bénin.</p>
-    <p class="legal-meta">Le siège de juridiction ci-dessus est indiqué à titre indicatif d'après les coordonnées de contact d'Empire Donko ; à confirmer selon le pays d'établissement réel de l'entreprise.</p>
+    <p class="legal-meta">TransTech Dynamic (Empire Donko) est établie au Bénin (Cotonou) — voir Mentions Légales pour les références d'immatriculation complètes.</p>
   `},
 
   mentions: { title:"Mentions Légales", html: `
     <h3>Éditeur</h3>
-    <p>L'application Kalcul est éditée par <strong>Empire Donko , enregistré sous la dénomination : TransTech Dynamic</strong>.</p>
+    <p>L'application Kalcul est éditée par <strong>Empire Donko</strong>, enregistré sous la dénomination <strong>TransTech Dynamic</strong>.</p>
     <ul>
       <li>Forme juridique : Établissement</li>
-      <li>Numéro d'immatriculation  : RB/COT/24 A 104475</li>
-      <li>Identifiant fiscal  : 0202112291540</li>
-      <li>Siège / adresse : Îlot : 3291, AGLA FIGARO, COTONOU</li>
-      <li>Pays d'établissement présumé : Bénin </li>
+      <li>Numéro d'immatriculation : RB/COT/24 A 104475</li>
+      <li>Identifiant fiscal : 0202112291540</li>
+      <li>Siège / adresse : Îlot 3291, Agla Figaro, Cotonou</li>
+      <li>Pays d'établissement : Bénin</li>
     </ul>
 
     <h3>Directeur de la publication</h3>
-    <p>Le responsable de la publication de l'Application est le représentant d'EMPIRE DONKO, joignable via les coordonnées ci-dessous.</p>
+    <p>Le responsable de la publication de l'Application est le représentant de TransTech Dynamic (Empire Donko), joignable via les coordonnées ci-dessous.</p>
 
     <h3>Contact</h3>
     <ul>
@@ -944,12 +1450,12 @@ const LEGAL_CONTENT = {
     <p>L'Application est hébergée par GitHub, Inc. (GitHub Pages), 88 Colin P. Kelly Jr Street, San Francisco, CA 94107, États-Unis.</p>
 
     <h3>Paiement</h3>
-    <p>Les paiements d'abonnement sont traités par FedaPay, prestataire tiers indépendant spécialisé dans l'agrégation Mobile Money en Afrique de l'Ouest. EMPIRE DONKO ne stocke, ne voit ni ne conserve aucune information bancaire ou de paiement.</p>
+    <p>Les paiements d'abonnement sont traités par FedaPay, prestataire tiers indépendant spécialisé dans l'agrégation Mobile Money en Afrique de l'Ouest. Empire Donko ne stocke, ne voit ni ne conserve aucune information bancaire ou de paiement.</p>
 
     <h3>Propriété intellectuelle</h3>
     <p>Le nom « Kalcul », le contenu et le code de l'Application sont la propriété d'Empire Donko, sauf mention contraire. Toute reproduction non autorisée est interdite.</p>
 
-    <p class="legal-meta">Les mentions indiquées sont renseignées par EMPIRE DONKO avec les informations réelles d'immatriculation, conformément aux obligations légales du pays d'établissement.</p>
+    <p class="legal-meta">Informations d'immatriculation fournies par TransTech Dynamic (Empire Donko), conformément aux obligations légales applicables au Bénin.</p>
   `},
 
   politique: { title:"Politique d'Utilisation", html: `
@@ -981,7 +1487,7 @@ const LEGAL_CONTENT = {
     <p>Le paiement est assuré par FedaPay, qui applique sa propre politique de confidentialité et ses propres conditions, indépendantes de Kalcul. Pour toute question relative au traitement de ses données de paiement, l'utilisateur est invité à s'y référer directement.</p>
 
     <h3>6. Usages interdits</h3>
-    <p>Il est interdit d'utiliser Kalcul pour établir des documents commerciaux frauduleux, usurper l'identité d'un tiers, contourner une obligation fiscale ou légale, ou pour toute activité illicite. Il est également interdit de décompiler, revendre ou redistribuer l'Application sans l'autorisation D'EMPIRE DONKO.</p>
+    <p>Il est interdit d'utiliser Kalcul pour établir des documents commerciaux frauduleux, usurper l'identité d'un tiers, contourner une obligation fiscale ou légale, ou pour toute activité illicite. Il est également interdit de décompiler, revendre ou redistribuer l'Application sans l'autorisation d'Empire Donko.</p>
 
     <h3>7. Évolution de cette politique</h3>
     <p>Cette politique peut évoluer si de nouvelles fonctionnalités venaient à modifier le fonctionnement décrit ci-dessus. La version affichée dans l'Application fait foi.</p>
@@ -1011,6 +1517,29 @@ const LEGAL_CONTENT = {
       <li>WhatsApp : +229 01 96 80 91 06</li>
       <li>Email : empiredonko@gmail.com</li>
     </ul>
+  `},
+
+  guide: { title:"Guide d'utilisation", html: `
+    <h3>🧺 Caisse</h3>
+    <p>Pour une vente rapide au comptoir : recherchez un produit, appuyez dessus pour l'ajouter au panier, ajustez les quantités avec + / −, puis « Valider la vente ». Le stock se met à jour automatiquement et un reçu est proposé à l'impression.</p>
+
+    <h3>📦 Stock</h3>
+    <p>Ajoutez vos produits (nom, référence, prix d'achat, prix de vente, quantité). Un badge rouge « Stock bas » apparaît dès qu'il reste 5 unités ou moins. C'est ce catalogue que la Caisse utilise pour vendre.</p>
+
+    <h3>🧾 Document (Facture / Devis)</h3>
+    <p>Pour un document plus formel avec nom de client, remise et TVA. Une Facture et un Devis n'ont pas la même présentation à l'impression : le Devis prend la forme d'un ticket simple, la Facture garde une mise en page complète — pour que vos clients distinguent les deux d'un coup d'œil. Pensez à « Enregistrer » avant de pouvoir imprimer ou télécharger.</p>
+
+    <h3>🗂️ Historique</h3>
+    <p>Regroupe vos ventes Caisse et vos Factures/Devis, avec un résumé Chiffre d'affaires / Coût / Bénéfice pour Aujourd'hui ou Ce mois.</p>
+
+    <h3>➗ Marge (dans « Plus »)</h3>
+    <p>Un calculateur rapide pour trouver un prix de vente ou vérifier une marge, sans avoir besoin d'ajouter le produit au Stock.</p>
+
+    <h3>⚙️ Réglages</h3>
+    <p>Informations de l'entreprise, devise d'affichage (FCFA/€/$), langue (FR/EN), sauvegarde &amp; restauration, et installation de l'application sur l'écran d'accueil.</p>
+
+    <h3>★ Kalcul Pro</h3>
+    <p>3 documents gratuits, puis choix d'un plan (Mensuel à À vie) payé une seule fois via FedaPay Mobile Money — sans prélèvement automatique.</p>
   `}
 };
 
@@ -1126,7 +1655,7 @@ function addItemRow(desc, qty, price){
   const tr = document.createElement("tr");
   tr.dataset.id = itemSeq;
   tr.innerHTML = `
-    <td><input type="text" class="it-desc" value="${desc?escapeHtml(desc):""}" placeholder="Article ou service"></td>
+    <td><input type="text" class="it-desc" value="${desc?escapeHtml(desc):""}" placeholder="${t("item_placeholder")}"></td>
     <td class="qty"><input type="number" class="it-qty mono-input" min="0" value="${qty!=null?qty:1}"></td>
     <td class="price"><input type="number" class="it-price mono-input" min="0" value="${price!=null?price:0}"></td>
     <td class="amount"><span class="it-amount">0</span></td>
@@ -1265,8 +1794,8 @@ document.getElementById("saveDocBtn").addEventListener("click", ()=>{
     return;
   }
   const doc = currentDocFromForm();
-  if(!doc.clientName){ alert("Indiquez le nom du client."); return; }
-  if(doc.items.length===0 || doc.items.every(i=>!i.desc)){ alert("Ajoutez au moins un article."); return; }
+  if(!doc.clientName){ alert(t("need_client_alert")); return; }
+  if(doc.items.length===0 || doc.items.every(i=>!i.desc)){ alert(t("need_item_alert")); return; }
 
   if(!isNew){
     const idx = docs.findIndex(d=>d.id===editingDocId);
@@ -1279,7 +1808,7 @@ document.getElementById("saveDocBtn").addEventListener("click", ()=>{
       save(KEYS.docs, docs);
       setDocSaved(true);
       renderHistory();
-      alert(`${doc.type === "facture" ? "Facture" : "Devis"} ${doc.number} mis à jour.`);
+      alert(`${doc.type === "facture" ? t("doctype_facture") : t("doctype_devis")} ${doc.number} ${t("updated_alert")}`);
       return;
     }
     // Le document n'existe plus (supprimé entre-temps) : on l'enregistre comme un nouveau document ci-dessous.
@@ -1296,21 +1825,40 @@ document.getElementById("saveDocBtn").addEventListener("click", ()=>{
   save(KEYS.docs, docs);
   editingDocId = doc.id;
   setDocSaved(true);
-  alert(`${doc.type === "facture" ? "Facture" : "Devis"} ${doc.number} enregistré. Vous pouvez maintenant l'imprimer ou le télécharger.`);
+  alert(`${doc.type === "facture" ? t("doctype_facture") : t("doctype_devis")} ${doc.number} ${t("saved_alert")}`);
   renderHistory();
   renderQuota();
 });
 
+/* Bascule vers le bon modèle visuel selon le type de document :
+   Devis → présentation "ticket" (comme les reçus Caisse), pour que le client
+   distingue clairement un devis d'une facture au premier coup d'œil.
+   Facture → modèle formel existant, inchangé. */
+function outputPrint(doc){
+  if(doc.type === "devis"){ printTicket(docToTicketData(doc)); }
+  else { printDocument(doc); }
+}
+function outputImage(doc){
+  if(doc.type === "devis"){ ticketToImage(docToTicketData(doc)); }
+  else { downloadDocAsImage(doc); }
+}
+
 document.getElementById("printDocBtn").addEventListener("click", ()=>{
   const doc = getCurrentSavedDoc();
-  if(!doc){ alert("Enregistrez d'abord ce document avant de l'imprimer."); return; }
-  printDocument(doc);
+  if(!doc){ alert(t("print_locked_alert")); return; }
+  outputPrint(doc);
 });
 
 document.getElementById("imageDocBtn").addEventListener("click", ()=>{
   const doc = getCurrentSavedDoc();
-  if(!doc){ alert("Enregistrez d'abord ce document avant de télécharger l'image."); return; }
-  downloadDocAsImage(doc);
+  if(!doc){ alert(t("image_locked_alert")); return; }
+  outputImage(doc);
+});
+
+document.getElementById("waDocBtn").addEventListener("click", ()=>{
+  const doc = getCurrentSavedDoc();
+  if(!doc){ alert(t("wa_locked_alert")); return; }
+  shareDocViaWhatsApp(doc);
 });
 
 function printDocument(doc){
@@ -1322,43 +1870,43 @@ function printDocument(doc){
       <td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:right;">${fmtNum(i.price)}</td>
       <td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:right;">${fmtNum(i.qty*i.price)}</td>
     </tr>`).join("");
-  const t = doc.totals || computeTotals();
+  const tot = doc.totals || computeTotals();
   area.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1B3358;padding-bottom:14px;margin-bottom:18px;">
       <div>
         ${settings.logo ? `<img src="${settings.logo}" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:6px;margin-bottom:6px;">` : ""}
-        <div style="font-size:20px;font-weight:700;">${escapeHtml(settings.name||"Mon entreprise")}</div>
+        <div style="font-size:20px;font-weight:700;">${escapeHtml(settings.name||"Kalcul")}</div>
         <div style="font-size:12px;color:#555;">${escapeHtml(settings.address||"")}</div>
         <div style="font-size:12px;color:#555;">${escapeHtml(settings.phone||"")}</div>
       </div>
       <div style="text-align:right;">
-        <div style="font-size:18px;font-weight:700;text-transform:uppercase;">${doc.type==="facture"?"Facture":"Devis"}</div>
-        <div style="font-size:13px;">N° ${escapeHtml(doc.number)}</div>
+        <div style="font-size:18px;font-weight:700;text-transform:uppercase;">${doc.type==="facture"?t("tpl_facture"):t("tpl_devis")}</div>
+        <div style="font-size:13px;">${t("tpl_no")} ${escapeHtml(doc.number)}</div>
         <div style="font-size:13px;">${escapeHtml(doc.date||"")}</div>
       </div>
     </div>
     <div style="margin-bottom:14px;">
-      <div style="font-size:11px;text-transform:uppercase;color:#888;">Client</div>
+      <div style="font-size:11px;text-transform:uppercase;color:#888;">${t("tpl_client")}</div>
       <div style="font-size:14px;font-weight:600;">${escapeHtml(doc.clientName||"")}</div>
       <div style="font-size:12px;color:#555;">${escapeHtml(doc.clientPhone||"")}</div>
     </div>
     <table style="width:100%;border-collapse:collapse;font-size:13px;">
       <thead><tr>
-        <th style="text-align:left;padding:6px 4px;border-bottom:2px solid #1B3358;">Description</th>
-        <th style="text-align:right;padding:6px 4px;border-bottom:2px solid #1B3358;">Qté</th>
-        <th style="text-align:right;padding:6px 4px;border-bottom:2px solid #1B3358;">P.U.</th>
-        <th style="text-align:right;padding:6px 4px;border-bottom:2px solid #1B3358;">Montant</th>
+        <th style="text-align:left;padding:6px 4px;border-bottom:2px solid #1B3358;">${t("th_desc")}</th>
+        <th style="text-align:right;padding:6px 4px;border-bottom:2px solid #1B3358;">${t("th_qty")}</th>
+        <th style="text-align:right;padding:6px 4px;border-bottom:2px solid #1B3358;">${t("th_price")}</th>
+        <th style="text-align:right;padding:6px 4px;border-bottom:2px solid #1B3358;">${t("th_amount")}</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
     <div style="margin-top:14px;margin-left:auto;width:260px;font-size:13px;">
-      <div style="display:flex;justify-content:space-between;padding:2px 0;"><span>Sous-total</span><span>${fmt(t.subtotal)}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:2px 0;"><span>Remise</span><span>-${fmt(t.discountAmt)}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:2px 0;"><span>TVA</span><span>${fmt(t.taxAmt)}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:6px 0;font-weight:700;font-size:16px;border-top:2px solid #000;margin-top:4px;"><span>Total</span><span>${fmt(t.total)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:2px 0;"><span>${t("sub_subtotal")}</span><span>${fmt(tot.subtotal)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:2px 0;"><span>${t("sub_discount")}</span><span>-${fmt(tot.discountAmt)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:2px 0;"><span>${t("sub_tax")}</span><span>${fmt(tot.taxAmt)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;font-weight:700;font-size:16px;border-top:2px solid #000;margin-top:4px;"><span>${t("sub_total")}</span><span>${fmt(tot.total)}</span></div>
     </div>
     ${doc.notes ? `<div style="margin-top:20px;font-size:12px;color:#555;white-space:pre-wrap;">${escapeHtml(doc.notes)}</div>` : ""}
-    <div style="margin-top:30px;font-size:10px;color:#999;text-align:center;">Généré avec Kalcul</div>
+    <div style="margin-top:30px;font-size:10px;color:#999;text-align:center;">${t("tpl_generated")}</div>
   `;
   window.print();
 }
@@ -1395,7 +1943,7 @@ function loadImage(src){
   });
 }
 
-async function downloadDocAsImage(doc){
+async function buildDocCanvas(doc){
   const scale = 2;
   const W = 900;
   const marginX = 40;
@@ -1437,7 +1985,7 @@ async function downloadDocAsImage(doc){
   ctx.fillStyle = "#241B10";
   ctx.textAlign = "left";
   ctx.font = "bold 20px " + IMG_DISPLAY_FONT;
-  ctx.fillText(settings.name || "Mon entreprise", textX, y+10);
+  ctx.fillText(settings.name || "Kalcul", textX, y+10);
   ctx.font = "12px " + IMG_BODY_FONT;
   ctx.fillStyle = "#5B4E3A";
   ctx.fillText(settings.address || "", textX, y+28);
@@ -1446,10 +1994,10 @@ async function downloadDocAsImage(doc){
   ctx.textAlign = "right";
   ctx.fillStyle = "#241B10";
   ctx.font = "bold 18px " + IMG_BODY_FONT;
-  ctx.fillText(doc.type==="facture" ? "FACTURE" : "DEVIS", W-marginX, y+8);
+  ctx.fillText(doc.type==="facture" ? t("tpl_facture") : t("tpl_devis"), W-marginX, y+8);
   ctx.font = "13px " + IMG_BODY_FONT;
   ctx.fillStyle = "#5B4E3A";
-  ctx.fillText("N° " + doc.number, W-marginX, y+26);
+  ctx.fillText(t("tpl_no") + " " + doc.number, W-marginX, y+26);
   ctx.fillText(doc.date || "", W-marginX, y+42);
 
   y += headerH - 30;
@@ -1459,7 +2007,7 @@ async function downloadDocAsImage(doc){
 
   ctx.textAlign = "left";
   ctx.fillStyle = "#888"; ctx.font = "10px " + IMG_BODY_FONT;
-  ctx.fillText("CLIENT", marginX, y);
+  ctx.fillText(t("tpl_client").toUpperCase(), marginX, y);
   ctx.fillStyle = "#241B10"; ctx.font = "bold 14px " + IMG_BODY_FONT;
   ctx.fillText(doc.clientName || "", marginX, y+18);
   ctx.font = "12px " + IMG_BODY_FONT; ctx.fillStyle = "#5B4E3A";
@@ -1471,11 +2019,11 @@ async function downloadDocAsImage(doc){
   ctx.beginPath(); ctx.moveTo(marginX, y); ctx.lineTo(W-marginX, y); ctx.stroke();
   y += 18;
   ctx.font = "bold 11px " + IMG_BODY_FONT; ctx.fillStyle = "#5B4E3A";
-  ctx.textAlign = "left"; ctx.fillText("DESCRIPTION", col.desc, y);
+  ctx.textAlign = "left"; ctx.fillText(t("th_desc").toUpperCase(), col.desc, y);
   ctx.textAlign = "right";
-  ctx.fillText("QTÉ", col.qty, y);
-  ctx.fillText("P.U.", col.price, y);
-  ctx.fillText("MONTANT", col.amount, y);
+  ctx.fillText(t("th_qty").toUpperCase(), col.qty, y);
+  ctx.fillText(t("th_price").toUpperCase(), col.price, y);
+  ctx.fillText(t("th_amount").toUpperCase(), col.amount, y);
   y += 10;
   ctx.beginPath(); ctx.moveTo(marginX, y); ctx.lineTo(W-marginX, y); ctx.stroke();
   y += 6;
@@ -1497,7 +2045,7 @@ async function downloadDocAsImage(doc){
   });
 
   y += 16;
-  const t = doc.totals || computeTotals();
+  const tot = doc.totals || computeTotals();
   const drawTotalLine = (label, valStr, bold)=>{
     ctx.textAlign = "left"; ctx.font = (bold?"bold ":"") + "13px " + IMG_BODY_FONT;
     ctx.fillStyle = "#241B10";
@@ -1506,14 +2054,14 @@ async function downloadDocAsImage(doc){
     ctx.fillText(valStr, W-marginX, y);
     y += 20;
   };
-  drawTotalLine("Sous-total", fmt(t.subtotal));
-  drawTotalLine("Remise", "-" + fmt(t.discountAmt));
-  drawTotalLine("TVA", fmt(t.taxAmt));
+  drawTotalLine(t("sub_subtotal"), fmt(tot.subtotal));
+  drawTotalLine(t("sub_discount"), "-" + fmt(tot.discountAmt));
+  drawTotalLine(t("sub_tax"), fmt(tot.taxAmt));
   ctx.strokeStyle = "#000"; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(W-marginX-220, y); ctx.lineTo(W-marginX, y); ctx.stroke();
   y += 22;
   ctx.font = "bold 16px " + IMG_BODY_FONT;
-  drawTotalLine("TOTAL", fmt(t.total), true);
+  drawTotalLine(t("sub_total"), fmt(tot.total), true);
 
   if(notesLines.length){
     y += 8;
@@ -1522,8 +2070,13 @@ async function downloadDocAsImage(doc){
   }
 
   ctx.textAlign = "center"; ctx.font = "10px " + IMG_BODY_FONT; ctx.fillStyle = "#999";
-  ctx.fillText("Généré avec Kalcul", W/2, H-18);
+  ctx.fillText(t("tpl_generated"), W/2, H-18);
 
+  return canvas;
+}
+
+async function downloadDocAsImage(doc){
+  const canvas = await buildDocCanvas(doc);
   const url = canvas.toDataURL("image/png");
   const a = document.createElement("a");
   a.href = url;
@@ -1534,26 +2087,283 @@ async function downloadDocAsImage(doc){
 }
 
 /* ============================================================
+   MODÈLE "TICKET" — utilisé pour les Devis et les reçus de Caisse,
+   afin que le client distingue visuellement un devis d'une facture.
+   Les deux adaptateurs ci-dessous normalisent Devis et Vente-Caisse
+   vers une même forme de données consommée par printTicket/ticketToImage.
+   ============================================================ */
+function docToTicketData(doc){
+  const t2 = doc.totals || {subtotal:0, discountAmt:0, taxAmt:0, total:0};
+  return {
+    docLabel: t("tpl_devis"),
+    number: doc.number,
+    date: doc.date || "",
+    clientName: doc.clientName || "",
+    clientPhone: doc.clientPhone || "",
+    items: doc.items.map(i=>({name:i.desc, qty:i.qty, price:i.price, amount:i.qty*i.price})),
+    subtotal: t2.subtotal, discountAmt: t2.discountAmt, taxAmt: t2.taxAmt, total: t2.total,
+    notes: doc.notes || ""
+  };
+}
+function saleToTicketData(sale){
+  return {
+    docLabel: t("tpl_ticket"),
+    number: sale.number,
+    date: new Date(sale.timestamp).toLocaleString(lang==="en"?"en-US":"fr-FR"),
+    clientName: "", clientPhone: "",
+    items: sale.items.map(i=>({name:i.name, qty:i.qty, price:i.sellPrice, amount:i.qty*i.sellPrice})),
+    subtotal: sale.totalCA, discountAmt:0, taxAmt:0, total: sale.totalCA,
+    notes: ""
+  };
+}
+
+function printTicket(data){
+  const area = document.getElementById("print-area");
+  const rows = data.items.map(i=>`
+    <tr>
+      <td style="padding:4px 2px;border-bottom:1px dashed #ccc;">${i.qty}× ${escapeHtml(i.name)}</td>
+      <td style="padding:4px 2px;border-bottom:1px dashed #ccc;text-align:right;white-space:nowrap;">${fmtNum(i.amount)}</td>
+    </tr>`).join("");
+  area.innerHTML = `
+    <div style="max-width:320px;margin:0 auto;font-family:monospace;">
+      <div style="text-align:center;border-bottom:2px dashed #000;padding-bottom:10px;margin-bottom:10px;">
+        ${settings.logo ? `<img src="${settings.logo}" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:6px;margin-bottom:6px;">` : ""}
+        <div style="font-size:16px;font-weight:700;">${escapeHtml(settings.name||"Kalcul")}</div>
+        <div style="font-size:11px;color:#555;">${escapeHtml(settings.address||"")}</div>
+        <div style="font-size:11px;color:#555;">${escapeHtml(settings.phone||"")}</div>
+        <div style="font-size:13px;font-weight:700;margin-top:6px;letter-spacing:1px;">${data.docLabel}</div>
+        <div style="font-size:11px;">${t("tpl_no")} ${escapeHtml(data.number)} · ${escapeHtml(data.date)}</div>
+      </div>
+      ${data.clientName ? `<div style="font-size:12px;margin-bottom:8px;">${t("tpl_client")}: ${escapeHtml(data.clientName)}</div>` : ""}
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">${rows}</table>
+      <div style="border-top:2px dashed #000;margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;font-weight:700;font-size:15px;">
+        <span>${t("sub_total")}</span><span>${fmt(data.total)}</span>
+      </div>
+      ${data.notes ? `<div style="margin-top:10px;font-size:11px;color:#555;white-space:pre-wrap;">${escapeHtml(data.notes)}</div>` : ""}
+      <div style="text-align:center;margin-top:16px;font-size:11px;font-weight:700;">${t("tpl_thanks")}</div>
+      <div style="text-align:center;margin-top:6px;font-size:9px;color:#999;">${t("tpl_generated")}</div>
+    </div>
+  `;
+  window.print();
+}
+
+async function buildTicketCanvas(data){
+  const scale = 2, W = 380, marginX = 18;
+  const contentW = W - marginX*2;
+  const meas = document.createElement("canvas").getContext("2d");
+  meas.font = "12px " + IMG_BODY_FONT;
+  const rowH = 18;
+  const notesLines = data.notes ? wrapCanvasText(meas, data.notes, contentW) : [];
+  const headerH = settings.logo ? 150 : 110;
+  const clientH = data.clientName ? 18 : 0;
+  const itemsH = data.items.length * rowH;
+  const totalsH = 40;
+  const notesH = notesLines.length ? notesLines.length*14+10 : 0;
+  const footerH = 46;
+  const H = headerH + clientH + itemsH + totalsH + notesH + footerH + 20;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = W*scale; canvas.height = H*scale;
+  const ctx = canvas.getContext("2d");
+  ctx.scale(scale, scale);
+  ctx.fillStyle = "#fff"; ctx.fillRect(0,0,W,H);
+  ctx.textAlign = "center";
+  let y = 22;
+  if(settings.logo){
+    try{ const img = await loadImage(settings.logo); ctx.drawImage(img, W/2-20, y-14, 40, 40); y += 34; }catch(e){}
+  }
+  ctx.font = "bold 15px " + IMG_BODY_FONT; ctx.fillStyle = "#241B10";
+  ctx.fillText(settings.name || "Kalcul", W/2, y); y += 15;
+  ctx.font = "10px " + IMG_BODY_FONT; ctx.fillStyle = "#555";
+  if(settings.address){ ctx.fillText(settings.address, W/2, y); y += 13; }
+  if(settings.phone){ ctx.fillText(settings.phone, W/2, y); y += 13; }
+  y += 6;
+  ctx.font = "bold 12px " + IMG_BODY_FONT; ctx.fillStyle="#241B10";
+  ctx.fillText(data.docLabel, W/2, y); y += 14;
+  ctx.font = "10px " + IMG_BODY_FONT; ctx.fillStyle="#555";
+  ctx.fillText(`${t("tpl_no")} ${data.number} · ${data.date}`, W/2, y); y += 12;
+  ctx.strokeStyle="#000"; ctx.setLineDash([3,2]); ctx.beginPath(); ctx.moveTo(marginX,y); ctx.lineTo(W-marginX,y); ctx.stroke(); ctx.setLineDash([]);
+  y += 14;
+  if(data.clientName){
+    ctx.textAlign="left"; ctx.font="11px "+IMG_BODY_FONT; ctx.fillStyle="#241B10";
+    ctx.fillText(`${t("tpl_client")}: ${data.clientName}`, marginX, y); y += clientH;
+  }
+  ctx.font = "11px " + IMG_BODY_FONT;
+  data.items.forEach(i=>{
+    ctx.textAlign="left"; ctx.fillStyle="#241B10";
+    ctx.fillText(`${i.qty}× ${i.name}`, marginX, y);
+    ctx.textAlign="right";
+    ctx.fillText(fmtNum(i.amount), W-marginX, y);
+    y += rowH;
+  });
+  ctx.strokeStyle="#000"; ctx.setLineDash([3,2]); ctx.beginPath(); ctx.moveTo(marginX,y); ctx.lineTo(W-marginX,y); ctx.stroke(); ctx.setLineDash([]);
+  y += 18;
+  ctx.textAlign="left"; ctx.font="bold 14px "+IMG_BODY_FONT; ctx.fillStyle="#241B10";
+  ctx.fillText(t("sub_total"), marginX, y);
+  ctx.textAlign="right";
+  ctx.fillText(fmt(data.total), W-marginX, y);
+  y += 20;
+  if(notesLines.length){
+    ctx.textAlign="left"; ctx.font="10px "+IMG_BODY_FONT; ctx.fillStyle="#555";
+    notesLines.forEach(l=>{ ctx.fillText(l, marginX, y); y+=14; });
+    y += 4;
+  }
+  ctx.textAlign="center"; ctx.font="bold 11px "+IMG_BODY_FONT; ctx.fillStyle="#241B10";
+  ctx.fillText(t("tpl_thanks"), W/2, y); y += 14;
+  ctx.font="9px "+IMG_BODY_FONT; ctx.fillStyle="#999";
+  ctx.fillText(t("tpl_generated"), W/2, y);
+
+  return canvas;
+}
+
+async function ticketToImage(data){
+  const canvas = await buildTicketCanvas(data);
+  const url = canvas.toDataURL("image/png");
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = (data.number || "ticket") + ".png";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+/* ============================================================
+   PARTAGE WHATSAPP — envoyer directement une facture/devis/reçu
+   au client, sans quitter l'application.
+
+   Tout ce qui précède l'envoi (génération de l'image, ouverture de
+   la fenêtre de partage) est 100% local et fonctionne hors connexion.
+   Seul l'envoi réel du message par WhatsApp nécessite une connexion —
+   ça, personne ne peut le contourner, pas même WhatsApp lui-même.
+
+   Méthode principale : Web Share API avec fichier joint (ouvre le
+   sélecteur natif du téléphone, l'utilisateur choisit WhatsApp puis
+   son contact — l'image part en pièce jointe directement).
+   Repli si non supporté (certains navigateurs desktop) : téléchargement
+   de l'image + ouverture de WhatsApp avec un message pré-rempli, à
+   joindre manuellement.
+   ============================================================ */
+function canShareFiles(){
+  if(!navigator.share || !navigator.canShare) return false;
+  try{
+    const probe = new File([new Blob(["x"])], "probe.png", {type:"image/png"});
+    return navigator.canShare({files:[probe]});
+  }catch(e){ return false; }
+}
+
+async function shareImageViaWhatsApp(canvas, filename, textMessage, clientPhone){
+  if(canShareFiles()){
+    try{
+      const blob = await new Promise(res=> canvas.toBlob(res, "image/png"));
+      const file = new File([blob], filename, {type:"image/png"});
+      await navigator.share({files:[file], text: textMessage});
+    }catch(err){
+      // AbortError = l'utilisateur a annulé le partage volontairement : rien à faire de plus.
+    }
+    return;
+  }
+  // Repli : télécharge l'image et ouvre WhatsApp avec un message pré-rempli.
+  const url = canvas.toDataURL("image/png");
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  const waNumber = clientPhone ? clientPhone.replace(/[^0-9]/g,"") : "";
+  const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(textMessage)}`;
+  window.open(waUrl, "_blank");
+  alert(t("wa_fallback_hint"));
+}
+
+function waMessageForDoc(doc){
+  const label = doc.type==="facture" ? t("doctype_facture") : t("doctype_devis");
+  const total = doc.totals ? fmt(doc.totals.total) : "";
+  return t("wa_share_message", {label, number: doc.number, company: settings.name||"Kalcul", total});
+}
+async function shareDocViaWhatsApp(doc){
+  const canvas = doc.type === "devis" ? await buildTicketCanvas(docToTicketData(doc)) : await buildDocCanvas(doc);
+  shareImageViaWhatsApp(canvas, (doc.number||"document")+".png", waMessageForDoc(doc), doc.clientPhone);
+}
+async function shareSaleViaWhatsApp(sale){
+  const canvas = await buildTicketCanvas(saleToTicketData(sale));
+  const msg = t("wa_share_message", {label:t("tpl_ticket"), number:sale.number, company:settings.name||"Kalcul", total:fmt(sale.totalCA)});
+  shareImageViaWhatsApp(canvas, (sale.number||"ticket")+".png", msg, "");
+}
+
+/* ============================================================
    HISTORIQUE
    ============================================================ */
+let reportPeriod = "today"; // "today" | "month"
+let histTab = "ventes";     // "ventes" | "docs"
+
+function isInPeriod(isoDate, period){
+  const d = new Date(isoDate);
+  const now = new Date();
+  if(period === "today"){
+    return d.toDateString() === now.toDateString();
+  }
+  return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth();
+}
+
+function renderReportStats(){
+  const filtered = sales.filter(s=> isInPeriod(s.timestamp, reportPeriod));
+  const ca = filtered.reduce((s,x)=>s+x.totalCA,0);
+  const cost = filtered.reduce((s,x)=>s+x.totalCost,0);
+  const profit = ca - cost;
+  document.getElementById("repCA").textContent = fmt(ca);
+  document.getElementById("repCost").textContent = fmt(cost);
+  document.getElementById("repProfit").textContent = fmt(profit);
+}
+
+function renderSalesHistory(){
+  const list = document.getElementById("salesList");
+  if(sales.length===0){
+    list.innerHTML = `<div class="empty"><div class="glyph">🧺</div>${t("empty_sales")}</div>`;
+    return;
+  }
+  list.innerHTML = sales.map(s=>{
+    const itemsSummary = s.items.map(i=>`${i.qty}× ${escapeHtml(i.name)}`).join(", ");
+    const dateStr = new Date(s.timestamp).toLocaleString(lang==="en"?"en-US":"fr-FR", {day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+    return `
+    <div class="hist-item" data-id="${s.id}">
+      <div class="meta">
+        <span class="num">${escapeHtml(s.number)} <span class="badge facture">${t("nav_caisse")}</span></span>
+        <span class="client">${itemsSummary} · ${dateStr}</span>
+      </div>
+      <div class="right">
+        <span class="amount">${fmt(s.totalCA)}</span>
+        <div class="hist-actions">
+          <span class="wa-doc" data-id="${s.id}" data-action="sale-wa">${t("wa_send_btn")}</span>
+          <span class="img-doc" data-id="${s.id}" data-action="sale-print">${t("action_image")}</span>
+          <span class="del-doc" data-id="${s.id}" data-action="del-sale" data-state="idle">${t("action_delete")}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
 function renderHistory(){
+  renderReportStats();
+  renderSalesHistory();
   const list = document.getElementById("historyList");
   if(docs.length===0){
-    list.innerHTML = `<div class="empty"><div class="glyph">🗂️</div>Aucun document pour l'instant.</div>`;
+    list.innerHTML = `<div class="empty"><div class="glyph">🗂️</div>${t("empty_docs")}</div>`;
     return;
   }
   list.innerHTML = docs.map(d=>`
     <div class="hist-item" data-id="${d.id}">
       <div class="meta">
-        <span class="num">${escapeHtml(d.number)} <span class="badge ${d.type}">${d.type==="facture"?"Facture":"Devis"}</span></span>
+        <span class="num">${escapeHtml(d.number)} <span class="badge ${d.type}">${d.type==="facture"?t("doctype_facture"):t("doctype_devis")}</span></span>
         <span class="client">${escapeHtml(d.clientName)} · ${escapeHtml(d.date||"")}</span>
       </div>
       <div class="right">
         <span class="amount">${fmt(d.totals ? d.totals.total : 0)}</span>
         <div class="hist-actions">
-          <span class="edit-doc" data-id="${d.id}">Modifier</span>
-          <span class="img-doc" data-id="${d.id}">Image</span>
-          <span class="del-doc" data-id="${d.id}" data-state="idle">Supprimer</span>
+          <span class="edit-doc" data-id="${d.id}">${t("action_edit")}</span>
+          <span class="wa-doc" data-id="${d.id}" data-action="doc-wa">${t("wa_send_btn")}</span>
+          <span class="img-doc" data-id="${d.id}">${t("action_image")}</span>
+          <span class="del-doc" data-id="${d.id}" data-state="idle">${t("action_delete")}</span>
         </div>
       </div>
     </div>
@@ -1565,6 +2375,24 @@ function renderHistory(){
    décrocher. La suppression demande une double confirmation tactile (pas de
    window.confirm, plus fiable sur mobile). */
 function initHistoryEvents(){
+  document.querySelectorAll(".rep-filter").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll(".rep-filter").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      reportPeriod = btn.dataset.period;
+      renderReportStats();
+    });
+  });
+  document.querySelectorAll(".hist-tab").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll(".hist-tab").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      histTab = btn.dataset.histtab;
+      document.getElementById("salesList").style.display = histTab==="ventes" ? "block" : "none";
+      document.getElementById("historyList").style.display = histTab==="docs" ? "block" : "none";
+    });
+  });
+
   document.getElementById("historyList").addEventListener("click", (e)=>{
     const editBtn = e.target.closest(".edit-doc");
     if(editBtn){
@@ -1588,11 +2416,11 @@ function initHistoryEvents(){
       } else {
         clearTimeout(delBtn._resetTimer);
         delBtn.dataset.state = "confirm";
-        delBtn.textContent = "Confirmer ?";
+        delBtn.textContent = t("action_confirm");
         delBtn.classList.add("confirming");
         delBtn._resetTimer = setTimeout(()=>{
           delBtn.dataset.state = "idle";
-          delBtn.textContent = "Supprimer";
+          delBtn.textContent = t("action_delete");
           delBtn.classList.remove("confirming");
         }, 3000);
       }
@@ -1602,16 +2430,68 @@ function initHistoryEvents(){
     if(imgBtn){
       e.stopPropagation();
       const doc = docs.find(d=>d.id===imgBtn.dataset.id);
-      if(doc) downloadDocAsImage(doc);
+      if(doc) outputImage(doc);
+      return;
+    }
+    const waBtn = e.target.closest(".wa-doc");
+    if(waBtn){
+      e.stopPropagation();
+      const doc = docs.find(d=>d.id===waBtn.dataset.id);
+      if(doc) shareDocViaWhatsApp(doc);
       return;
     }
     const item = e.target.closest(".hist-item");
     if(item){
       const doc = docs.find(d=>d.id===item.dataset.id);
-      if(doc) printDocument(doc);
+      if(doc) outputPrint(doc);
+    }
+  });
+
+  document.getElementById("salesList").addEventListener("click", (e)=>{
+    const delBtn = e.target.closest('[data-action="del-sale"]');
+    if(delBtn){
+      e.stopPropagation();
+      const id = delBtn.dataset.id;
+      if(delBtn.dataset.state === "confirm"){
+        sales = sales.filter(s=>s.id!==id);
+        save(KEYS.sales, sales);
+        renderHistory();
+      } else {
+        clearTimeout(delBtn._resetTimer);
+        delBtn.dataset.state = "confirm";
+        delBtn.textContent = t("action_confirm");
+        delBtn.classList.add("confirming");
+        delBtn._resetTimer = setTimeout(()=>{
+          delBtn.dataset.state = "idle";
+          delBtn.textContent = t("action_delete");
+          delBtn.classList.remove("confirming");
+        }, 3000);
+      }
+      return;
+    }
+    const printBtn = e.target.closest('[data-action="sale-print"]');
+    if(printBtn){
+      e.stopPropagation();
+      const sale = sales.find(s=>s.id===printBtn.dataset.id);
+      if(sale) ticketToImage(saleToTicketData(sale));
+      return;
+    }
+    const waBtn = e.target.closest('[data-action="sale-wa"]');
+    if(waBtn){
+      e.stopPropagation();
+      const sale = sales.find(s=>s.id===waBtn.dataset.id);
+      if(sale) shareSaleViaWhatsApp(sale);
+      return;
+    }
+    const item = e.target.closest(".hist-item");
+    if(item){
+      const sale = sales.find(s=>s.id===item.dataset.id);
+      if(sale) printTicket(saleToTicketData(sale));
     }
   });
 }
+
+
 
 /* ============================================================
    CALCUL DE MARGE
@@ -1624,7 +2504,7 @@ document.getElementById("calcSuggestBtn").addEventListener("click", ()=>{
   const box = document.getElementById("suggestResult");
   if(marginPct >= 100){
     box.style.display="block";
-    box.innerHTML = `<div class="small">La marge doit être inférieure à 100%.</div>`;
+    box.innerHTML = `<div class="small">${t("margin_bad_pct")}</div>`;
     return;
   }
   const price = totalCost / (1 - marginPct/100);
@@ -1632,8 +2512,8 @@ document.getElementById("calcSuggestBtn").addEventListener("click", ()=>{
   box.style.display = "block";
   box.innerHTML = `
     <div class="big amount">${fmt(price)}</div>
-    <div class="small">Prix de vente conseillé pour une marge de ${marginPct}%</div>
-    <div class="small">Marge réalisée : <span class="amount">${fmt(marginAmt)}</span> par unité</div>
+    <div class="small">${t("suggest_result_sub", {pct: marginPct})}</div>
+    <div class="small">${t("suggest_result_margin", {amt: `<span class="amount">${fmt(marginAmt)}</span>`})}</div>
   `;
 });
 
@@ -1641,16 +2521,324 @@ document.getElementById("calcRealBtn").addEventListener("click", ()=>{
   const cost = parseFloat(document.getElementById("rCost").value)||0;
   const price = parseFloat(document.getElementById("rPrice").value)||0;
   const box = document.getElementById("realResult");
-  if(price<=0){ box.style.display="block"; box.innerHTML = `<div class="small">Indiquez un prix de vente valide.</div>`; return; }
+  if(price<=0){ box.style.display="block"; box.innerHTML = `<div class="small">${t("margin_bad_price")}</div>`; return; }
   const marginAmt = price - cost;
   const marginPct = (marginAmt / price) * 100;
   box.style.display = "block";
   const color = marginPct < 0 ? "#8B3A2B" : "#1B3358";
   box.innerHTML = `
     <div class="big amount" style="color:${color};">${marginPct.toFixed(1)}%</div>
-    <div class="small">Marge réalisée sur le prix de vente</div>
-    <div class="small">Gain : <span class="amount">${fmt(marginAmt)}</span> par unité</div>
+    <div class="small">${t("real_result_sub")}</div>
+    <div class="small">${t("real_result_gain", {amt: `<span class="amount">${fmt(marginAmt)}</span>`})}</div>
   `;
+});
+
+/* ============================================================
+   STOCK — catalogue de produits (utilisé aussi par la Caisse)
+   ============================================================ */
+let editingProductId = null;
+let pendingProductPhotos = [];
+const MAX_PRODUCT_PHOTOS = 4;
+
+/* Compatibilité : les produits enregistrés avant cette mise à jour n'ont
+   qu'un champ "image" unique. getProductImages() unifie l'ancien et le
+   nouveau format pour l'affichage. */
+function getProductImages(p){
+  if(p.images && p.images.length) return p.images;
+  if(p.image) return [p.image];
+  return [];
+}
+
+/* Redimensionne une photo produit côté client avant stockage (JPEG, max 220px)
+   pour éviter de saturer le localStorage quand il y a beaucoup de produits —
+   contrairement au logo d'entreprise (unique), il peut y en avoir des dizaines,
+   avec jusqu'à 4 photos chacun. */
+function resizeImageFile(file, maxDim){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        let w = img.width, h = img.height;
+        if(w > h && w > maxDim){ h = Math.round(h*maxDim/w); w = maxDim; }
+        else if(h > maxDim){ w = Math.round(w*maxDim/h); h = maxDim; }
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", 0.8));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderPhotoGrid(){
+  const grid = document.getElementById("prodPhotoGrid");
+  grid.innerHTML = pendingProductPhotos.map((src, i)=>`
+    <div class="photo-thumb-wrap">
+      <img src="${src}" alt="">
+      <button type="button" class="rm-photo" data-index="${i}" aria-label="Retirer">✕</button>
+    </div>
+  `).join("");
+  grid.querySelectorAll(".rm-photo").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      pendingProductPhotos.splice(parseInt(btn.dataset.index,10), 1);
+      renderPhotoGrid();
+    });
+  });
+}
+
+document.getElementById("prodPhotoInput").addEventListener("change", async (e)=>{
+  const files = Array.from(e.target.files||[]);
+  const room = MAX_PRODUCT_PHOTOS - pendingProductPhotos.length;
+  for(const file of files.slice(0, room)){
+    try{
+      const dataUrl = await resizeImageFile(file, 220);
+      pendingProductPhotos.push(dataUrl);
+    }catch(err){ /* image illisible : on l'ignore silencieusement */ }
+  }
+  renderPhotoGrid();
+  e.target.value = ""; // permet de resélectionner les mêmes fichiers plus tard si besoin
+});
+
+function renderStock(){
+  const list = document.getElementById("stockList");
+  if(products.length===0){
+    list.innerHTML = `<div class="empty"><div class="glyph">📦</div>${t("stock_empty")}</div>`;
+    return;
+  }
+  list.innerHTML = products.map(p=>{
+    const low = p.qty <= 5;
+    const imgs = getProductImages(p);
+    const thumb = imgs.length ? `
+      <div class="thumb-stack">
+        <img src="${imgs[0]}" alt="" class="item-thumb">
+        ${imgs.length>1 ? `<span class="thumb-count">${imgs.length}</span>` : ""}
+      </div>` : "";
+    return `
+    <div class="stock-item" data-id="${p.id}">
+      <div class="top-line">
+        <div class="info-row">
+          ${thumb}
+          <div>
+            <div class="name">${escapeHtml(p.name)}</div>
+            <div class="ref">${escapeHtml(p.ref||"")}</div>
+          </div>
+        </div>
+        <span class="badge ${low?'lowstock':'free'}">${low ? t("low_stock_badge") : p.qty}</span>
+      </div>
+      <div class="prices">
+        <span>${t("stock_th_buy")} <b>${fmt(p.buyPrice)}</b></span>
+        <span>${t("stock_th_sell")} <b>${fmt(p.sellPrice)}</b></span>
+        <span>${t("stock_th_qty")} <b>${p.qty}</b></span>
+      </div>
+      <div class="hist-actions">
+        <span class="edit-doc" data-id="${p.id}" data-action="edit-product">${t("action_edit")}</span>
+        <span class="del-doc" data-id="${p.id}" data-action="del-product" data-state="idle">${t("action_delete")}</span>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function resetProductForm(){
+  document.getElementById("prodName").value = "";
+  document.getElementById("prodRef").value = "";
+  document.getElementById("prodBuy").value = "";
+  document.getElementById("prodSell").value = "";
+  document.getElementById("prodQty").value = "";
+  document.getElementById("prodPhotoInput").value = "";
+  pendingProductPhotos = [];
+  renderPhotoGrid();
+  editingProductId = null;
+}
+
+document.getElementById("saveProductBtn").addEventListener("click", ()=>{
+  const name = document.getElementById("prodName").value.trim();
+  const ref = document.getElementById("prodRef").value.trim();
+  const buyPrice = parseFloat(document.getElementById("prodBuy").value)||0;
+  const sellPrice = parseFloat(document.getElementById("prodSell").value)||0;
+  const qty = parseFloat(document.getElementById("prodQty").value)||0;
+  if(!name || document.getElementById("prodBuy").value==="" || document.getElementById("prodSell").value==="" || document.getElementById("prodQty").value===""){
+    alert(t("need_product_fields"));
+    return;
+  }
+  const images = pendingProductPhotos.slice(0, MAX_PRODUCT_PHOTOS);
+  if(editingProductId){
+    const idx = products.findIndex(p=>p.id===editingProductId);
+    if(idx!==-1){
+      products[idx] = {id:editingProductId, name, ref, buyPrice, sellPrice, qty, images};
+    }
+  } else {
+    products.unshift({id:"p_"+Date.now(), name, ref, buyPrice, sellPrice, qty, images});
+  }
+  save(KEYS.products, products);
+  resetProductForm();
+  renderStock();
+  alert(t("product_saved_alert"));
+});
+
+function initStockEvents(){
+  document.getElementById("stockList").addEventListener("click", (e)=>{
+    const editBtn = e.target.closest('[data-action="edit-product"]');
+    if(editBtn){
+      const p = products.find(x=>x.id===editBtn.dataset.id);
+      if(p){
+        document.getElementById("prodName").value = p.name;
+        document.getElementById("prodRef").value = p.ref||"";
+        document.getElementById("prodBuy").value = p.buyPrice;
+        document.getElementById("prodSell").value = p.sellPrice;
+        document.getElementById("prodQty").value = p.qty;
+        document.getElementById("prodPhotoInput").value = "";
+        pendingProductPhotos = getProductImages(p).slice();
+        renderPhotoGrid();
+        editingProductId = p.id;
+        window.scrollTo({top:0, behavior:"smooth"});
+      }
+      return;
+    }
+    const delBtn = e.target.closest('[data-action="del-product"]');
+    if(delBtn){
+      if(delBtn.dataset.state === "confirm"){
+        products = products.filter(p=>p.id!==delBtn.dataset.id);
+        save(KEYS.products, products);
+        renderStock();
+      } else {
+        clearTimeout(delBtn._resetTimer);
+        delBtn.dataset.state = "confirm";
+        delBtn.textContent = t("action_confirm");
+        delBtn.classList.add("confirming");
+        delBtn._resetTimer = setTimeout(()=>{
+          delBtn.dataset.state = "idle";
+          delBtn.textContent = t("action_delete");
+          delBtn.classList.remove("confirming");
+        }, 3000);
+      }
+    }
+  });
+}
+
+/* ============================================================
+   CAISSE — vente rapide (panier) à partir du stock
+   ============================================================ */
+function renderPOSProducts(){
+  const list = document.getElementById("posProductList");
+  const emptyHint = document.getElementById("posEmptyHint");
+  if(products.length===0){
+    list.innerHTML = "";
+    emptyHint.style.display = "block";
+    return;
+  }
+  emptyHint.style.display = "none";
+  const q = (document.getElementById("posSearch").value||"").toLowerCase();
+  const filtered = products.filter(p=> !q || p.name.toLowerCase().includes(q) || (p.ref||"").toLowerCase().includes(q));
+  list.innerHTML = filtered.map(p=>{
+    const imgs = getProductImages(p);
+    return `
+    <div class="pos-item ${p.qty<=0?'out-of-stock':''}" data-id="${p.id}">
+      <div class="info-row">
+        ${imgs.length ? `<img src="${imgs[0]}" alt="" class="item-thumb">` : ""}
+        <div>
+          <div class="name">${escapeHtml(p.name)}</div>
+          <div class="ref">${escapeHtml(p.ref||"")} · ${p.qty} ${t("stock_th_qty").toLowerCase()}</div>
+        </div>
+      </div>
+      <div class="price amount">${fmt(p.sellPrice)}</div>
+    </div>
+  `;
+  }).join("");
+}
+document.getElementById("posSearch").addEventListener("input", renderPOSProducts);
+
+function addToCart(productId){
+  const p = products.find(x=>x.id===productId);
+  if(!p || p.qty<=0) return;
+  const line = cart.find(c=>c.productId===productId);
+  const currentQtyInCart = line ? line.qty : 0;
+  if(currentQtyInCart >= p.qty) return; // ne dépasse jamais le stock disponible
+  if(line){ line.qty++; }
+  else { cart.push({productId:p.id, name:p.name, sellPrice:p.sellPrice, buyPrice:p.buyPrice, qty:1}); }
+  renderCart();
+}
+function changeCartQty(productId, delta){
+  const line = cart.find(c=>c.productId===productId);
+  if(!line) return;
+  const p = products.find(x=>x.id===productId);
+  const maxQty = p ? p.qty : 999999;
+  line.qty += delta;
+  if(line.qty > maxQty) line.qty = maxQty;
+  if(line.qty <= 0){ cart = cart.filter(c=>c.productId!==productId); }
+  renderCart();
+}
+function renderCart(){
+  const cartCard = document.getElementById("cartCard");
+  const list = document.getElementById("cartList");
+  if(cart.length===0){
+    cartCard.style.display = "none";
+    document.getElementById("cartTotal").textContent = fmt(0);
+    return;
+  }
+  cartCard.style.display = "block";
+  let total = 0;
+  list.innerHTML = cart.map(c=>{
+    const lineTotal = c.qty * c.sellPrice;
+    total += lineTotal;
+    return `
+    <div class="cart-item" data-id="${c.productId}">
+      <div class="name">${escapeHtml(c.name)}</div>
+      <div class="stepper">
+        <button type="button" class="cart-dec" data-id="${c.productId}">−</button>
+        <span class="qty">${c.qty}</span>
+        <button type="button" class="cart-inc" data-id="${c.productId}">+</button>
+      </div>
+      <div class="line-total amount">${fmt(lineTotal)}</div>
+    </div>`;
+  }).join("");
+  document.getElementById("cartTotal").textContent = fmt(total);
+}
+
+function initPOSEvents(){
+  document.getElementById("posProductList").addEventListener("click", (e)=>{
+    const item = e.target.closest(".pos-item");
+    if(item) addToCart(item.dataset.id);
+  });
+  document.getElementById("cartList").addEventListener("click", (e)=>{
+    const inc = e.target.closest(".cart-inc");
+    const dec = e.target.closest(".cart-dec");
+    if(inc) changeCartQty(inc.dataset.id, 1);
+    if(dec) changeCartQty(dec.dataset.id, -1);
+  });
+}
+
+document.getElementById("validateSaleBtn").addEventListener("click", ()=>{
+  if(cart.length===0) return;
+  let totalCA = 0, totalCost = 0;
+  const items = cart.map(c=>{
+    totalCA += c.qty*c.sellPrice;
+    totalCost += c.qty*c.buyPrice;
+    return {name:c.name, qty:c.qty, sellPrice:c.sellPrice, buyPrice:c.buyPrice};
+  });
+  cart.forEach(c=>{
+    const p = products.find(x=>x.id===c.productId);
+    if(p) p.qty = Math.max(0, p.qty - c.qty);
+  });
+  save(KEYS.products, products);
+  const sale = {
+    id:"s_"+Date.now(),
+    number:"V-"+String(sales.length+1).padStart(4,"0"),
+    timestamp:new Date().toISOString(),
+    items, totalCA, totalCost, profit: totalCA-totalCost
+  };
+  sales.unshift(sale);
+  save(KEYS.sales, sales);
+  cart = [];
+  renderCart();
+  renderPOSProducts();
+  renderStock();
+  alert(t("sale_success"));
+  printTicket(saleToTicketData(sale));
 });
 
 /* ============================================================
@@ -1667,11 +2855,12 @@ function renderPlans(){
     return `
     <div class="plan-card ${p.id===selectedPlanId?'selected':''}" data-plan="${p.id}">
       <div class="plan-top">
-        <span class="plan-label">${p.label}</span>
-        ${p.badge ? `<span class="plan-badge">${p.badge}</span>` : ""}
+        <span class="plan-label">${t("plan_"+p.id)}</span>
+        ${p.badge ? `<span class="plan-badge">${t("plan_badge_best")}</span>` : ""}
       </div>
+      ${p.oldPrice ? `<div class="plan-old-price amount">${fmt(p.oldPrice)}</div>` : ""}
       <div class="plan-price amount">${fmt(p.price)}</div>
-      <div class="plan-sub">${p.days ? `${p.days} jours d'accès` : "Accès illimité — paiement unique, aucun renouvellement"}${perMonth ? ` · ≈ ${fmt(perMonth)}/mois` : ""}</div>
+      <div class="plan-sub">${p.days ? `${p.days} ${t("plan_days_access")}` : t("plan_lifetime_access")}${perMonth ? ` · ≈ ${fmt(perMonth)}${t("per_month")}` : ""}</div>
     </div>`;
   }).join("");
   el.querySelectorAll(".plan-card").forEach(card=>{
@@ -1690,19 +2879,20 @@ function renderProView(){
   const line = document.getElementById("proStatusLine");
   const details = document.getElementById("proDetails");
   document.getElementById("payAmountLabel").textContent = fmt(getSelectedPlan().price);
+  const dateLocale = lang==="en" ? "en-US" : "fr-FR";
   if(isPro()){
-    const planLabel = (PLANS.find(p=>p.id===pro.planId)||{}).label || "";
+    const planLabelKey = "plan_" + (pro.planId || "month1");
     if(pro.expiresAt === null){
-      line.innerHTML = `<span class="badge pro">Pro actif</span> Plan à vie — accès illimité, aucun renouvellement.`;
+      line.innerHTML = `<span class="badge pro">${t("badge_pro_label")}</span> ${t("pro_active_lifetime")}`;
     } else {
       const exp = new Date(pro.expiresAt);
-      line.innerHTML = `<span class="badge pro">Pro actif</span> Plan ${escapeHtml(planLabel)} — valide jusqu'au ${exp.toLocaleDateString("fr-FR")}.`;
+      line.innerHTML = `<span class="badge pro">${t("badge_pro_label")}</span> ${t("pro_active_until", {plan: t(planLabelKey), date: exp.toLocaleDateString(dateLocale)})}`;
     }
-    details.innerHTML = `<div class="notice">Documents illimités débloqués sur cet appareil. Choisir un nouveau plan ci-dessous remplacera la durée restante.</div>`;
+    details.innerHTML = `<div class="notice">${t("pro_details_active")}</div>`;
   } else {
     const used = docs.length;
-    line.innerHTML = `<span class="badge free">Gratuit</span> ${used}/${CONFIG.FREE_DOCS_LIMIT} documents gratuits utilisés.`;
-    details.innerHTML = `<div class="notice">Choisissez la durée qui vous convient ci-dessous.</div>`;
+    line.innerHTML = `<span class="badge free">${t("badge_free_label")}</span> ${used}/${CONFIG.FREE_DOCS_LIMIT} ${t("pro_free_used")}`;
+    details.innerHTML = `<div class="notice">${t("pro_details_free")}</div>`;
   }
 }
 
@@ -1712,9 +2902,10 @@ function activatePro(plan){
   save(KEYS.pro, pro);
   renderProView();
   renderQuota();
+  const dateLocale = lang==="en" ? "en-US" : "fr-FR";
   const msg = plan.days === null
-    ? "Paiement confirmé. Kalcul Pro à vie est actif — aucun renouvellement nécessaire."
-    : "Paiement confirmé. Plan " + plan.label + " actif jusqu'au " + new Date(expiresAt).toLocaleDateString("fr-FR") + ".";
+    ? t("pro_confirmed_lifetime")
+    : t("pro_confirmed_plan", {plan: t("plan_"+plan.id), date: new Date(expiresAt).toLocaleDateString(dateLocale)});
   alert(msg);
 }
 
@@ -1732,7 +2923,7 @@ function initFedaPay(){
     environment: CONFIG.FEDAPAY_ENV,
     transaction: {
       amount: plan.price,
-      description: "Abonnement Kalcul Pro — " + plan.label
+      description: "Abonnement Kalcul Pro — " + t("plan_"+plan.id)
     },
     currency: { iso: CONFIG.CURRENCY },
     customer: {
@@ -1770,11 +2961,17 @@ setDocSaved(false);
 renderHeader();
 renderQuota();
 initHistoryEvents();
+initStockEvents();
+initPOSEvents();
+renderStock();
+renderPOSProducts();
+renderCart();
 initFedaPay();
 applyTheme(load(KEYS.theme, "light"));
 renderRateStatus();
 updateCurrencyHints();
 updateInstallUI();
+applyI18n();
 refreshUsdRate(); // tentative silencieuse — échoue proprement hors ligne, garde le taux en cache
 
 })();

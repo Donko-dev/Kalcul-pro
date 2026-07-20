@@ -360,9 +360,11 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
 .del-doc.confirming{color:#fff; background:var(--clay); padding:2px 7px; border-radius:99px;}
 
 /* plans d'abonnement */
-.plans{display:flex; flex-direction:column; gap:8px; margin:12px 0;}
-.plan-card{border:1.5px solid var(--line); border-radius:10px; padding:10px 12px; cursor:pointer; background:var(--paper);}
-.plan-card.selected{border-color:var(--indigo); background:var(--white); box-shadow:0 0 0 1.5px var(--indigo) inset;}
+.plans{display:flex; flex-direction:column; gap:9px; margin:12px 0;}
+.plan-card{border:1.5px solid var(--line); border-radius:12px; padding:12px 14px; cursor:pointer; background:var(--paper); transition:transform .12s, box-shadow .12s;}
+.plan-card:active{transform:scale(.98);}
+.plan-card.selected{border-color:var(--indigo); background:var(--white); box-shadow:0 3px 10px rgba(0,0,0,.08);}
+.plan-label{font-family:var(--display);}
 .plan-top{display:flex; justify-content:space-between; align-items:center; gap:8px;}
 .plan-label{font-weight:700; font-size:13.5px;}
 .plan-badge{font-size:9.5px; text-transform:uppercase; letter-spacing:.4px; background:var(--ochre); color:#241B10; padding:2px 7px; border-radius:99px; font-weight:700; white-space:nowrap;}
@@ -377,6 +379,44 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
 </style>
 </head>
 <body>
+
+<!-- ===== ÉCRAN DE VERROUILLAGE (code PIN local, optionnel) ===== -->
+<div id="lockScreen" class="legal-overlay" style="display:none; align-items:center; z-index:200;">
+  <div class="legal-modal" style="border-radius:16px; max-height:none;">
+    <div class="legal-modal-header">
+      <span data-i18n="lock_title">Kalcul verrouillé</span>
+    </div>
+    <div class="legal-modal-body" style="text-align:center;">
+      <div style="font-size:34px; margin:6px 0 10px;">🔒</div>
+      <p class="sub" data-i18n="lock_sub" style="margin-bottom:14px;">Entrez votre code pour continuer.</p>
+      <input type="password" id="lockPinInput" inputmode="text" autocomplete="off" style="text-align:center; font-size:20px; letter-spacing:3px;" data-i18n-placeholder="lock_pin_placeholder" placeholder="Code">
+      <div id="lockError" class="hint" style="color:var(--clay); min-height:16px; margin-top:6px;"></div>
+      <button type="button" class="btn btn-primary btn-block" id="lockUnlockBtn" style="margin-top:10px;" data-i18n="lock_unlock_btn">Déverrouiller</button>
+      <div style="margin-top:14px; font-size:12.5px;">
+        <span id="lockForgotLink" style="color:var(--indigo); text-decoration:underline; cursor:pointer;" data-i18n="lock_forgot_link">Code oublié ?</span>
+      </div>
+
+      <div id="lockRecoveryBox" style="display:none; margin-top:18px; text-align:left; border-top:1px dashed var(--line); padding-top:14px;">
+        <p class="sub" data-i18n="lock_recovery_intro">Pour réinitialiser votre code, confirmez le nom exact de votre entreprise et le numéro de téléphone enregistrés dans Réglages.</p>
+        <label for="recoveryName" data-i18n="lock_recovery_name">Nom de l'entreprise</label>
+        <input type="text" id="recoveryName">
+        <label for="recoveryPhone" data-i18n="lock_recovery_phone">Téléphone enregistré</label>
+        <input type="tel" id="recoveryPhone">
+        <button type="button" class="btn btn-ghost btn-block" id="recoveryCheckBtn" style="margin-top:10px;" data-i18n="lock_recovery_check_btn">Vérifier</button>
+        <div id="recoveryError" class="hint" style="color:var(--clay); min-height:16px;"></div>
+
+        <div id="lockNewPinBox" style="display:none; margin-top:12px;">
+          <label for="newPin1" data-i18n="lock_new_pin">Nouveau code</label>
+          <input type="password" id="newPin1" autocomplete="off">
+          <label for="newPin2" data-i18n="lock_new_pin_confirm">Confirmer le nouveau code</label>
+          <input type="password" id="newPin2" autocomplete="off">
+          <div class="notice" data-i18n="lock_short_warning">Un code court est plus facile à retenir, mais aussi plus facile à deviner. Choisissez quelque chose de mémorable pour vous seul.</div>
+          <button type="button" class="btn btn-primary btn-block" id="lockResetConfirmBtn" style="margin-top:8px;" data-i18n="lock_reset_confirm_btn">Valider le nouveau code</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <header class="top">
   <div class="top-row">
@@ -607,15 +647,7 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
       <input type="text" id="setAddress" data-i18n-placeholder="address_placeholder" placeholder="Ville, quartier...">
 
       <label for="setCountry" data-i18n="country_label">Pays</label>
-      <select id="setCountry">
-        <option value="BJ" data-i18n="country_bj">Bénin</option>
-        <option value="TG" data-i18n="country_tg">Togo</option>
-        <option value="CI" data-i18n="country_ci">Côte d'Ivoire</option>
-        <option value="SN" data-i18n="country_sn">Sénégal</option>
-        <option value="NE" data-i18n="country_ne">Niger</option>
-        <option value="ML" data-i18n="country_ml">Mali</option>
-        <option value="BF" data-i18n="country_bf">Burkina Faso</option>
-      </select>
+      <select id="setCountry"></select>
 
       <label for="setPhone" data-i18n="phone_label">Téléphone</label>
       <input type="tel" id="setPhone" placeholder="+229...">
@@ -642,9 +674,15 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
       <h2 data-i18n="currency_t">Devise d'affichage</h2>
       <div class="sub" data-i18n="currency_s">Les montants saisis restent en FCFA. Cette devise ne change que l'affichage — la conversion est automatique et instantanée.</div>
       <select id="setCurrency">
-        <option value="XOF">FCFA (F CFA)</option>
+        <option value="XOF">FCFA UEMOA (F CFA)</option>
+        <option value="XAF">FCFA CEMAC (FCFA)</option>
         <option value="EUR">Euro (€)</option>
         <option value="USD">Dollar US ($)</option>
+        <option value="GBP">Livre sterling (£)</option>
+        <option value="CAD">Dollar canadien (CA$)</option>
+        <option value="CHF">Franc suisse (CHF)</option>
+        <option value="ZAR">Rand sud-africain (R)</option>
+        <option value="CNY">Yuan chinois (¥)</option>
       </select>
       <div class="hint" id="rateStatusHint"></div>
     </div>
@@ -670,6 +708,32 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
       <button type="button" class="btn btn-ochre btn-block" id="restoreBackupBtn" style="margin-top:10px;" data-i18n="restore_btn">⬆️ Restaurer cette sauvegarde</button>
       <div class="notice" data-i18n="restore_notice">La restauration remplace toutes les données présentes sur cet appareil par celles du fichier choisi — y compris le statut Kalcul Pro, reconnu automatiquement, sans nous contacter.</div>
     </div>
+
+    <div class="card">
+      <h2 data-i18n="security_t">Verrouillage de l'application</h2>
+      <div class="sub" data-i18n="security_s">Protégez Kalcul par un code sur cet appareil. Ce code reste 100% local — Empire Donko ne le connaît pas et ne peut pas le récupérer à votre place.</div>
+      <div id="securityStatusLine" class="hint"></div>
+
+      <label for="secNewPin" data-i18n="security_new_pin">Nouveau code (n'importe quel caractère, n'importe quelle longueur)</label>
+      <input type="password" id="secNewPin" autocomplete="off">
+      <label for="secNewPin2" data-i18n="security_confirm_pin">Confirmer le nouveau code</label>
+      <input type="password" id="secNewPin2" autocomplete="off">
+      <div class="notice" data-i18n="lock_short_warning">Un code court est plus facile à retenir, mais aussi plus facile à deviner. Choisissez quelque chose de mémorable pour vous seul.</div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" id="secSavePinBtn" data-i18n="security_save_pin_btn">Enregistrer le code</button>
+        <button type="button" class="btn btn-danger" id="secRemovePinBtn" data-i18n="security_remove_pin_btn">Retirer le verrouillage</button>
+      </div>
+
+      <label for="secAutoLock" style="margin-top:16px;" data-i18n="security_autolock_label">Verrouillage automatique après combien de temps hors de l'application ?</label>
+      <select id="secAutoLock">
+        <option value="0" data-i18n="autolock_immediate">Immédiatement</option>
+        <option value="1" data-i18n="autolock_1min">1 minute</option>
+        <option value="5" data-i18n="autolock_5min">5 minutes</option>
+        <option value="15" data-i18n="autolock_15min">15 minutes</option>
+        <option value="60" data-i18n="autolock_1h">1 heure</option>
+        <option value="-1" data-i18n="autolock_never">Jamais (déverrouillage manuel seulement)</option>
+      </select>
+    </div>
   </section>
 
   <!-- ===== VUE : ABONNEMENT ===== -->
@@ -684,7 +748,7 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
       <div class="btn-row">
         <button id="pay-btn" type="button" class="btn btn-ochre btn-block"><span data-i18n="pay_btn">Payer et débloquer —</span> <span id="payAmountLabel"></span></button>
       </div>
-      <p class="hint" data-i18n="pay_hint">Paiement unique via FedaPay (Mobile Money) — aucun prélèvement automatique, aucune carte ni numéro enregistré chez nous. À la fin de la période, revenez ici et repayez le plan de votre choix pour continuer. C'est le seul moment où une connexion est nécessaire.</p>
+      <p class="hint" data-i18n="pay_hint">Paiement unique via KKiaPay — Mobile Money ou carte bancaire (Visa/Mastercard), selon ce qui est disponible dans votre pays. Aucun prélèvement automatique : aucune carte ni numéro n'est enregistré chez nous, tout est géré par KKiaPay.</p>
       <div class="notice" data-i18n="pay_notice">Le déverrouillage est enregistré sur cet appareil. Pour le retrouver sur un nouveau téléphone, utilisez Réglages → Sauvegarde &amp; restauration — aucun contact nécessaire.</div>
     </div>
   </section>
@@ -694,14 +758,14 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
     <div class="foot-title" data-i18n="footer_partner_t">Partenariat &amp; outils personnalisés</div>
     <div class="foot-sub" data-i18n="footer_partner_s">Une idée d'outil sur mesure pour votre activité ? Écrivez-nous.</div>
     <div class="foot-links">
-      <a class="foot-btn wa" href="https://wa.me/2290196809106?text=Bonjour%2C%20je%20vous%20contacte%20depuis%20Kalcul." target="_blank" rel="noopener noreferrer" aria-label="Contacter sur WhatsApp">
+      <a id="footWaLink" class="foot-btn wa" href="https://wa.me/2290196809106?text=Bonjour%2C%20je%20vous%20contacte%20depuis%20Kalcul." target="_blank" rel="noopener noreferrer" aria-label="Contacter sur WhatsApp">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
           <circle cx="12" cy="12" r="12" fill="#25D366"/>
           <path fill="#fff" d="M12 6.2a5.8 5.8 0 0 0-5 8.7l-.8 2.9 3-.8a5.8 5.8 0 1 0 2.8-10.8Zm0 1.3a4.5 4.5 0 0 1 3.9 6.8 4.5 4.5 0 0 1-7 1.1l-.2-.1-1.7.4.5-1.6-.1-.2a4.5 4.5 0 0 1 4.6-6.4Zm-2.1 2.3c-.1 0-.3 0-.4.2-.2.2-.6.6-.6 1.4s.6 1.7.7 1.8c.1.1 1.2 2 3 2.6.4.2.8.3 1 .3.5.1.9.1 1.2-.1.3-.2.6-.6.7-.9l.1-.4-1.6-.8-.5.6c0 .1-.1.1-.3 0-.2-.1-.7-.3-1.3-.9-.5-.4-.9-1-1-1.2-.1-.2 0-.2 0-.3l.4-.5c.1-.1.1-.2 0-.3l-.6-1.3c-.1-.2-.2-.2-.4-.2h-.3Z"/>
         </svg>
         <span data-i18n="footer_whatsapp">WhatsApp</span>
       </a>
-      <a class="foot-btn mail" href="mailto:empiredonko@gmail.com?subject=Partenariat%20%2F%20outil%20personnalis%C3%A9%20-%20Kalcul" aria-label="Contacter par email">
+      <a id="footMailLink" class="foot-btn mail" href="mailto:empiredonko@gmail.com?subject=Partenariat%20%2F%20outil%20personnalis%C3%A9%20-%20Kalcul" aria-label="Contacter par email">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
           <circle cx="12" cy="12" r="12" fill="#1B3358"/>
           <path fill="#fff" d="M6.5 8.3h11c.6 0 1 .4 1 1v5.4c0 .6-.4 1-1 1h-11c-.6 0-1-.4-1-1V9.3c0-.6.4-1 1-1Zm.7 1.1L12 12.9l4.8-3.5H7.2Z"/>
@@ -718,6 +782,7 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
       <a href="#" data-legal="cgu" data-i18n="legal_cgu">CGU</a> · <a href="#" data-legal="mentions" data-i18n="legal_mentions">Mentions légales</a> · <a href="#" data-legal="politique" data-i18n="legal_politique">Politique d'utilisation</a> · <a href="#" data-legal="guide" data-i18n="legal_guide">Guide d'utilisation</a> · <a href="#" data-legal="apropos" data-i18n="legal_apropos">À propos</a>
     </div>
     <div class="powered-by"><span data-i18n="powered_by">Propulsé par</span> <strong>EMPIRE DONKO</strong></div>
+    <div style="text-align:center;margin-top:9px;"><span id="adminAccessBtn" style="font-size:9px;color:var(--line);cursor:default;opacity:.55;">accès réservé</span></div>
   </footer>
 
   <div id="legalModalOverlay" class="legal-overlay" style="display:none;">
@@ -757,6 +822,89 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
   </div>
 </div>
 
+<!-- ===== ESPACE RÉSERVÉ — centre de contrôle caché, propriétaire uniquement ===== -->
+<div id="adminGate" class="legal-overlay" style="display:none;">
+  <div class="legal-modal" style="border-radius:16px; max-height:none;">
+    <div class="legal-modal-header">
+      <span>Espace réservé</span>
+      <button type="button" id="adminGateClose" aria-label="Fermer">✕</button>
+    </div>
+    <div class="legal-modal-body">
+      <label for="adminGatePassword">Mot de passe</label>
+      <input type="password" id="adminGatePassword" autocomplete="off">
+      <div id="adminGateError" class="hint" style="color:var(--clay); min-height:16px;"></div>
+      <button type="button" class="btn btn-primary btn-block" id="adminGateSubmit" style="margin-top:10px;">Entrer</button>
+    </div>
+  </div>
+</div>
+
+<div id="adminPanel" class="legal-overlay" style="display:none;">
+  <div class="legal-modal">
+    <div class="legal-modal-header">
+      <span>Centre de contrôle Kalcul</span>
+      <button type="button" id="adminPanelClose" aria-label="Fermer">✕</button>
+    </div>
+    <div class="legal-modal-body">
+      <div class="notice">Ces réglages sont enregistrés sur <b>cet appareil</b>. Pour les pousser chez tous les utilisateurs sans toucher au code : réglez ici, cliquez « Exporter data.json », puis déposez ce fichier à côté de index.html sur GitHub. L'application de chaque utilisateur le récupère automatiquement au prochain chargement en ligne (et garde la dernière version connue hors ligne).</div>
+
+      <h3 style="margin-top:16px;font-size:13.5px;">Identité du site</h3>
+      <label for="admTitle">Titre de l'application (onglet du navigateur)</label>
+      <input type="text" id="admTitle">
+      <label for="admTag">Sous-titre / accroche (sous le logo)</label>
+      <input type="text" id="admTag">
+      <label for="admDescription">Description (référencement)</label>
+      <textarea id="admDescription"></textarea>
+      <label for="admLogoFile">Logo du site (remplace le K par défaut)</label>
+      <input type="file" id="admLogoFile" accept="image/*">
+      <div class="photo-grid" id="admLogoPreviewGrid"></div>
+
+      <h3 style="margin-top:16px;font-size:13.5px;">Couleurs</h3>
+      <div class="row">
+        <div><label for="admColorPrimary">Couleur principale (indigo)</label><input type="text" id="admColorPrimary" placeholder="#1B3358"></div>
+        <div><label for="admColorAccent">Couleur d'accent (ochre)</label><input type="text" id="admColorAccent" placeholder="#C08A28"></div>
+      </div>
+
+      <h3 style="margin-top:16px;font-size:13.5px;">Textes &amp; pied de page</h3>
+      <label for="admFooterDefault">Message par défaut en pied de document (essai gratuit)</label>
+      <input type="text" id="admFooterDefault">
+      <label for="admWhatsapp">Numéro WhatsApp de contact</label>
+      <input type="text" id="admWhatsapp">
+      <label for="admEmail">Email de contact</label>
+      <input type="text" id="admEmail">
+
+      <h3 style="margin-top:16px;font-size:13.5px;">Fonctionnalités</h3>
+      <label style="display:flex;align-items:center;gap:8px;font-weight:400;"><input type="checkbox" id="admFeatCaisse" style="width:auto;"> Activer la Caisse</label>
+      <label style="display:flex;align-items:center;gap:8px;font-weight:400;"><input type="checkbox" id="admFeatWa" style="width:auto;"> Activer le partage WhatsApp</label>
+      <label for="admTrialLimit">Nombre d'essais gratuits</label>
+      <input type="number" id="admTrialLimit" min="0">
+
+      <h3 style="margin-top:16px;font-size:13.5px;">Sécurité de l'Espace Réservé</h3>
+      <label for="admNewPassword">Changer le mot de passe d'accès</label>
+      <input type="password" id="admNewPassword" placeholder="Laisser vide pour ne pas changer">
+      <label for="admNewPassword2">Confirmer le nouveau mot de passe</label>
+      <input type="password" id="admNewPassword2">
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" id="admApplyBtn">Appliquer sur cet appareil</button>
+        <button type="button" class="btn btn-ochre" id="admExportBtn">⬇️ Exporter data.json</button>
+        <button type="button" class="btn btn-ghost" id="admResetBtn">Réinitialiser</button>
+      </div>
+      <label for="admImportFile" style="margin-top:14px;">Importer un data.json</label>
+      <input type="file" id="admImportFile" accept="application/json,.json">
+    </div>
+  </div>
+</div>
+
+<!-- ===== BOÎTES À SUGGESTIONS — 2 boutons flottants, discrets ===== -->
+<div id="suggestFab" style="position:fixed; right:14px; bottom:96px; z-index:40; display:flex; flex-direction:column; gap:10px;">
+  <button type="button" id="suggestWaBtn" aria-label="Suggestion WhatsApp" style="width:46px;height:46px;border-radius:50%;border:none;background:#25D366;box-shadow:0 3px 10px rgba(0,0,0,.25);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="#fff" d="M12 2a10 10 0 0 0-8.6 15l-1.1 4 4.1-1.1A10 10 0 1 0 12 2Zm0 1.8a8.2 8.2 0 0 1 6.9 12.6l-.2.3.6 2.2-2.3-.6-.3.2A8.2 8.2 0 1 1 12 3.8Zm-3.1 3.4c-.2 0-.5 0-.7.4-.3.3-1 1-1 2.4s1 2.8 1.1 3c.1.1 2 3.1 4.8 4.4.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8-.1.5-.3.9-1 1-1.4l.1-.5-2.4-1.2-.7 1c-.1.1-.2.2-.4.1-.3-.1-1.1-.4-2.1-1.3-.8-.7-1.4-1.6-1.5-1.9-.2-.3 0-.4.1-.5l.6-.7c.1-.2.2-.3.1-.5l-1-2.4c-.2-.4-.4-.4-.6-.4h-.5Z"/></svg>
+  </button>
+  <button type="button" id="suggestEmailBtn" aria-label="Suggestion Email" style="width:46px;height:46px;border-radius:50%;border:none;background:var(--indigo);box-shadow:0 3px 10px rgba(0,0,0,.25);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="#fff" d="M4 5.5h16c.8 0 1.5.7 1.5 1.5v10c0 .8-.7 1.5-1.5 1.5H4c-.8 0-1.5-.7-1.5-1.5V7c0-.8.7-1.5 1.5-1.5Zm.9 1.5L12 12l7.1-5H4.9Z"/></svg>
+  </button>
+</div>
+
 <nav class="bottom">
   <button data-view="view-pos" class="active"><span class="ic">🧺</span><span data-i18n="nav_caisse">Caisse</span></button>
   <button data-view="view-stock"><span class="ic">📦</span><span data-i18n="nav_stock">Stock</span></button>
@@ -765,8 +913,8 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
   <button id="navPlusBtn"><span class="ic">⋯</span><span data-i18n="nav_plus">Plus</span></button>
 </nav>
 
-<!-- FedaPay Checkout.js — chargé uniquement pour le paiement de l'abonnement -->
-<script src="https://cdn.fedapay.com/checkout.js?v=1.1.7"></script>
+<!-- KKiaPay k.js — chargé uniquement pour le paiement de l'abonnement (mobile money + carte bancaire) -->
+<script src="https://cdn.kkiapay.me/k.js"></script>
 
 <script>
 (function(){
@@ -874,15 +1022,47 @@ fr: {
   backup_read_error:"Impossible de lire ce fichier.",
   phone_example_prefix:"Exemple pour le {country} :",
   rate_fixed_eur:"Taux fixe et légal : 1 € = 655,957 FCFA (parité BCEAO, ne varie jamais).",
+  rate_fixed_xaf:"Parité fixe et légale avec le FCFA UEMOA (zone CEMAC) : 1 FCFA = 1 FCFA (CEMAC), ne varie jamais.",
   rate_current_usd:"Taux actuel : 1 $ ≈ {rate} FCFA · mis à jour : {when}",
+  rate_current_generic:"Taux actuel : 1 € ≈ {rate} {cur} · mis à jour : {when}",
   rate_pending:"estimation, en attente d'une connexion",
   rate_refresh_btn:"Actualiser",
+  lock_title:"Kalcul verrouillé", lock_sub:"Entrez votre code pour continuer.",
+  lock_pin_placeholder:"Code", lock_unlock_btn:"Déverrouiller",
+  lock_forgot_link:"Code oublié ?",
+  lock_recovery_intro:"Pour réinitialiser votre code, confirmez le nom exact de votre entreprise et le numéro de téléphone enregistrés dans Réglages.",
+  lock_recovery_name:"Nom de l'entreprise", lock_recovery_phone:"Téléphone enregistré",
+  lock_recovery_check_btn:"Vérifier",
+  lock_recovery_no_settings:"Aucune entreprise n'est encore enregistrée sur cet appareil — impossible de vérifier. Utilisez Sauvegarde & restauration si vous avez un fichier de sauvegarde.",
+  lock_recovery_mismatch:"Ces informations ne correspondent à aucune entreprise enregistrée sur cet appareil.",
+  lock_new_pin:"Nouveau code", lock_new_pin_confirm:"Confirmer le nouveau code",
+  lock_short_warning:"Un code court est plus facile à retenir, mais aussi plus facile à deviner. Choisissez quelque chose de mémorable pour vous seul.",
+  lock_reset_confirm_btn:"Valider le nouveau code",
+  lock_pin_empty:"Entrez un code.", lock_pin_wrong:"Code incorrect. Réessayez.",
+  lock_pin_locked:"Trop de tentatives. Réessayez dans {s} secondes.",
+  lock_pin_mismatch:"Les deux codes ne correspondent pas.",
+  lock_pin_reset_done:"Code réinitialisé. Vous pouvez maintenant déverrouiller Kalcul.",
+  security_t:"Verrouillage de l'application",
+  security_s:"Protégez Kalcul par un code sur cet appareil. Ce code reste 100% local — Empire Donko ne le connaît pas et ne peut pas le récupérer à votre place.",
+  security_status_active:"🔒 Verrouillage activé.", security_status_inactive:"🔓 Aucun verrouillage actif.",
+  security_new_pin:"Nouveau code (n'importe quel caractère, n'importe quelle longueur)",
+  security_confirm_pin:"Confirmer le nouveau code",
+  security_save_pin_btn:"Enregistrer le code", security_remove_pin_btn:"Retirer le verrouillage",
+  security_pin_saved:"Code enregistré. Il sera demandé au prochain verrouillage.",
+  security_pin_removed:"Verrouillage retiré.",
+  security_autolock_label:"Verrouillage automatique après combien de temps hors de l'application ?",
+  autolock_immediate:"Immédiatement", autolock_1min:"1 minute", autolock_5min:"5 minutes",
+  autolock_15min:"15 minutes", autolock_1h:"1 heure", autolock_never:"Jamais (déverrouillage manuel seulement)",
+  suggest_wa_message:"Bonjour, voici ma suggestion pour améliorer Kalcul : ",
+  suggest_email_subject:"Suggestion pour Kalcul",
   wa_send_btn:"Envoyer via WhatsApp",
   wa_share_message:"{label} {number} — {company}\nTotal : {total}\n\nEnvoyé avec Kalcul.",
   wa_fallback_hint:"L'image a été téléchargée. WhatsApp s'ouvre à côté — joignez l'image dans la conversation.",
   wa_locked_alert:"Enregistrez d'abord ce document avant de l'envoyer.",
 
   pro_t:"Kalcul Pro", pro_loading:"Chargement du statut...",
+  pay_module_error:"Le module de paiement KKiaPay n'a pas pu se charger. Vérifiez votre connexion internet et réessayez.",
+  pay_failed_alert:"Paiement non abouti ou annulé. Aucun montant n'a été débité. Réessayez quand vous voulez.",
   badge_free_label:"Gratuit", badge_pro_label:"Pro actif",
   plan_month1:"Mensuel", plan_month2:"Bimestriel", plan_month3:"Trimestriel", plan_month6:"Semestriel",
   plan_year1:"Annuel", plan_year2:"2 ans", plan_year3:"3 ans", plan_lifetime:"À vie",
@@ -895,7 +1075,7 @@ fr: {
   pro_details_active:"Documents illimités débloqués sur cet appareil. Choisir un nouveau plan ci-dessous remplacera la durée restante.",
   pro_details_free:"Choisissez la durée qui vous convient ci-dessous.",
   pay_btn:"Payer et débloquer —",
-  pay_hint:"Paiement unique via FedaPay (Mobile Money) — aucun prélèvement automatique, aucune carte ni numéro enregistré chez nous. À la fin de la période, revenez ici et repayez le plan de votre choix pour continuer. C'est le seul moment où une connexion est nécessaire.",
+  pay_hint:"Paiement unique via KKiaPay — Mobile Money ou carte bancaire (Visa/Mastercard), selon ce qui est disponible dans votre pays. Aucun prélèvement automatique : aucune carte ni numéro n'est enregistré chez nous, tout est géré par KKiaPay. À la fin de la période, revenez ici et repayez le plan de votre choix pour continuer.",
   pay_notice:"Le déverrouillage est enregistré sur cet appareil. Pour le retrouver sur un nouveau téléphone, utilisez Réglages → Sauvegarde & restauration — aucun contact nécessaire.",
   plan_days_access:"jours d'accès", plan_lifetime_access:"Accès illimité — paiement unique",
   per_month:"/mois",
@@ -1007,15 +1187,47 @@ en: {
   backup_read_error:"Could not read this file.",
   phone_example_prefix:"Example for {country}:",
   rate_fixed_eur:"Fixed legal rate: 1 € = 655.957 FCFA (BCEAO parity, never changes).",
+  rate_fixed_xaf:"Fixed legal parity with the UEMOA FCFA (CEMAC zone): 1 FCFA = 1 FCFA (CEMAC), never changes.",
   rate_current_usd:"Current rate: 1 $ ≈ {rate} FCFA · updated: {when}",
+  rate_current_generic:"Current rate: 1 € ≈ {rate} {cur} · updated: {when}",
   rate_pending:"estimate, awaiting a connection",
   rate_refresh_btn:"Refresh",
+  lock_title:"Kalcul locked", lock_sub:"Enter your code to continue.",
+  lock_pin_placeholder:"Code", lock_unlock_btn:"Unlock",
+  lock_forgot_link:"Forgot your code?",
+  lock_recovery_intro:"To reset your code, confirm the exact business name and phone number saved in Settings.",
+  lock_recovery_name:"Business name", lock_recovery_phone:"Registered phone",
+  lock_recovery_check_btn:"Verify",
+  lock_recovery_no_settings:"No business is registered yet on this device — cannot verify. Use Backup & restore if you have a backup file.",
+  lock_recovery_mismatch:"This information doesn't match any business registered on this device.",
+  lock_new_pin:"New code", lock_new_pin_confirm:"Confirm new code",
+  lock_short_warning:"A short code is easier to remember, but also easier to guess. Choose something memorable to you alone.",
+  lock_reset_confirm_btn:"Confirm new code",
+  lock_pin_empty:"Enter a code.", lock_pin_wrong:"Incorrect code. Try again.",
+  lock_pin_locked:"Too many attempts. Try again in {s} seconds.",
+  lock_pin_mismatch:"The two codes don't match.",
+  lock_pin_reset_done:"Code reset. You can now unlock Kalcul.",
+  security_t:"App lock",
+  security_s:"Protect Kalcul with a code on this device. This code stays 100% local — Empire Donko doesn't know it and cannot recover it for you.",
+  security_status_active:"🔒 Lock enabled.", security_status_inactive:"🔓 No active lock.",
+  security_new_pin:"New code (any character, any length)",
+  security_confirm_pin:"Confirm new code",
+  security_save_pin_btn:"Save code", security_remove_pin_btn:"Remove lock",
+  security_pin_saved:"Code saved. It will be asked for at the next lock.",
+  security_pin_removed:"Lock removed.",
+  security_autolock_label:"Auto-lock after how long away from the app?",
+  autolock_immediate:"Immediately", autolock_1min:"1 minute", autolock_5min:"5 minutes",
+  autolock_15min:"15 minutes", autolock_1h:"1 hour", autolock_never:"Never (manual unlock only)",
+  suggest_wa_message:"Hi, here's my suggestion to improve Kalcul: ",
+  suggest_email_subject:"Suggestion for Kalcul",
   wa_send_btn:"Send via WhatsApp",
   wa_share_message:"{label} {number} — {company}\nTotal: {total}\n\nSent with Kalcul.",
   wa_fallback_hint:"The image was downloaded. WhatsApp is opening alongside — attach the image in the conversation.",
   wa_locked_alert:"Save this document first before sending it.",
 
   pro_t:"Kalcul Pro", pro_loading:"Loading status...",
+  pay_module_error:"The KKiaPay payment module could not load. Check your internet connection and try again.",
+  pay_failed_alert:"Payment not completed or cancelled. No amount was charged. Try again anytime.",
   badge_free_label:"Free", badge_pro_label:"Pro active",
   plan_month1:"Monthly", plan_month2:"Bimonthly", plan_month3:"Quarterly", plan_month6:"Biannual",
   plan_year1:"Annual", plan_year2:"2 years", plan_year3:"3 years", plan_lifetime:"Lifetime",
@@ -1028,7 +1240,7 @@ en: {
   pro_details_active:"Unlimited documents unlocked on this device. Choosing a new plan below will replace the remaining time.",
   pro_details_free:"Choose the duration that suits you below.",
   pay_btn:"Pay and unlock —",
-  pay_hint:"One-time payment via FedaPay (Mobile Money) — no automatic debit, no card or number stored with us. When the period ends, come back here and pay again for the plan of your choice. This is the only time a connection is needed.",
+  pay_hint:"One-time payment via KKiaPay — Mobile Money or bank card (Visa/Mastercard), depending on what's available in your country. No automatic debit: no card or number is stored with us, everything is handled by KKiaPay. When the period ends, come back here and pay again for the plan of your choice.",
   pay_notice:"The unlock is saved on this device. To find it on a new phone, use Settings → Backup & restore — no need to contact us.",
   plan_days_access:"days of access", plan_lifetime_access:"Unlimited access — one-time payment",
   per_month:"/mo",
@@ -1059,9 +1271,9 @@ function t(key, vars){
 }
 
 const CONFIG = {
-  FEDAPAY_PUBLIC_KEY: "pk_live_9iYiCnrfVLTqtOQ6-aDRynRV", // clé PUBLIQUE réelle (même compte marchand que Donko Gestion)
-  FEDAPAY_ENV: "live",       // "sandbox" pour tester, "live" en production
-  CURRENCY: "XOF",          // devise réelle du prélèvement FedaPay — reste XOF (Mobile Money local), quelle que soit la devise d'affichage choisie
+  KKIAPAY_PUBLIC_KEY: "5a2223a51cff4ee0029821e143a207f473f6f7f4", // clé PUBLIQUE KKiaPay (safe côté client, comme toute clé pk_)
+  KKIAPAY_SANDBOX: false,    // true pour tester, false en production
+  CURRENCY: "XOF",          // devise réelle du prélèvement KKiaPay — reste XOF, quelle que soit la devise d'affichage choisie
   TRIAL_LIMIT: 10           // essais gratuits avant paiement requis — PARTAGÉS entre documents (facture/devis), produits (stock) et ventes (caisse)
 };
 
@@ -1076,24 +1288,39 @@ function trialRemaining(){ return Math.max(0, CONFIG.TRIAL_LIMIT - trialUsed());
 // Plans d'abonnement — prix en FCFA (devise réelle du prélèvement).
 // "days: null" = plan à vie, jamais d'expiration. Modifiable librement ici.
 const PLANS = [
-  { id:"month1",   label:"Mensuel",     days:30,   price:2000,  oldPrice:5000   },
-  { id:"month2",   label:"Bimestriel",  days:60,   price:3600,  oldPrice:9000   },
-  { id:"month3",   label:"Trimestriel", days:90,   price:5000,  oldPrice:12000  },
-  { id:"month6",   label:"Semestriel",  days:180,  price:9000,  oldPrice:20000  },
-  { id:"year1",    label:"Annuel",      days:365,  price:15000, oldPrice:35000, badge:"best" },
-  { id:"year2",    label:"2 ans",       days:730,  price:25000, oldPrice:55000  },
-  { id:"year3",    label:"3 ans",       days:1095, price:33000, oldPrice:70000  },
-  { id:"lifetime", label:"À vie",       days:null, price:75000, oldPrice:150000, badge:"exclusive" }
+  { id:"month1",   label:"Mensuel",     days:30,   price:7500,   oldPrice:15000,  color:"#3E7C8A" },
+  { id:"month2",   label:"Bimestriel",  days:60,   price:13500,  oldPrice:27000,  color:"#4E7C3E" },
+  { id:"month3",   label:"Trimestriel", days:90,   price:18900,  oldPrice:37800,  color:"#8A6A2A" },
+  { id:"month6",   label:"Semestriel",  days:180,  price:33900,  oldPrice:67800,  color:"#B5622E" },
+  { id:"year1",    label:"Annuel",      days:365,  price:55900,  oldPrice:111800, color:"#1B3358", badge:"best" },
+  { id:"year2",    label:"2 ans",       days:730,  price:93900,  oldPrice:187800, color:"#5B3E8A" },
+  { id:"year3",    label:"3 ans",       days:1095, price:123900, oldPrice:247800, color:"#8B3A2B" },
+  { id:"lifetime", label:"À vie",       days:null, price:279900, oldPrice:559800, color:"#C08A28", badge:"exclusive" }
 ];
 
-// Devises d'affichage — le FCFA reste la seule unité de saisie/stockage.
+/* Devises d'affichage — le FCFA (XOF) reste la seule unité de saisie/stockage,
+   quelle que soit la devise choisie ici. Deux catégories :
+   - FIXES : parité légale, ne varie jamais, aucune connexion nécessaire
+     (XOF et XAF sont tous deux arrimés à 655,957 F pour 1 € par les traités
+     de la zone franc CFA — c'est une loi, pas un taux de marché).
+   - FLOTTANTES : taux de marché réel, récupéré via la BCE (frankfurter.dev)
+     quand une connexion existe, mis en cache localement, et sinon estimé
+     avec la dernière valeur connue (ou une valeur de secours si jamais
+     aucune connexion n'a encore permis de la récupérer). Uniquement des
+     devises pour lesquelles ce service fournit un taux fiable. */
 const CURRENCIES = {
-  XOF: {symbol:"F CFA", decimals:0, position:"after"},
-  EUR: {symbol:"€",     decimals:2, position:"after"},
-  USD: {symbol:"$",     decimals:2, position:"before"}
+  XOF: {symbol:"F CFA", decimals:0, position:"after", kind:"fixed"},
+  XAF: {symbol:"FCFA (CEMAC)", decimals:0, position:"after", kind:"fixed"},
+  EUR: {symbol:"€",     decimals:2, position:"after", kind:"pivot"},
+  USD: {symbol:"$",     decimals:2, position:"before", kind:"float", fallback:1.14},
+  GBP: {symbol:"£",     decimals:2, position:"before", kind:"float", fallback:0.85},
+  CAD: {symbol:"CA$",   decimals:2, position:"before", kind:"float", fallback:1.47},
+  CHF: {symbol:"CHF",   decimals:2, position:"after",  kind:"float", fallback:0.94},
+  ZAR: {symbol:"R",     decimals:2, position:"before", kind:"float", fallback:20.5},
+  CNY: {symbol:"¥",     decimals:2, position:"before", kind:"float", fallback:7.85}
 };
 const FIXED_XOF_PER_EUR = 655.957; // parité légale fixe (BCEAO/Trésor français) — ne varie jamais
-const FALLBACK_EUR_USD = 1.14;     // valeur de secours si aucune connexion n'a encore permis de récupérer le taux réel
+const FALLBACK_EUR_USD = 1.14;     // valeur de secours (compat. ancien code)
 
 const KEYS = {
   settings: "kalcul_settings_v1",
@@ -1105,7 +1332,10 @@ const KEYS = {
   theme: "kalcul_theme_v1",
   products: "kalcul_products_v1",
   sales: "kalcul_sales_v1",
-  lang: "kalcul_lang_v1"
+  lang: "kalcul_lang_v1",
+  security: "kalcul_security_v1",
+  adminSecurity: "kalcul_admin_security_v1",
+  siteConfig: "kalcul_site_config_v1"
 };
 
 /* ============================================================
@@ -1172,15 +1402,17 @@ function getCurrentSavedDoc(){
    USD dépend d'un taux réel, récupéré quand une connexion existe,
    mis en cache localement, et sinon estimé avec FALLBACK_EUR_USD.
    ============================================================ */
+function getCurrencyRate(cur){
+  const def = CURRENCIES[cur];
+  if(!def) return 1;
+  const cached = rates && rates.byCurrency && rates.byCurrency[cur];
+  return (typeof cached === "number") ? cached : def.fallback;
+}
 function xofToDisplay(xofAmount){
-  if(currency === "XOF") return xofAmount;
-  if(currency === "EUR") return xofAmount / FIXED_XOF_PER_EUR;
-  if(currency === "USD"){
-    const eurUsd = (rates && rates.EUR_USD) ? rates.EUR_USD : FALLBACK_EUR_USD;
-    const xofPerUsd = FIXED_XOF_PER_EUR / eurUsd;
-    return xofAmount / xofPerUsd;
-  }
-  return xofAmount;
+  if(currency === "XOF" || currency === "XAF") return xofAmount; // parité fixe identique, même valeur numérique
+  const eur = xofAmount / FIXED_XOF_PER_EUR;
+  if(currency === "EUR") return eur;
+  return eur * getCurrencyRate(currency);
 }
 function fmtNum(xofAmount){
   const c = CURRENCIES[currency];
@@ -1193,36 +1425,43 @@ function fmt(xofAmount){
   const numStr = fmtNum(xofAmount);
   return c.position === "before" ? `${c.symbol}${numStr}` : `${numStr} ${c.symbol}`;
 }
-async function refreshUsdRate(){
+async function refreshDisplayRates(){
   try{
-    const res = await fetch("https://api.frankfurter.dev/v2/rate/EUR/USD");
+    const targets = Object.keys(CURRENCIES).filter(c=>CURRENCIES[c].kind==="float");
+    const res = await fetch("https://api.frankfurter.dev/v2/latest?from=EUR&to=" + targets.join(","));
     if(!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
-    if(data && typeof data.rate === "number"){
-      rates = {EUR_USD:data.rate, updatedAt:new Date().toISOString()};
+    if(data && data.rates){
+      rates = rates || {};
+      rates.byCurrency = Object.assign({}, rates.byCurrency, data.rates);
+      rates.updatedAt = new Date().toISOString();
+      if(data.rates.USD) rates.EUR_USD = data.rates.USD; // compat champ historique
       save(KEYS.rates, rates);
     }
   }catch(e){
-    // Pas grave : pas de connexion ou service indisponible — on garde le taux en cache / de secours.
+    // Pas grave : pas de connexion ou service indisponible — on garde le(s) taux en cache / de secours.
   }
   renderRateStatus();
   refreshAllDisplayedAmounts();
 }
+const refreshUsdRate = refreshDisplayRates; // alias — compat avec les appels existants
 function renderRateStatus(){
   const el = document.getElementById("rateStatusHint");
   if(!el) return;
-  if(currency === "XOF"){
+  const def = CURRENCIES[currency];
+  if(!def || currency === "XOF"){
     el.textContent = "";
+  } else if(currency === "XAF"){
+    el.textContent = t("rate_fixed_xaf");
   } else if(currency === "EUR"){
     el.textContent = t("rate_fixed_eur");
   } else {
-    const eurUsd = (rates && rates.EUR_USD) ? rates.EUR_USD : FALLBACK_EUR_USD;
-    const xofPerUsd = (FIXED_XOF_PER_EUR/eurUsd).toFixed(1);
+    const rate = getCurrencyRate(currency);
     const dateLocale = lang==="en" ? "en-US" : "fr-FR";
-    const when = rates.updatedAt ? new Date(rates.updatedAt).toLocaleString(dateLocale) : t("rate_pending");
-    el.innerHTML = `${t("rate_current_usd", {rate: xofPerUsd, when})} — <span id="refreshRateBtn" style="color:var(--indigo);text-decoration:underline;cursor:pointer;">${t("rate_refresh_btn")}</span>`;
+    const when = (rates && rates.updatedAt) ? new Date(rates.updatedAt).toLocaleString(dateLocale) : t("rate_pending");
+    el.innerHTML = `${t("rate_current_generic", {rate: rate.toFixed(3), cur: currency, when})} — <span id="refreshRateBtn" style="color:var(--indigo);text-decoration:underline;cursor:pointer;">${t("rate_refresh_btn")}</span>`;
     const rb = document.getElementById("refreshRateBtn");
-    if(rb) rb.addEventListener("click", refreshUsdRate);
+    if(rb) rb.addEventListener("click", refreshDisplayRates);
   }
 }
 function updateCurrencyHints(){
@@ -1344,6 +1583,8 @@ function applyI18n(){
   if(document.getElementById("view-stock") && document.getElementById("view-stock").classList.contains("active")){ renderStock(); renderStockQuota(); }
   if(document.getElementById("view-pos") && document.getElementById("view-pos").classList.contains("active")){ renderPOSProducts(); renderCart(); renderCaisseQuota(); }
   updateCurrencyHints();
+  if(typeof renderSecuritySettings === "function") renderSecuritySettings();
+  if(typeof populateCountrySelect === "function") populateCountrySelect();
   if(typeof updatePhoneExample === "function") updatePhoneExample();
   applyTheme(document.documentElement.getAttribute("data-theme") || "light");
 }
@@ -1354,28 +1595,106 @@ function setLang(l){
 }
 
 document.getElementById("setName").value = settings.name;
+/* ============================================================
+   PAYS — liste large (Afrique francophone d'abord, puis reste du monde).
+   KKiaPay accepte la carte bancaire partout et le mobile money selon le
+   pays ; il n'y a donc plus de restriction de pays côté Kalcul. Cette
+   liste peut être complétée plus tard sans toucher au reste du code
+   (voir l'Espace Réservé, qui peut aussi appliquer un fichier de mise à
+   jour). Exemples de numéro réalistes pour les 7 pays historiques,
+   exemple générique (indicatif + 8 chiffres) pour les autres.
+   ============================================================ */
+const COUNTRIES = [
+  {code:"BJ", dial:"229", fr:"Bénin", en:"Benin", example:"+2290190000000"},
+  {code:"TG", dial:"228", fr:"Togo", en:"Togo", example:"+22890000000"},
+  {code:"CI", dial:"225", fr:"Côte d'Ivoire", en:"Ivory Coast", example:"+2250100000000"},
+  {code:"SN", dial:"221", fr:"Sénégal", en:"Senegal", example:"+221771234567"},
+  {code:"NE", dial:"227", fr:"Niger", en:"Niger", example:"+22790000000"},
+  {code:"ML", dial:"223", fr:"Mali", en:"Mali", example:"+22370000000"},
+  {code:"BF", dial:"226", fr:"Burkina Faso", en:"Burkina Faso", example:"+22670000000"},
+  {code:"GW", dial:"245", fr:"Guinée-Bissau", en:"Guinea-Bissau"},
+  {code:"CM", dial:"237", fr:"Cameroun", en:"Cameroon"},
+  {code:"GA", dial:"241", fr:"Gabon", en:"Gabon"},
+  {code:"CG", dial:"242", fr:"Congo-Brazzaville", en:"Congo-Brazzaville"},
+  {code:"CD", dial:"243", fr:"RD Congo", en:"DR Congo"},
+  {code:"TD", dial:"235", fr:"Tchad", en:"Chad"},
+  {code:"CF", dial:"236", fr:"Centrafrique", en:"Central African Republic"},
+  {code:"GQ", dial:"240", fr:"Guinée équatoriale", en:"Equatorial Guinea"},
+  {code:"GN", dial:"224", fr:"Guinée", en:"Guinea"},
+  {code:"GH", dial:"233", fr:"Ghana", en:"Ghana"},
+  {code:"NG", dial:"234", fr:"Nigeria", en:"Nigeria"},
+  {code:"LR", dial:"231", fr:"Liberia", en:"Liberia"},
+  {code:"SL", dial:"232", fr:"Sierra Leone", en:"Sierra Leone"},
+  {code:"GM", dial:"220", fr:"Gambie", en:"Gambia"},
+  {code:"CV", dial:"238", fr:"Cap-Vert", en:"Cape Verde"},
+  {code:"MR", dial:"222", fr:"Mauritanie", en:"Mauritania"},
+  {code:"MA", dial:"212", fr:"Maroc", en:"Morocco"},
+  {code:"DZ", dial:"213", fr:"Algérie", en:"Algeria"},
+  {code:"TN", dial:"216", fr:"Tunisie", en:"Tunisia"},
+  {code:"LY", dial:"218", fr:"Libye", en:"Libya"},
+  {code:"EG", dial:"20", fr:"Égypte", en:"Egypt"},
+  {code:"KE", dial:"254", fr:"Kenya", en:"Kenya"},
+  {code:"TZ", dial:"255", fr:"Tanzanie", en:"Tanzania"},
+  {code:"UG", dial:"256", fr:"Ouganda", en:"Uganda"},
+  {code:"RW", dial:"250", fr:"Rwanda", en:"Rwanda"},
+  {code:"ET", dial:"251", fr:"Éthiopie", en:"Ethiopia"},
+  {code:"ZA", dial:"27", fr:"Afrique du Sud", en:"South Africa"},
+  {code:"ZM", dial:"260", fr:"Zambie", en:"Zambia"},
+  {code:"ZW", dial:"263", fr:"Zimbabwe", en:"Zimbabwe"},
+  {code:"MZ", dial:"258", fr:"Mozambique", en:"Mozambique"},
+  {code:"MG", dial:"261", fr:"Madagascar", en:"Madagascar"},
+  {code:"MU", dial:"230", fr:"Maurice", en:"Mauritius"},
+  {code:"DJ", dial:"253", fr:"Djibouti", en:"Djibouti"},
+  {code:"KM", dial:"269", fr:"Comores", en:"Comoros"},
+  {code:"FR", dial:"33", fr:"France", en:"France"},
+  {code:"BE", dial:"32", fr:"Belgique", en:"Belgium"},
+  {code:"CH", dial:"41", fr:"Suisse", en:"Switzerland"},
+  {code:"DE", dial:"49", fr:"Allemagne", en:"Germany"},
+  {code:"GB", dial:"44", fr:"Royaume-Uni", en:"United Kingdom"},
+  {code:"ES", dial:"34", fr:"Espagne", en:"Spain"},
+  {code:"PT", dial:"351", fr:"Portugal", en:"Portugal"},
+  {code:"IT", dial:"39", fr:"Italie", en:"Italy"},
+  {code:"NL", dial:"31", fr:"Pays-Bas", en:"Netherlands"},
+  {code:"LU", dial:"352", fr:"Luxembourg", en:"Luxembourg"},
+  {code:"US", dial:"1", fr:"États-Unis", en:"United States"},
+  {code:"CA", dial:"1", fr:"Canada", en:"Canada"},
+  {code:"BR", dial:"55", fr:"Brésil", en:"Brazil"},
+  {code:"HT", dial:"509", fr:"Haïti", en:"Haiti"},
+  {code:"MX", dial:"52", fr:"Mexique", en:"Mexico"},
+  {code:"SA", dial:"966", fr:"Arabie saoudite", en:"Saudi Arabia"},
+  {code:"AE", dial:"971", fr:"Émirats arabes unis", en:"United Arab Emirates"},
+  {code:"QA", dial:"974", fr:"Qatar", en:"Qatar"},
+  {code:"LB", dial:"961", fr:"Liban", en:"Lebanon"},
+  {code:"TR", dial:"90", fr:"Turquie", en:"Turkey"},
+  {code:"IN", dial:"91", fr:"Inde", en:"India"},
+  {code:"CN", dial:"86", fr:"Chine", en:"China"},
+  {code:"JP", dial:"81", fr:"Japon", en:"Japan"},
+  {code:"AU", dial:"61", fr:"Australie", en:"Australia"}
+];
+function countryName(c){ return lang==="en" ? c.en : c.fr; }
+function populateCountrySelect(){
+  const sel = document.getElementById("setCountry");
+  const sorted = COUNTRIES.slice().sort((a,b)=> countryName(a).localeCompare(countryName(b), lang==="en"?"en":"fr"));
+  const prevVal = sel.value || settings.country || "BJ";
+  sel.innerHTML = sorted.map(c=>`<option value="${c.code}">${escapeHtml(countryName(c))}</option>`).join("");
+  sel.value = prevVal;
+  if(sel.value !== prevVal && sorted.length) sel.value = sorted[0].code;
+}
+function updatePhoneExample(){
+  const code = document.getElementById("setCountry").value || "BJ";
+  const info = COUNTRIES.find(c=>c.code===code) || COUNTRIES[0];
+  const example = info.example || ("+" + info.dial + "00000000");
+  document.getElementById("phoneExampleHint").textContent = t("phone_example_prefix", {country: countryName(info)}) + " " + example;
+  document.getElementById("setPhone").placeholder = example;
+}
+
 document.getElementById("setAddress").value = settings.address;
 document.getElementById("setPhone").value = settings.phone;
+populateCountrySelect();
 document.getElementById("setCountry").value = settings.country || "BJ";
 document.getElementById("footerMsgInput").value = settings.footerMessage || "";
 if(settings.logo){ document.getElementById("logoPreview").src = settings.logo; }
 
-/* Exemples de format local par pays (indicatif + numéro), affichés quand
-   l'utilisateur choisit son pays dans Réglages. */
-const COUNTRY_PHONE = {
-  BJ: {key:"bj", example:"+2290190000000"},
-  TG: {key:"tg", example:"+22890000000"},
-  CI: {key:"ci", example:"+2250100000000"},
-  SN: {key:"sn", example:"+221771234567"},
-  NE: {key:"ne", example:"+22790000000"},
-  ML: {key:"ml", example:"+22370000000"},
-  BF: {key:"bf", example:"+22670000000"}
-};
-function updatePhoneExample(){
-  const info = COUNTRY_PHONE[document.getElementById("setCountry").value] || COUNTRY_PHONE.BJ;
-  document.getElementById("phoneExampleHint").textContent = t("phone_example_prefix", {country: t("country_"+info.key)}) + " " + info.example;
-  document.getElementById("setPhone").placeholder = info.example;
-}
 document.getElementById("setCountry").addEventListener("change", updatePhoneExample);
 updatePhoneExample();
 
@@ -1505,6 +1824,35 @@ function detectNumberingGaps(docsArr, prefix){
   return gaps;
 }
 
+/* Fusionne les réglages d'entreprise sans jamais effacer un champ déjà
+   rempli localement : un champ local non vide est toujours conservé ;
+   seuls les champs VIDES sur cet appareil sont complétés depuis le fichier
+   importé. Restaurer une sauvegarde ne peut donc jamais "vider" un champ
+   déjà configuré. */
+function mergeSettings(local, imported){
+  if(!imported) return local;
+  const fields = ["name","address","phone","country","logo","footerMessage"];
+  const merged = {};
+  fields.forEach(f=>{
+    const localVal = local ? local[f] : "";
+    merged[f] = (localVal && String(localVal).trim()) ? localVal : (imported[f] || "");
+  });
+  return merged;
+}
+
+/* Fusionne le statut Kalcul Pro en gardant toujours le PLUS AVANTAGEUX des
+   deux appareils (à vie > date la plus lointaine dans le futur) — restaurer
+   une sauvegarde ne peut donc jamais faire perdre un accès Pro déjà actif. */
+function mergeProStatus(local, imported){
+  if(!imported || !imported.active) return local;
+  if(!local || !local.active) return imported;
+  if(local.expiresAt === null) return local;
+  if(imported.expiresAt === null) return imported;
+  const localExp = new Date(local.expiresAt).getTime();
+  const importedExp = new Date(imported.expiresAt).getTime();
+  return importedExp > localExp ? imported : local;
+}
+
 document.getElementById("restoreBackupBtn").addEventListener("click", ()=>{
   const input = document.getElementById("restoreFileInput");
   const file = input.files[0];
@@ -1522,17 +1870,17 @@ document.getElementById("restoreBackupBtn").addEventListener("click", ()=>{
     if(!ok) return;
     const d = parsed.data;
 
-    // Réglages, abonnement Pro, compteurs : le compteur prend le maximum des
-    // deux appareils (pour ne jamais réutiliser un numéro), le reste vient
-    // du fichier importé (utile pour propager la config d'entreprise/Pro).
-    if(d.settings) save(KEYS.settings, d.settings);
-    if(d.pro) save(KEYS.pro, d.pro);
+    // Réglages et statut Pro : FUSION qui ne retire jamais rien de local
+    // (voir mergeSettings / mergeProStatus ci-dessus). Compteurs : toujours
+    // le maximum des deux appareils, pour ne jamais réutiliser un numéro.
+    if(d.settings) save(KEYS.settings, mergeSettings(settings, d.settings));
+    if(d.pro) save(KEYS.pro, mergeProStatus(pro, d.pro));
     if(d.counters){
-      const merged = {
+      const mergedCounters = {
         facture: Math.max(counters.facture||0, d.counters.facture||0),
         devis: Math.max(counters.devis||0, d.counters.devis||0)
       };
-      save(KEYS.counters, merged);
+      save(KEYS.counters, mergedCounters);
     }
 
     // Documents, produits, ventes : FUSION (union par id), pas d'écrasement —
@@ -1561,6 +1909,163 @@ document.getElementById("restoreBackupBtn").addEventListener("click", ()=>{
 });
 
 /* ============================================================
+   VERROUILLAGE LOCAL (code PIN) — 100% hors ligne.
+   Le code n'est jamais transmis nulle part : seul son empreinte (hash
+   SHA-256, calculée localement par le navigateur, sans réseau) est
+   conservée. Empire Donko ne peut donc jamais le connaître ni le
+   récupérer à la place de l'utilisateur — d'où la récupération par
+   nom d'entreprise + téléphone, les seules données déjà en sa possession.
+   ============================================================ */
+async function hashText(str){
+  try{
+    const enc = new TextEncoder().encode(str);
+    const buf = await crypto.subtle.digest("SHA-256", enc);
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+  }catch(e){
+    // Repli non-cryptographique si crypto.subtle est indisponible (très rare,
+    // ex. ouverture en file:// sur certains navigateurs) — reste local.
+    let h = 0;
+    for(let i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) >>> 0; }
+    return "fb_" + h.toString(16);
+  }
+}
+let security = load(KEYS.security, {pinHash:null, autoLockMinutes:5, lastActiveAt:null});
+let pinAttempts = 0, pinLockUntil = 0;
+
+function showLockScreen(){
+  const el = document.getElementById("lockScreen");
+  if(!el) return;
+  el.style.display = "flex";
+  document.getElementById("lockPinInput").value = "";
+  document.getElementById("lockError").textContent = "";
+  document.getElementById("lockRecoveryBox").style.display = "none";
+  setTimeout(()=>{ const i=document.getElementById("lockPinInput"); if(i) i.focus(); }, 60);
+}
+function hideLockScreen(){
+  const el = document.getElementById("lockScreen");
+  if(el) el.style.display = "none";
+}
+async function attemptUnlock(){
+  const val = document.getElementById("lockPinInput").value;
+  const errEl = document.getElementById("lockError");
+  if(pinLockUntil > Date.now()){
+    errEl.textContent = t("lock_pin_locked", {s: Math.ceil((pinLockUntil-Date.now())/1000)});
+    return;
+  }
+  if(!val){ errEl.textContent = t("lock_pin_empty"); return; }
+  const h = await hashText(val);
+  if(security.pinHash && h === security.pinHash){
+    pinAttempts = 0;
+    security.lastActiveAt = Date.now();
+    save(KEYS.security, security);
+    hideLockScreen();
+  } else {
+    pinAttempts++;
+    if(pinAttempts >= 5){
+      pinLockUntil = Date.now() + 30000;
+      pinAttempts = 0;
+      errEl.textContent = t("lock_pin_locked", {s:30});
+    } else {
+      errEl.textContent = t("lock_pin_wrong");
+    }
+  }
+}
+document.getElementById("lockUnlockBtn").addEventListener("click", attemptUnlock);
+document.getElementById("lockPinInput").addEventListener("keydown", (e)=>{ if(e.key==="Enter") attemptUnlock(); });
+document.getElementById("lockForgotLink").addEventListener("click", ()=>{
+  const box = document.getElementById("lockRecoveryBox");
+  box.style.display = box.style.display==="none" ? "block" : "none";
+  document.getElementById("recoveryError").textContent = "";
+  document.getElementById("lockNewPinBox").style.display = "none";
+});
+document.getElementById("recoveryCheckBtn").addEventListener("click", ()=>{
+  const errEl = document.getElementById("recoveryError");
+  if(!settings.name){ errEl.textContent = t("lock_recovery_no_settings"); return; }
+  const nameOk = document.getElementById("recoveryName").value.trim().toLowerCase() === (settings.name||"").trim().toLowerCase();
+  const digits = s => String(s||"").replace(/[^0-9]/g,"");
+  const phoneOk = digits(document.getElementById("recoveryPhone").value) === digits(settings.phone) && digits(settings.phone).length>0;
+  if(nameOk && phoneOk){
+    errEl.textContent = "";
+    document.getElementById("lockNewPinBox").style.display = "block";
+  } else {
+    errEl.textContent = t("lock_recovery_mismatch");
+  }
+});
+document.getElementById("lockResetConfirmBtn").addEventListener("click", async ()=>{
+  const p1 = document.getElementById("newPin1").value;
+  const p2 = document.getElementById("newPin2").value;
+  if(!p1){ alert(t("lock_pin_empty")); return; }
+  if(p1 !== p2){ alert(t("lock_pin_mismatch")); return; }
+  security.pinHash = await hashText(p1);
+  security.lastActiveAt = Date.now();
+  save(KEYS.security, security);
+  alert(t("lock_pin_reset_done"));
+  document.getElementById("newPin1").value = "";
+  document.getElementById("newPin2").value = "";
+  document.getElementById("lockRecoveryBox").style.display = "none";
+  hideLockScreen();
+});
+
+function renderSecuritySettings(){
+  const line = document.getElementById("securityStatusLine");
+  if(line) line.textContent = security.pinHash ? t("security_status_active") : t("security_status_inactive");
+  const sel = document.getElementById("secAutoLock");
+  if(sel) sel.value = String(security.autoLockMinutes != null ? security.autoLockMinutes : 5);
+}
+document.getElementById("secSavePinBtn").addEventListener("click", async ()=>{
+  const p1 = document.getElementById("secNewPin").value;
+  const p2 = document.getElementById("secNewPin2").value;
+  if(!p1){ alert(t("lock_pin_empty")); return; }
+  if(p1 !== p2){ alert(t("lock_pin_mismatch")); return; }
+  security.pinHash = await hashText(p1);
+  security.lastActiveAt = Date.now();
+  save(KEYS.security, security);
+  document.getElementById("secNewPin").value = "";
+  document.getElementById("secNewPin2").value = "";
+  renderSecuritySettings();
+  alert(t("security_pin_saved"));
+});
+document.getElementById("secRemovePinBtn").addEventListener("click", ()=>{
+  if(!security.pinHash){ renderSecuritySettings(); return; }
+  security.pinHash = null;
+  save(KEYS.security, security);
+  renderSecuritySettings();
+  alert(t("security_pin_removed"));
+});
+document.getElementById("secAutoLock").addEventListener("change", (e)=>{
+  security.autoLockMinutes = parseInt(e.target.value, 10);
+  save(KEYS.security, security);
+});
+
+/* Verrouillage automatique : on note l'horodatage à chaque mise en arrière-plan
+   (changement d'onglet, appui sur Accueil, écran éteint) et on compare au
+   retour. "0" = immédiat, "-1" = jamais (déverrouillage manuel uniquement).
+   Fonctionne 100% hors connexion : horloge locale uniquement, aucun réseau.
+   Couvre aussi le cas "coupe les données mobiles puis actualise la page" :
+   le verrouillage est réévalué dès le chargement (voir initSecurity). */
+document.addEventListener("visibilitychange", ()=>{
+  if(document.hidden){
+    security.lastActiveAt = Date.now();
+    save(KEYS.security, security);
+  } else {
+    checkAutoLock();
+  }
+});
+window.addEventListener("pageshow", checkAutoLock);
+function checkAutoLock(){
+  if(!security.pinHash) return;
+  const mins = (security.autoLockMinutes != null) ? security.autoLockMinutes : 5;
+  if(mins === -1) return;
+  const last = security.lastActiveAt || 0;
+  const elapsedMs = Date.now() - last;
+  if(mins === 0 || elapsedMs >= mins*60000) showLockScreen();
+}
+function initSecurity(){
+  renderSecuritySettings();
+  if(security.pinHash) showLockScreen();
+}
+
+/* ============================================================
    PAGES LÉGALES — CGU, Mentions légales, Politique d'utilisation, À propos
    Contenu affiché dans une fenêtre modale, ouverte depuis le pied de page.
    ============================================================ */
@@ -1571,7 +2076,7 @@ const LEGAL_CONTENT = {
     <p>Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation de l'application Kalcul (ci-après « l'Application » ou « le Service »), éditée par Empire Donko, destinée à la facturation, à l'établissement de devis et au calcul de marge commerciale pour les commerçants, artisans et indépendants au Bénin, au Togo, en Côte d'Ivoire, au Sénégal, au Niger, au Mali et au Burkina Faso.</p>
 
     <h3>Article 2 — Description du Service</h3>
-    <p>Kalcul fonctionne entièrement en local, directement dans le navigateur de l'utilisateur, sans serveur distant ni base de données externe. Aucune inscription ni création de compte n'est nécessaire. Une connexion internet n'est requise qu'au moment du paiement d'un plan Kalcul Pro via FedaPay (Mobile Money), ou ponctuellement pour l'actualisation du taux de change USD affiché.</p>
+    <p>Kalcul fonctionne entièrement en local, directement dans le navigateur de l'utilisateur, sans serveur distant ni base de données externe. Aucune inscription ni création de compte n'est nécessaire. Une connexion internet n'est requise qu'au moment du paiement d'un plan Kalcul Pro via KKiaPay (Mobile Money &amp; carte bancaire), ou ponctuellement pour l'actualisation du taux de change USD affiché.</p>
 
     <h3>Article 3 — Accès au Service</h3>
     <p>L'accès à Kalcul est libre et gratuit dans la limite de l'offre d'essai définie dans l'Application. L'utilisateur est seul responsable de disposer d'un appareil et d'un navigateur compatibles, ainsi que d'une connexion internet lorsque celle-ci est nécessaire.</p>
@@ -1582,7 +2087,7 @@ const LEGAL_CONTENT = {
     <h3>Article 5 — Abonnement Kalcul Pro et paiement</h3>
     <p>Au-delà du nombre de documents gratuits, l'utilisation illimitée de Kalcul est soumise à l'achat d'un plan payant (Mensuel, Bimestriel, Trimestriel, Semestriel, Annuel, 2 ans, 3 ans ou À vie), dont la durée et le tarif sont affichés dans l'Application au moment de l'achat.</p>
     <ul>
-      <li>Chaque plan correspond à un paiement unique via FedaPay. Aucun prélèvement automatique ou récurrent n'est mis en place : à l'échéance, l'utilisateur doit revenir volontairement payer à nouveau s'il souhaite continuer.</li>
+      <li>Chaque plan correspond à un paiement unique via KKiaPay. Aucun prélèvement automatique ou récurrent n'est mis en place : à l'échéance, l'utilisateur doit revenir volontairement payer à nouveau s'il souhaite continuer.</li>
       <li>Le débit réel s'effectue toujours en Francs CFA (XOF), quelle que soit la devise d'affichage choisie dans les Réglages, celle-ci n'étant qu'une conversion informative.</li>
       <li>Sauf défaillance technique avérée empêchant l'accès au Service après paiement confirmé, les sommes versées ne sont pas remboursables, le déverrouillage étant immédiat.</li>
       <li>Empire Donko peut modifier les tarifs et durées des plans proposés ; toute modification s'applique aux achats futurs uniquement.</li>
@@ -1595,10 +2100,10 @@ const LEGAL_CONTENT = {
     <p>L'Application Kalcul, son nom, son design, ses textes et son code source constituent des créations protégées. Toute reproduction ou exploitation commerciale non autorisée est interdite sans l'accord préalable d'Empire Donko.</p>
 
     <h3>Article 8 — Limitation de responsabilité</h3>
-    <p>Kalcul est fourni « en l'état ». L'Application ne remplace pas les conseils d'un comptable ou d'un conseiller fiscal. Empire Donko ne saurait être tenu responsable des pertes de données locales, des interruptions liées à l'hébergement, ni des dysfonctionnements imputables à FedaPay ou à l'opérateur Mobile Money de l'utilisateur.</p>
+    <p>Kalcul est fourni « en l'état ». L'Application ne remplace pas les conseils d'un comptable ou d'un conseiller fiscal. Empire Donko ne saurait être tenu responsable des pertes de données locales, des interruptions liées à l'hébergement, ni des dysfonctionnements imputables à KKiaPay ou à l'opérateur Mobile Money de l'utilisateur.</p>
 
     <h3>Article 9 — Disponibilité du Service</h3>
-    <p>L'Application dépend de l'hébergement GitHub Pages et, pour les paiements, du service FedaPay. Empire Donko ne garantit pas une disponibilité continue de ces services tiers.</p>
+    <p>L'Application dépend de l'hébergement GitHub Pages et, pour les paiements, du service KKiaPay. Empire Donko ne garantit pas une disponibilité continue de ces services tiers.</p>
 
     <h3>Article 10 — Modification des CGU</h3>
     <p>Empire Donko peut modifier les présentes CGU à tout moment. La version en vigueur est celle affichée dans l'Application au moment de la consultation.</p>
@@ -1632,7 +2137,7 @@ const LEGAL_CONTENT = {
     <p>L'Application est hébergée par GitHub, Inc. (GitHub Pages), 88 Colin P. Kelly Jr Street, San Francisco, CA 94107, États-Unis.</p>
 
     <h3>Paiement</h3>
-    <p>Les paiements d'abonnement sont traités par FedaPay, prestataire tiers indépendant spécialisé dans l'agrégation Mobile Money en Afrique de l'Ouest. Empire Donko ne stocke, ne voit ni ne conserve aucune information bancaire ou de paiement.</p>
+    <p>Les paiements d'abonnement sont traités par KKiaPay, agrégateur de paiement tiers indépendant (Bénin) spécialisé dans le mobile money et la carte bancaire (Visa/Mastercard) en Afrique de l'Ouest francophone. Empire Donko ne stocke, ne voit ni ne conserve aucune information bancaire ou de paiement — les données de carte transitent directement, chiffrées, entre l'appareil du client et les réseaux Visa/Mastercard.</p>
 
     <h3>Propriété intellectuelle</h3>
     <p>Le nom « Kalcul », le contenu et le code de l'Application sont la propriété d'Empire Donko, sauf mention contraire. Toute reproduction non autorisée est interdite.</p>
@@ -1662,11 +2167,11 @@ const LEGAL_CONTENT = {
     </ul>
     <p>Ces données disparaissent si l'utilisateur vide le cache de son navigateur, désinstalle l'application, ou change d'appareil sans utiliser la fonction de sauvegarde. Réglages → Sauvegarde &amp; restauration est donc fortement recommandé avant tout changement de téléphone.</p>
 
-    <h3>4. Le seul moment où une connexion est utilisée</h3>
-    <p>Une connexion internet n'est nécessaire que pour deux actions : le paiement d'un plan Kalcul Pro via FedaPay, et l'actualisation ponctuelle et optionnelle du taux de change USD. En dehors de ces deux cas, Kalcul fonctionne intégralement hors ligne.</p>
+    <h3>4. Les seuls moments où une connexion est utilisée</h3>
+    <p>Une connexion internet n'est utile que pour : le paiement d'un plan Kalcul Pro via KKiaPay ; l'actualisation ponctuelle et optionnelle des taux de change ; et la vérification, au chargement de la page, d'une éventuelle mise à jour de configuration (couleurs, textes, coordonnées) publiée par Empire Donko sur le même hébergement statique que l'application — sans jamais passer par un serveur applicatif ni une base de données. En dehors de ces cas, Kalcul fonctionne intégralement hors ligne, y compris après une actualisation de la page sans connexion.</p>
 
-    <h3>5. FedaPay, un service tiers indépendant</h3>
-    <p>Le paiement est assuré par FedaPay, qui applique sa propre politique de confidentialité et ses propres conditions, indépendantes de Kalcul. Pour toute question relative au traitement de ses données de paiement, l'utilisateur est invité à s'y référer directement.</p>
+    <h3>5. KKiaPay, un service tiers indépendant</h3>
+    <p>Le paiement est assuré par KKiaPay, qui applique sa propre politique de confidentialité et ses propres conditions, indépendantes de Kalcul. Pour toute question relative au traitement de ses données de paiement, l'utilisateur est invité à s'y référer directement.</p>
 
     <h3>6. Usages interdits</h3>
     <p>Il est interdit d'utiliser Kalcul pour établir des documents commerciaux frauduleux, usurper l'identité d'un tiers, contourner une obligation fiscale ou légale, ou pour toute activité illicite. Il est également interdit de décompiler, revendre ou redistribuer l'Application sans l'autorisation d'Empire Donko.</p>
@@ -1687,7 +2192,7 @@ const LEGAL_CONTENT = {
       <li>Fonctionne sans connexion internet, à l'exception du paiement de l'abonnement ;</li>
       <li>Ne demande aucune inscription ni compte ;</li>
       <li>Conserve toutes les données directement sur l'appareil de l'utilisateur ;</li>
-      <li>Propose un paiement unique et transparent via FedaPay (Mobile Money), sans prélèvement automatique.</li>
+      <li>Propose un paiement unique et transparent via KKiaPay (Mobile Money &amp; carte bancaire), sans prélèvement automatique.</li>
     </ul>
 
     <h3>Qui est derrière Kalcul</h3>
@@ -1705,7 +2210,7 @@ const LEGAL_CONTENT = {
     <p class="legal-meta">Ce guide décrit chaque page de Kalcul en détail, étape par étape. Accessible à tout moment via le bouton ❓ en haut de l'écran.</p>
 
     <h3>🧭 Principe général</h3>
-    <p>Kalcul fonctionne 100% sur votre appareil : aucune inscription, aucune connexion internet nécessaire au quotidien. Les seuls moments où une connexion est utile : payer un plan Kalcul Pro via FedaPay, visiter la boutique Empire Donko, actualiser le taux de change USD, ou envoyer une suggestion. Tout le reste — créer des factures, gérer le stock, vendre en caisse — fonctionne hors ligne, même après avoir fermé et rouvert l'application.</p>
+    <p>Kalcul fonctionne 100% sur votre appareil : aucune inscription, aucune connexion internet nécessaire au quotidien. Les seuls moments où une connexion est utile : payer un plan Kalcul Pro via KKiaPay, visiter la boutique Empire Donko, actualiser les taux de change, envoyer une suggestion, ou récupérer une éventuelle mise à jour de configuration publiée par Empire Donko. Tout le reste — créer des factures, gérer le stock, vendre en caisse — fonctionne hors ligne, même après avoir fermé et rouvert l'application, ou coupé les données mobiles puis actualisé la page.</p>
     <p>La navigation se fait par la barre du bas : <strong>Caisse</strong>, <strong>Stock</strong>, <strong>Document</strong>, <strong>Historique</strong>, et <strong>Plus</strong> (qui regroupe Marge, Réglages et Kalcul Pro).</p>
 
     <h3>🧺 Caisse — vente rapide au comptoir</h3>
@@ -1763,7 +2268,7 @@ const LEGAL_CONTENT = {
     </ul>
 
     <h3>★ Kalcul Pro</h3>
-    <p>10 essais gratuits, partagés entre la création de factures/devis, de produits en Stock, et de ventes en Caisse (modifier un élément déjà créé reste toujours gratuit). Pendant l'essai gratuit : pas de photos produit, pas de logo sur les documents, pied de page fixe « Généré par Kalcul ». Kalcul Pro débloque tout, sans limite, avec choix du plan (Mensuel à À vie), payé en une seule fois via FedaPay Mobile Money — jamais de prélèvement automatique.</p>
+    <p>10 essais gratuits, partagés entre la création de factures/devis, de produits en Stock, et de ventes en Caisse (modifier un élément déjà créé reste toujours gratuit). Pendant l'essai gratuit : pas de photos produit, pas de logo sur les documents, pied de page fixe « Généré par Kalcul ». Kalcul Pro débloque tout, sans limite, avec choix du plan (Mensuel à À vie), payé en une seule fois via KKiaPay Mobile Money — jamais de prélèvement automatique.</p>
 
     <h3>💬 Boîte à suggestions</h3>
     <p>Disponible en pied de page : proposez une idée ou signalez un problème directement à Empire Donko, par email ou WhatsApp, sans quitter l'application.</p>
@@ -1793,6 +2298,238 @@ document.querySelectorAll("[data-legal]").forEach(a=>{
     e.preventDefault();
     openLegalModal(a.dataset.legal);
   });
+});
+
+/* ============================================================
+   ESPACE RÉSERVÉ — centre de contrôle propriétaire, 100% local.
+   Le mot de passe n'est JAMAIS stocké en clair dans le code : seule son
+   empreinte SHA-256 y figure, calculée hors ligne par le navigateur.
+   Quiconque fouille le code source ne peut donc pas lire le mot de passe,
+   seulement son empreinte irréversible — exactement comme pour le code
+   de verrouillage de l'application.
+   Ce panneau modifie l'app sur CET appareil uniquement (promesse "hors
+   serveur, hors base de données" respectée). Pour répercuter un
+   changement chez tous les utilisateurs sans toucher au code : on exporte
+   "data.json" ici, on le dépose à côté de index.html sur GitHub Pages, et
+   chaque application le récupère toute seule au prochain chargement en
+   ligne (voir loadRemoteSiteConfig plus bas) — ce n'est jamais qu'un
+   fichier statique de plus sur le même hébergement déjà utilisé pour
+   index.html, donc aucune base de données ni serveur applicatif requis.
+   ============================================================ */
+const DEFAULT_ADMIN_HASH = "391a9dc924d6b2a6fde451b85559d328ad52c8f4013f02d94d48e64d7a460e1a";
+let adminSecurity = load(KEYS.adminSecurity, {passHash:null});
+let siteConfig = load(KEYS.siteConfig, null);
+let admAttempts = 0, admLockUntil = 0;
+
+function effectiveAdminHash(){ return adminSecurity.passHash || DEFAULT_ADMIN_HASH; }
+
+function applySiteConfig(cfg){
+  if(!cfg) return;
+  if(cfg.title) document.title = cfg.title;
+  if(cfg.description){
+    const m = document.querySelector('meta[name="description"]');
+    if(m) m.setAttribute("content", cfg.description);
+  }
+  if(cfg.tagline){ const el=document.getElementById("brandTag"); if(el) el.textContent = cfg.tagline; }
+  if(cfg.logo){
+    const svg = document.querySelector("svg.brand-logo");
+    if(svg){
+      const img = document.createElement("img");
+      img.src = cfg.logo; img.alt = "Kalcul"; img.className = "brand-logo";
+      img.style.cssText = "width:34px;height:44px;object-fit:contain;border-radius:6px;";
+      svg.replaceWith(img);
+    }
+  }
+  if(cfg.colorPrimary) document.documentElement.style.setProperty("--indigo", cfg.colorPrimary);
+  if(cfg.colorAccent) document.documentElement.style.setProperty("--ochre", cfg.colorAccent);
+  if(cfg.trialLimit != null && !isNaN(cfg.trialLimit)) CONFIG.TRIAL_LIMIT = parseInt(cfg.trialLimit,10);
+  if(cfg.footerDefault) window.__kalculAdminFooterDefault = cfg.footerDefault;
+  if(cfg.whatsapp) window.__kalculAdminWhatsapp = cfg.whatsapp;
+  if(cfg.email) window.__kalculAdminEmail = cfg.email;
+  if(cfg.featCaisse === false){ const b=document.querySelector('nav.bottom button[data-view="view-pos"]'); if(b) b.style.display="none"; }
+  if(cfg.featWa === false){ document.querySelectorAll(".btn-wa, #suggestWaBtn").forEach(el=> el.style.display="none"); }
+  if(cfg.whatsapp || cfg.email){
+    const c = suggestContact();
+    const waLink = document.getElementById("footWaLink");
+    const mailLink = document.getElementById("footMailLink");
+    if(waLink) waLink.href = `https://wa.me/${c.wa.replace(/[^0-9]/g,"")}?text=${encodeURIComponent("Bonjour, je vous contacte depuis Kalcul.")}`;
+    if(mailLink) mailLink.href = `mailto:${c.email}?subject=${encodeURIComponent("Partenariat / outil personnalisé - Kalcul")}`;
+  }
+}
+
+/* Tentative silencieuse, non-bloquante, de récupérer une mise à jour de
+   configuration déposée par le propriétaire à côté de index.html. Échoue
+   proprement hors ligne (fichier absent ou pas de réseau) et retombe alors
+   sur la dernière version connue, mise en cache localement. */
+async function loadRemoteSiteConfig(){
+  try{
+    const res = await fetch("./data.json?v=" + Date.now(), {cache:"no-store"});
+    if(!res.ok) throw new Error("no data.json");
+    const cfg = await res.json();
+    if(cfg && typeof cfg === "object"){
+      siteConfig = cfg;
+      save(KEYS.siteConfig, siteConfig);
+      applySiteConfig(siteConfig);
+    }
+  }catch(e){
+    // Hors ligne ou fichier absent : on applique simplement la dernière
+    // version mise en cache localement (déjà fait au démarrage), rien de plus.
+  }
+}
+
+function openAdminGate(){
+  document.getElementById("adminGatePassword").value = "";
+  document.getElementById("adminGateError").textContent = "";
+  document.getElementById("adminGate").style.display = "flex";
+  setTimeout(()=>{ const i=document.getElementById("adminGatePassword"); if(i) i.focus(); }, 50);
+}
+document.getElementById("adminAccessBtn").addEventListener("click", openAdminGate);
+document.getElementById("adminGateClose").addEventListener("click", ()=> document.getElementById("adminGate").style.display="none");
+document.getElementById("adminGateSubmit").addEventListener("click", async ()=>{
+  const errEl = document.getElementById("adminGateError");
+  if(admLockUntil > Date.now()){
+    errEl.textContent = "Trop de tentatives. Réessayez dans " + Math.ceil((admLockUntil-Date.now())/1000) + " secondes.";
+    return;
+  }
+  const val = document.getElementById("adminGatePassword").value;
+  const h = await hashText(val);
+  if(h === effectiveAdminHash()){
+    admAttempts = 0;
+    document.getElementById("adminGate").style.display = "none";
+    openAdminPanel();
+  } else {
+    admAttempts++;
+    if(admAttempts >= 5){
+      admLockUntil = Date.now() + 60000;
+      admAttempts = 0;
+      errEl.textContent = "Trop de tentatives. Réessayez dans 60 secondes.";
+    } else {
+      errEl.textContent = "Mot de passe incorrect.";
+    }
+  }
+});
+document.getElementById("adminGatePassword").addEventListener("keydown",(e)=>{ if(e.key==="Enter") document.getElementById("adminGateSubmit").click(); });
+
+let admPendingLogo = null;
+function openAdminPanel(){
+  const cfg = siteConfig || {};
+  document.getElementById("admTitle").value = cfg.title || document.title || "";
+  document.getElementById("admTag").value = cfg.tagline || "";
+  document.getElementById("admDescription").value = cfg.description || "";
+  document.getElementById("admColorPrimary").value = cfg.colorPrimary || "";
+  document.getElementById("admColorAccent").value = cfg.colorAccent || "";
+  document.getElementById("admFooterDefault").value = cfg.footerDefault || "";
+  document.getElementById("admWhatsapp").value = cfg.whatsapp || "";
+  document.getElementById("admEmail").value = cfg.email || "";
+  document.getElementById("admFeatCaisse").checked = cfg.featCaisse !== false;
+  document.getElementById("admFeatWa").checked = cfg.featWa !== false;
+  document.getElementById("admTrialLimit").value = cfg.trialLimit != null ? cfg.trialLimit : CONFIG.TRIAL_LIMIT;
+  document.getElementById("admNewPassword").value = "";
+  document.getElementById("admNewPassword2").value = "";
+  admPendingLogo = cfg.logo || null;
+  const grid = document.getElementById("admLogoPreviewGrid");
+  grid.innerHTML = admPendingLogo ? `<img src="${admPendingLogo}" alt="" style="width:52px;height:52px;border-radius:8px;object-fit:cover;border:1px solid var(--line);">` : "";
+  document.getElementById("adminPanel").style.display = "flex";
+}
+document.getElementById("adminPanelClose").addEventListener("click", ()=> document.getElementById("adminPanel").style.display="none");
+document.getElementById("admLogoFile").addEventListener("change", (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    admPendingLogo = reader.result;
+    document.getElementById("admLogoPreviewGrid").innerHTML = `<img src="${admPendingLogo}" alt="" style="width:52px;height:52px;border-radius:8px;object-fit:cover;border:1px solid var(--line);">`;
+  };
+  reader.readAsDataURL(file);
+});
+
+function readAdminForm(){
+  return {
+    title: document.getElementById("admTitle").value.trim(),
+    tagline: document.getElementById("admTag").value.trim(),
+    description: document.getElementById("admDescription").value.trim(),
+    logo: admPendingLogo || null,
+    colorPrimary: document.getElementById("admColorPrimary").value.trim(),
+    colorAccent: document.getElementById("admColorAccent").value.trim(),
+    footerDefault: document.getElementById("admFooterDefault").value.trim(),
+    whatsapp: document.getElementById("admWhatsapp").value.trim(),
+    email: document.getElementById("admEmail").value.trim(),
+    featCaisse: document.getElementById("admFeatCaisse").checked,
+    featWa: document.getElementById("admFeatWa").checked,
+    trialLimit: parseInt(document.getElementById("admTrialLimit").value, 10) || CONFIG.TRIAL_LIMIT
+  };
+}
+
+document.getElementById("admApplyBtn").addEventListener("click", async ()=>{
+  const p1 = document.getElementById("admNewPassword").value;
+  const p2 = document.getElementById("admNewPassword2").value;
+  if(p1 || p2){
+    if(p1 !== p2){ alert("Les deux mots de passe ne correspondent pas."); return; }
+    if(p1.length < 4){ alert("Choisissez un mot de passe d'au moins 4 caractères."); return; }
+    adminSecurity.passHash = await hashText(p1);
+    save(KEYS.adminSecurity, adminSecurity);
+  }
+  siteConfig = readAdminForm();
+  save(KEYS.siteConfig, siteConfig);
+  applySiteConfig(siteConfig);
+  alert("Appliqué sur cet appareil. Exportez data.json si vous voulez le pousser chez tous les utilisateurs.");
+});
+document.getElementById("admExportBtn").addEventListener("click", ()=>{
+  const cfg = readAdminForm();
+  const blob = new Blob([JSON.stringify(cfg, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "data.json";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+});
+document.getElementById("admResetBtn").addEventListener("click", ()=>{
+  if(!confirm("Réinitialiser la configuration locale (couleurs, textes, logo) ? L'application reviendra à ses réglages d'origine sur cet appareil au prochain chargement.")) return;
+  siteConfig = null;
+  save(KEYS.siteConfig, null);
+  alert("Configuration locale réinitialisée. Rechargement...");
+  location.reload();
+});
+document.getElementById("admImportFile").addEventListener("change", (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const cfg = JSON.parse(reader.result);
+      if(!cfg || typeof cfg !== "object") throw new Error("invalid");
+      siteConfig = cfg;
+      save(KEYS.siteConfig, siteConfig);
+      openAdminPanel();
+      applySiteConfig(siteConfig);
+      alert("data.json importé et appliqué sur cet appareil.");
+    }catch(err){
+      alert("Ce fichier n'est pas un data.json Kalcul valide.");
+    }
+  };
+  reader.readAsText(file);
+});
+
+/* ============================================================
+   BOÎTES À SUGGESTIONS — 2 boutons flottants (WhatsApp / Email),
+   discrets, en bas à droite, au-dessus de la barre de navigation.
+   ============================================================ */
+function suggestContact(){
+  return {
+    wa: window.__kalculAdminWhatsapp || "2290196809106",
+    email: window.__kalculAdminEmail || "empiredonko@gmail.com"
+  };
+}
+document.getElementById("suggestWaBtn").addEventListener("click", ()=>{
+  const c = suggestContact();
+  const msg = t("suggest_wa_message");
+  window.open(`https://wa.me/${c.wa.replace(/[^0-9]/g,"")}?text=${encodeURIComponent(msg)}`, "_blank");
+});
+document.getElementById("suggestEmailBtn").addEventListener("click", ()=>{
+  const c = suggestContact();
+  const subject = encodeURIComponent(t("suggest_email_subject"));
+  const body = encodeURIComponent(t("suggest_wa_message"));
+  window.location.href = `mailto:${c.email}?subject=${subject}&body=${body}`;
 });
 
 /* ============================================================
@@ -2112,7 +2849,7 @@ document.getElementById("waDocBtn").addEventListener("click", ()=>{
    - Pro par défaut : "Généré par Kalcul Pro".
    - Pro avec message personnalisé (Réglages) : ce message remplace le texte par défaut. */
 function docFooterText(){
-  if(!isPro()) return t("tpl_generated_trial");
+  if(!isPro()) return window.__kalculAdminFooterDefault || t("tpl_generated_trial");
   if(settings.footerMessage && settings.footerMessage.trim()) return settings.footerMessage.trim();
   return t("tpl_generated_pro");
 }
@@ -3243,7 +3980,7 @@ document.getElementById("validateSaleBtn").addEventListener("click", ()=>{
 });
 
 /* ============================================================
-   ABONNEMENT / FEDAPAY — plans multiples
+   ABONNEMENT / KKIAPAY — plans multiples (mobile money + carte bancaire)
    ============================================================ */
 function getSelectedPlan(){
   return PLANS.find(p=>p.id===selectedPlanId) || PLANS[0];
@@ -3253,14 +3990,15 @@ function renderPlans(){
   const el = document.getElementById("plansList");
   el.innerHTML = PLANS.map(p=>{
     const perMonth = (p.days && p.days > 30) ? Math.round(p.price/(p.days/30)) : null;
+    const c = p.color || "#1B3358";
     return `
-    <div class="plan-card ${p.id===selectedPlanId?'selected':''}" data-plan="${p.id}">
+    <div class="plan-card ${p.id===selectedPlanId?'selected':''}" data-plan="${p.id}" style="border-left:5px solid ${c}; ${p.id===selectedPlanId?`box-shadow:0 0 0 1.5px ${c} inset;`:""}">
       <div class="plan-top">
-        <span class="plan-label">${t("plan_"+p.id)}</span>
-        ${p.badge ? `<span class="plan-badge plan-badge-pulse">${t(p.badge==="exclusive"?"plan_badge_exclusive":"plan_badge_best")}</span>` : ""}
+        <span class="plan-label" style="color:${c};">${t("plan_"+p.id)}</span>
+        ${p.badge ? `<span class="plan-badge plan-badge-pulse" style="background:${c};">${t(p.badge==="exclusive"?"plan_badge_exclusive":"plan_badge_best")}</span>` : ""}
       </div>
       ${p.oldPrice ? `<div class="plan-old-price amount">${fmt(p.oldPrice)}</div>` : ""}
-      <div class="plan-price amount">${fmt(p.price)}</div>
+      <div class="plan-price amount" style="color:${c};">${fmt(p.price)}</div>
       <div class="plan-sub">${p.days ? `${p.days} ${t("plan_days_access")}` : t("plan_lifetime_access")}${perMonth ? ` · ≈ ${fmt(perMonth)}${t("per_month")}` : ""}</div>
     </div>`;
   }).join("");
@@ -3270,7 +4008,7 @@ function renderPlans(){
       selectedPlanId = card.dataset.plan;
       renderPlans();
       document.getElementById("payAmountLabel").textContent = fmt(getSelectedPlan().price);
-      rebindFedaPay();
+      rebindKkiaPay();
     });
   });
 }
@@ -3314,48 +4052,69 @@ function activatePro(plan){
   alert(msg);
 }
 
-function initFedaPay(){
-  if(typeof FedaPay === "undefined"){
-    const btn = document.getElementById("pay-btn");
-    if(btn) btn.addEventListener("click", ()=>{
-      alert("Le module de paiement n'a pas pu se charger. Vérifiez votre connexion internet et réessayez.");
-    });
+/* KKiaPay — mobile money ET carte bancaire (Visa/Mastercard) dans un même
+   widget. C'est KKiaPay lui-même qui détecte le pays du numéro saisi par le
+   client et propose les moyens de paiement disponibles pour ce pays (mobile
+   money local si couvert, carte bancaire toujours disponible). Aucune
+   restriction de pays n'est donc nécessaire côté Kalcul. */
+let kkiapayListenersBound = false;
+function payReference(plan){
+  // Référence courte et non devinable, utile pour retrouver la transaction
+  // sans jamais transmettre de donnée sensible du magasin.
+  return "KLC-" + plan.id + "-" + Date.now().toString(36).toUpperCase();
+}
+function openKkiaPayCheckout(){
+  if(typeof openKkiapayWidget === "undefined"){
+    alert(t("pay_module_error"));
     return;
   }
   const plan = getSelectedPlan();
-  FedaPay.init("#pay-btn", {
-    public_key: CONFIG.FEDAPAY_PUBLIC_KEY,
-    environment: CONFIG.FEDAPAY_ENV,
-    transaction: {
-      amount: plan.price,
-      description: "Abonnement Kalcul Pro — " + t("plan_"+plan.id)
-    },
-    currency: { iso: CONFIG.CURRENCY },
-    customer: {
-      lastname: (settings.name || "Client Kalcul"),
-      phone_number: {
-        number: settings.phone || "",
-        country: settings.country || "BJ"
-      }
-    },
-    onComplete: function(resp){
-      if(resp.transaction && resp.transaction.status === "approved"){
-        activatePro(plan);
-      } else {
-        alert("Paiement non confirmé. Réessayez si vous pensez qu'il s'agit d'une erreur.");
-      }
-    }
+  const pendingRef = payReference(plan);
+  sessionStorage.setItem("kalcul_pending_pay", JSON.stringify({ref:pendingRef, planId:plan.id}));
+  openKkiapayWidget({
+    amount: plan.price,
+    key: CONFIG.KKIAPAY_PUBLIC_KEY,
+    sandbox: CONFIG.KKIAPAY_SANDBOX,
+    position: "center",
+    theme: "#1B3358",
+    data: pendingRef,
+    name: settings.name || "Client Kalcul",
+    phone: (settings.phone || "").replace(/[^0-9]/g, "")
   });
 }
-
-function rebindFedaPay(){
-  // Reclone le bouton pour repartir d'un nœud sans écouteur avant de
-  // réinitialiser FedaPay avec le montant du plan nouvellement choisi.
-  const oldBtn = document.getElementById("pay-btn");
-  const newBtn = oldBtn.cloneNode(true);
-  oldBtn.parentNode.replaceChild(newBtn, oldBtn);
-  initFedaPay();
+function bindKkiapayListeners(){
+  if(kkiapayListenersBound || typeof addSuccessListener === "undefined") return;
+  kkiapayListenersBound = true;
+  addSuccessListener((resp)=>{
+    let pending = null;
+    try{ pending = JSON.parse(sessionStorage.getItem("kalcul_pending_pay")||"null"); }catch(e){}
+    sessionStorage.removeItem("kalcul_pending_pay");
+    const plan = PLANS.find(p=>p.id===(pending && pending.planId)) || getSelectedPlan();
+    activatePro(plan);
+  });
+  if(typeof addFailedListener !== "undefined"){
+    addFailedListener(()=>{
+      sessionStorage.removeItem("kalcul_pending_pay");
+      alert(t("pay_failed_alert"));
+    });
+  }
 }
+function initKkiaPay(){
+  const btn = document.getElementById("pay-btn");
+  if(!btn) return;
+  bindKkiapayListeners();
+  const newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+  newBtn.addEventListener("click", (e)=>{
+    e.preventDefault();
+    if(typeof openKkiapayWidget === "undefined"){
+      alert(t("pay_module_error"));
+      return;
+    }
+    openKkiaPayCheckout();
+  });
+}
+function rebindKkiaPay(){ initKkiaPay(); }
 
 /* ============================================================
    INITIALISATION
@@ -3363,6 +4122,8 @@ function rebindFedaPay(){
 document.getElementById("docDate").value = new Date().toISOString().slice(0,10);
 addItemRow();
 setDocSaved(false);
+initSecurity();
+if(siteConfig) applySiteConfig(siteConfig);
 renderHeader();
 renderQuota();
 initHistoryEvents();
@@ -3374,13 +4135,14 @@ renderPOSProducts();
 renderCart();
 renderCaisseQuota();
 renderTrialUiRestrictions();
-initFedaPay();
+initKkiaPay();
 applyTheme(load(KEYS.theme, "light"));
 renderRateStatus();
 updateCurrencyHints();
 updateInstallUI();
 applyI18n();
 refreshUsdRate(); // tentative silencieuse — échoue proprement hors ligne, garde le taux en cache
+loadRemoteSiteConfig(); // idem pour data.json — silencieux, non bloquant, hors ligne = cache local conservé
 
 })();
 </script>

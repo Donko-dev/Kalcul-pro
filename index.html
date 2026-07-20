@@ -345,6 +345,16 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
 
 .badge.lowstock{background:#F6D9D2; color:var(--clay);}
 
+/* Sélecteur de fichier personnalisé — le texte natif du navigateur
+   ("Aucun fichier choisi" / "No file chosen") ne peut pas être traduit en
+   JS, car c'est le navigateur lui-même qui l'affiche. On masque donc
+   l'input natif et on affiche notre propre bouton + statut, traduisibles. */
+.file-picker{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:2px;}
+.file-picker input[type=file]{display:none;}
+.file-picker-btn{padding:9px 14px; border-radius:8px; border:1px solid var(--line); background:var(--paper); font-size:13px; font-weight:600; cursor:pointer; color:var(--ink); flex-shrink:0;}
+.file-picker-btn:hover{background:var(--paper-2);}
+.file-picker-status{font-size:12.5px; color:var(--ink-soft);}
+
 .clickable-thumb{cursor:pointer;}
 .lightbox-inner{position:relative; max-width:92vw; max-height:85vh;}
 .lightbox-close{position:absolute; top:-14px; right:-14px; width:34px; height:34px; border-radius:50%; background:var(--indigo-deep); color:#fff; border:2px solid var(--white); font-size:15px; cursor:pointer; z-index:2;}
@@ -487,7 +497,11 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
       <label for="prodQty" data-i18n="prod_qty_label">Quantité en stock</label>
       <input type="number" id="prodQty" class="mono-input" min="0">
       <label data-i18n="prod_photos_label">Photos (jusqu'à 4)</label>
-      <input type="file" id="prodPhotoInput" accept="image/*" multiple>
+      <div class="file-picker">
+        <input type="file" id="prodPhotoInput" accept="image/*" multiple>
+        <button type="button" class="file-picker-btn" data-for="prodPhotoInput" data-i18n="file_choose_btn">Choisir des fichiers</button>
+        <span class="file-picker-status" id="prodPhotoInput_status" data-i18n="file_none_chosen">Aucun fichier choisi</span>
+      </div>
       <div class="photo-grid" id="prodPhotoGrid"></div>
       <div class="notice" id="prodPhotoUpsell" style="display:none;"></div>
       <button type="button" class="btn btn-primary btn-block" id="saveProductBtn" style="margin-top:12px;" data-i18n="save_product_btn">Enregistrer le produit</button>
@@ -656,7 +670,11 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
       <label data-i18n="logo_label">Logo (optionnel)</label>
       <div class="row" style="align-items:center;">
         <img id="logoPreview" class="logo-preview" alt="">
-        <input type="file" id="logoInput" accept="image/*">
+        <div class="file-picker">
+          <input type="file" id="logoInput" accept="image/*">
+          <button type="button" class="file-picker-btn" data-for="logoInput" data-i18n="file_choose_btn">Choisir un fichier</button>
+          <span class="file-picker-status" id="logoInput_status" data-i18n="file_none_chosen">Aucun fichier choisi</span>
+        </div>
       </div>
       <div class="notice" id="logoUpsell" style="display:none;"></div>
 
@@ -704,7 +722,11 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
       <p class="hint" data-i18n="backup_hint">Envoyez ce fichier vers votre nouveau téléphone (WhatsApp, email, Bluetooth ou Google Drive), puis ouvrez Kalcul dessus et utilisez « Restaurer » ci-dessous.</p>
 
       <label for="restoreFileInput" style="margin-top:16px;" data-i18n="restore_file_label">Fichier de sauvegarde</label>
-      <input type="file" id="restoreFileInput" accept="application/json,.json">
+      <div class="file-picker">
+        <input type="file" id="restoreFileInput" accept="application/json,.json">
+        <button type="button" class="file-picker-btn" data-for="restoreFileInput" data-i18n="file_choose_btn">Choisir un fichier</button>
+        <span class="file-picker-status" id="restoreFileInput_status" data-i18n="file_none_chosen">Aucun fichier choisi</span>
+      </div>
       <button type="button" class="btn btn-ochre btn-block" id="restoreBackupBtn" style="margin-top:10px;" data-i18n="restore_btn">⬆️ Restaurer cette sauvegarde</button>
       <div class="notice" data-i18n="restore_notice">La restauration remplace toutes les données présentes sur cet appareil par celles du fichier choisi — y compris le statut Kalcul Pro, reconnu automatiquement, sans nous contacter.</div>
     </div>
@@ -774,9 +796,9 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
       </a>
     </div>
     <div class="foot-note">+229 01 96 80 91 06 · empiredonko@gmail.com</div>
-    <a class="store-cta-btn" href="https://majesticfordonko.mychariow.shop" target="_blank" rel="noopener noreferrer">
+    <a class="store-cta-btn" href="https://empirecode.mychariow.co/" target="_blank" rel="noopener noreferrer">
       <span class="store-cta-dot"></span>
-      🛍️ EMPIRE DONKO TOOLS STORE
+      🛍️ EMPIRE CODE
     </a>
     <div class="legal-footer-links">
       <a href="#" data-legal="cgu" data-i18n="legal_cgu">CGU</a> · <a href="#" data-legal="mentions" data-i18n="legal_mentions">Mentions légales</a> · <a href="#" data-legal="politique" data-i18n="legal_politique">Politique d'utilisation</a> · <a href="#" data-legal="guide" data-i18n="legal_guide">Guide d'utilisation</a> · <a href="#" data-legal="apropos" data-i18n="legal_apropos">À propos</a>
@@ -855,7 +877,11 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
       <label for="admDescription">Description (référencement)</label>
       <textarea id="admDescription"></textarea>
       <label for="admLogoFile">Logo du site (remplace le K par défaut)</label>
-      <input type="file" id="admLogoFile" accept="image/*">
+      <div class="file-picker">
+        <input type="file" id="admLogoFile" accept="image/*">
+        <button type="button" class="file-picker-btn" data-for="admLogoFile" data-i18n="file_choose_btn">Choisir un fichier</button>
+        <span class="file-picker-status" id="admLogoFile_status" data-i18n="file_none_chosen">Aucun fichier choisi</span>
+      </div>
       <div class="photo-grid" id="admLogoPreviewGrid"></div>
 
       <h3 style="margin-top:16px;font-size:13.5px;">Couleurs</h3>
@@ -890,7 +916,11 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
         <button type="button" class="btn btn-ghost" id="admResetBtn">Réinitialiser</button>
       </div>
       <label for="admImportFile" style="margin-top:14px;">Importer un data.json</label>
-      <input type="file" id="admImportFile" accept="application/json,.json">
+      <div class="file-picker">
+        <input type="file" id="admImportFile" accept="application/json,.json">
+        <button type="button" class="file-picker-btn" data-for="admImportFile" data-i18n="file_choose_btn">Choisir un fichier</button>
+        <span class="file-picker-status" id="admImportFile_status" data-i18n="file_none_chosen">Aucun fichier choisi</span>
+      </div>
     </div>
   </div>
 </div>
@@ -1055,6 +1085,8 @@ fr: {
   autolock_15min:"15 minutes", autolock_1h:"1 heure", autolock_never:"Jamais (déverrouillage manuel seulement)",
   suggest_wa_message:"Bonjour, voici ma suggestion pour améliorer Kalcul : ",
   suggest_email_subject:"Suggestion pour Kalcul",
+  file_choose_btn:"Choisir un fichier", file_none_chosen:"Aucun fichier choisi",
+  file_n_chosen:"{n} fichiers sélectionnés",
   wa_send_btn:"Envoyer via WhatsApp",
   wa_share_message:"{label} {number} — {company}\nTotal : {total}\n\nEnvoyé avec Kalcul.",
   wa_fallback_hint:"L'image a été téléchargée. WhatsApp s'ouvre à côté — joignez l'image dans la conversation.",
@@ -1220,6 +1252,8 @@ en: {
   autolock_15min:"15 minutes", autolock_1h:"1 hour", autolock_never:"Never (manual unlock only)",
   suggest_wa_message:"Hi, here's my suggestion to improve Kalcul: ",
   suggest_email_subject:"Suggestion for Kalcul",
+  file_choose_btn:"Choose file", file_none_chosen:"No file chosen",
+  file_n_chosen:"{n} files selected",
   wa_send_btn:"Send via WhatsApp",
   wa_share_message:"{label} {number} — {company}\nTotal: {total}\n\nSent with Kalcul.",
   wa_fallback_hint:"The image was downloaded. WhatsApp is opening alongside — attach the image in the conversation.",
@@ -1531,6 +1565,36 @@ function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
+/* Sélecteurs de fichier personnalisés : le bouton natif du navigateur
+   ("Aucun fichier choisi" / "No file chosen") reste dans la langue du
+   navigateur/système, pas celle de l'application — ce n'est pas un texte
+   que le JavaScript d'une page web peut traduire. On masque donc l'input
+   natif et on pilote nous-mêmes le bouton + le statut affiché, qui eux
+   suivent bien la langue choisie dans Kalcul. */
+function updateFilePickerStatus(input){
+  const status = document.getElementById(input.id + "_status");
+  if(!status) return;
+  if(input.files && input.files.length > 1){
+    status.textContent = t("file_n_chosen", {n: input.files.length});
+  } else if(input.files && input.files.length === 1){
+    status.textContent = input.files[0].name;
+  } else {
+    status.textContent = t("file_none_chosen");
+  }
+}
+document.querySelectorAll(".file-picker-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    const input = document.getElementById(btn.dataset.for);
+    if(input) input.click();
+  });
+});
+document.querySelectorAll(".file-picker input[type=file]").forEach(input=>{
+  input.addEventListener("change", ()=> updateFilePickerStatus(input));
+});
+function refreshAllFilePickerStatuses(){
+  document.querySelectorAll(".file-picker input[type=file]").forEach(updateFilePickerStatus);
+}
+
 /* ============================================================
    APPLICATION DE LA LANGUE — balaie le DOM (data-i18n / data-i18n-placeholder)
    et régénère tout le contenu construit dynamiquement en JS.
@@ -1572,6 +1636,7 @@ function applyI18n(){
   document.documentElement.lang = lang;
   document.querySelectorAll("[data-i18n]").forEach(el=>{ el.textContent = t(el.dataset.i18n); });
   document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>{ el.placeholder = t(el.dataset.i18nPlaceholder); });
+  if(typeof refreshAllFilePickerStatuses === "function") refreshAllFilePickerStatuses();
   renderTrialUiRestrictions();
   const langSel = document.getElementById("setLang");
   if(langSel) langSel.value = lang;
@@ -1586,6 +1651,7 @@ function applyI18n(){
   if(typeof renderSecuritySettings === "function") renderSecuritySettings();
   if(typeof populateCountrySelect === "function") populateCountrySelect();
   if(typeof updatePhoneExample === "function") updatePhoneExample();
+  if(typeof refreshOpenLegalModalLang === "function") refreshOpenLegalModalLang();
   applyTheme(document.documentElement.getAttribute("data-theme") || "light");
 }
 function setLang(l){
@@ -2071,12 +2137,12 @@ function initSecurity(){
    ============================================================ */
 const LEGAL_CONTENT = {
 
-  cgu: { title:"Conditions Générales d'Utilisation", html: `
+  cgu: { fr: { title:"Conditions Générales d'Utilisation", html: `
     <h3>Article 1 — Objet</h3>
-    <p>Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation de l'application Kalcul (ci-après « l'Application » ou « le Service »), éditée par Empire Donko, destinée à la facturation, à l'établissement de devis et au calcul de marge commerciale pour les commerçants, artisans et indépendants au Bénin, au Togo, en Côte d'Ivoire, au Sénégal, au Niger, au Mali et au Burkina Faso.</p>
+    <p>Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation de l'application Kalcul (ci-après « l'Application » ou « le Service »), éditée par Empire Donko, destinée à la facturation, à l'établissement de devis et au calcul de marge commerciale pour les commerçants, artisans et indépendants, en Afrique de l'Ouest comme dans le reste du monde, grâce au paiement par Mobile Money et par carte bancaire.</p>
 
     <h3>Article 2 — Description du Service</h3>
-    <p>Kalcul fonctionne entièrement en local, directement dans le navigateur de l'utilisateur, sans serveur distant ni base de données externe. Aucune inscription ni création de compte n'est nécessaire. Une connexion internet n'est requise qu'au moment du paiement d'un plan Kalcul Pro via KKiaPay (Mobile Money &amp; carte bancaire), ou ponctuellement pour l'actualisation du taux de change USD affiché.</p>
+    <p>Kalcul fonctionne entièrement en local, directement dans le navigateur de l'utilisateur, sans serveur distant ni base de données externe. Aucune inscription ni création de compte n'est nécessaire. Une connexion internet n'est requise qu'au moment du paiement d'un plan Kalcul Pro via KKiaPay (Mobile Money &amp; carte bancaire), ou ponctuellement pour l'actualisation des taux de change affichés.</p>
 
     <h3>Article 3 — Accès au Service</h3>
     <p>L'accès à Kalcul est libre et gratuit dans la limite de l'offre d'essai définie dans l'Application. L'utilisateur est seul responsable de disposer d'un appareil et d'un navigateur compatibles, ainsi que d'une connexion internet lorsque celle-ci est nécessaire.</p>
@@ -2111,9 +2177,49 @@ const LEGAL_CONTENT = {
     <h3>Article 11 — Droit applicable et juridiction</h3>
     <p>Les présentes CGU sont soumises au droit béninois ainsi qu'aux dispositions communes de l'espace OHADA, sans préjudice des règles d'ordre public applicables dans le pays de résidence de l'utilisateur. À défaut de résolution amiable, tout litige relève des juridictions compétentes du Bénin.</p>
     <p class="legal-meta">TransTech Dynamic (Empire Donko) est établie au Bénin (Cotonou) — voir Mentions Légales pour les références d'immatriculation complètes.</p>
-  `},
+  `}, en: { title:"Terms of Use", html: `
+    <h3>Article 1 — Purpose</h3>
+    <p>These Terms of Use govern access to and use of the Kalcul application (the "Application" or "Service"), published by Empire Donko, designed for invoicing, quoting and margin calculation for merchants, tradespeople and independent workers, in West Africa as well as the rest of the world, thanks to payment by Mobile Money and by bank card.</p>
 
-  mentions: { title:"Mentions Légales", html: `
+    <h3>Article 2 — Description of the Service</h3>
+    <p>Kalcul runs entirely locally, directly in the user's browser, with no remote server or external database. No sign-up or account creation is required. An internet connection is only needed when paying for a Kalcul Pro plan via KKiaPay (Mobile Money &amp; bank card), or occasionally to refresh the displayed exchange rates.</p>
+
+    <h3>Article 3 — Access to the Service</h3>
+    <p>Access to Kalcul is free within the limits of the trial offer defined in the Application. The user is solely responsible for having a compatible device and browser, as well as an internet connection when one is required.</p>
+
+    <h3>Article 4 — No account, local data storage</h3>
+    <p>Kalcul does not create any user account. All data entered (business information, invoices, quotes, history) is kept solely on the user's device. Empire Donko has no access to this data and cannot view, retrieve or restore it in case of loss. It is up to the user to regularly back up via Settings → Backup &amp; restore.</p>
+
+    <h3>Article 5 — Kalcul Pro subscription and payment</h3>
+    <p>Beyond the number of free documents, unlimited use of Kalcul requires purchasing a paid plan (Monthly, Bimonthly, Quarterly, Biannual, Annual, 2 years, 3 years or Lifetime), whose duration and price are shown in the Application at the time of purchase.</p>
+    <ul>
+      <li>Each plan is a one-time payment via KKiaPay. No automatic or recurring debit is set up: when the period ends, the user must voluntarily come back and pay again to continue.</li>
+      <li>The actual charge is always made in CFA Francs (XOF), regardless of the display currency chosen in Settings, which is only an informative conversion.</li>
+      <li>Except in the event of a proven technical failure preventing access to the Service after confirmed payment, amounts paid are non-refundable, as unlocking is immediate.</li>
+      <li>Empire Donko may change the prices and durations of the plans offered; any change applies to future purchases only.</li>
+    </ul>
+
+    <h3>Article 6 — User obligations</h3>
+    <p>The user agrees to use Kalcul in accordance with the law, in particular not to produce fraudulent commercial documents or impersonate a third party. The user remains solely responsible for the accuracy of information entered in their invoices and quotes, as well as for compliance with the tax, accounting and regulatory obligations applicable to their business.</p>
+
+    <h3>Article 7 — Intellectual property</h3>
+    <p>The Kalcul Application, its name, design, texts and source code are protected creations. Any unauthorized reproduction or commercial use is prohibited without Empire Donko's prior consent.</p>
+
+    <h3>Article 8 — Limitation of liability</h3>
+    <p>Kalcul is provided "as is". The Application does not replace the advice of an accountant or tax advisor. Empire Donko cannot be held liable for local data loss, hosting-related interruptions, or malfunctions attributable to KKiaPay or the user's Mobile Money operator.</p>
+
+    <h3>Article 9 — Service availability</h3>
+    <p>The Application depends on GitHub Pages hosting and, for payments, on the KKiaPay service. Empire Donko does not guarantee continuous availability of these third-party services.</p>
+
+    <h3>Article 10 — Changes to these Terms</h3>
+    <p>Empire Donko may modify these Terms of Use at any time. The version in force is the one displayed in the Application at the time of consultation.</p>
+
+    <h3>Article 11 — Governing law and jurisdiction</h3>
+    <p>These Terms of Use are governed by Beninese law as well as the common provisions of the OHADA area, without prejudice to the public-order rules applicable in the user's country of residence. Failing an amicable resolution, any dispute falls under the competent courts of Benin.</p>
+    <p class="legal-meta">TransTech Dynamic (Empire Donko) is established in Benin (Cotonou) — see Legal Notice for full registration details.</p>
+  `}},
+
+  mentions: { fr: { title:"Mentions Légales", html: `
     <h3>Éditeur</h3>
     <p>L'application Kalcul est éditée par <strong>Empire Donko</strong>, enregistré sous la dénomination <strong>TransTech Dynamic</strong>.</p>
     <ul>
@@ -2143,9 +2249,39 @@ const LEGAL_CONTENT = {
     <p>Le nom « Kalcul », le contenu et le code de l'Application sont la propriété d'Empire Donko, sauf mention contraire. Toute reproduction non autorisée est interdite.</p>
 
     <p class="legal-meta">Informations d'immatriculation fournies par TransTech Dynamic (Empire Donko), conformément aux obligations légales applicables au Bénin.</p>
-  `},
+  `}, en: { title:"Legal Notice", html: `
+    <h3>Publisher</h3>
+    <p>The Kalcul application is published by <strong>Empire Donko</strong>, registered under the name <strong>TransTech Dynamic</strong>.</p>
+    <ul>
+      <li>Legal form: Sole proprietorship (Établissement)</li>
+      <li>Registration number: RB/COT/24 A 104475</li>
+      <li>Tax ID: 0202112291540</li>
+      <li>Registered address: Îlot 3291, Agla Figaro, Cotonou</li>
+      <li>Country of establishment: Benin</li>
+    </ul>
 
-  politique: { title:"Politique d'Utilisation", html: `
+    <h3>Publication director</h3>
+    <p>The person responsible for the Application's publication is the representative of TransTech Dynamic (Empire Donko), reachable via the contact details below.</p>
+
+    <h3>Contact</h3>
+    <ul>
+      <li>WhatsApp: +229 01 96 80 91 06</li>
+      <li>Email: empiredonko@gmail.com</li>
+    </ul>
+
+    <h3>Hosting</h3>
+    <p>The Application is hosted by GitHub, Inc. (GitHub Pages), 88 Colin P. Kelly Jr Street, San Francisco, CA 94107, United States.</p>
+
+    <h3>Payment</h3>
+    <p>Subscription payments are processed by KKiaPay, an independent third-party payment aggregator (Benin) specialized in mobile money and bank cards (Visa/Mastercard) in French-speaking West Africa. Empire Donko does not store, see or keep any banking or payment information — card data travels directly, encrypted, between the customer's device and the Visa/Mastercard networks.</p>
+
+    <h3>Intellectual property</h3>
+    <p>The name "Kalcul", the content and the code of the Application are the property of Empire Donko, unless otherwise stated. Any unauthorized reproduction is prohibited.</p>
+
+    <p class="legal-meta">Registration details provided by TransTech Dynamic (Empire Donko), in accordance with the legal obligations applicable in Benin.</p>
+  `}},
+
+  politique: { fr: { title:"Politique d'Utilisation", html: `
     <h3>1. Une application pensée pour ne rien collecter</h3>
     <p>Kalcul fonctionne entièrement sur l'appareil de l'utilisateur. Il n'existe ni serveur, ni base de données distante, ni compte utilisateur. Cette page décrit précisément ce que cela signifie en pratique.</p>
 
@@ -2178,21 +2314,54 @@ const LEGAL_CONTENT = {
 
     <h3>7. Évolution de cette politique</h3>
     <p>Cette politique peut évoluer si de nouvelles fonctionnalités venaient à modifier le fonctionnement décrit ci-dessus. La version affichée dans l'Application fait foi.</p>
-  `},
+  `}, en: { title:"Usage Policy", html: `
+    <h3>1. An application designed to collect nothing</h3>
+    <p>Kalcul runs entirely on the user's device. There is no server, no remote database, and no user account. This page describes precisely what that means in practice.</p>
 
-  apropos: { title:"À Propos", html: `
-    <h3>Kalcul, un outil pensé pour le commerce local</h3>
-    <p>Kalcul est une application de facturation, de devis et de calcul de marge, conçue pour les commerçants, artisans et indépendants du Bénin, du Togo, de la Côte d'Ivoire, du Sénégal, du Niger, du Mali et du Burkina Faso.</p>
+    <h3>2. What Kalcul never does</h3>
+    <ul>
+      <li>No personal data collection sent to a server;</li>
+      <li>No account, no password, no sign-up;</li>
+      <li>No tracking cookie, no audience-analytics tool, no advertising;</li>
+      <li>No transmission of business information, invoices, quotes or customer data to any third party, to Empire Donko, or to anyone.</li>
+    </ul>
+
+    <h3>3. What is stored, and where</h3>
+    <p>The following items stay solely in the local browser memory of the device used:</p>
+    <ul>
+      <li>Business information (name, address, phone, logo);</li>
+      <li>Invoice and quote history;</li>
+      <li>Kalcul Pro subscription status;</li>
+      <li>The chosen display currency and theme.</li>
+    </ul>
+    <p>This data disappears if the user clears their browser cache, uninstalls the app, or switches devices without using the backup feature. Settings → Backup &amp; restore is therefore strongly recommended before changing phones.</p>
+
+    <h3>4. The only times a connection is used</h3>
+    <p>An internet connection is only useful for: paying for a Kalcul Pro plan via KKiaPay; the occasional, optional refresh of exchange rates; and checking, when the page loads, for a possible configuration update (colors, texts, contact details) published by Empire Donko on the same static hosting as the application — never through an application server or a database. Outside of these cases, Kalcul works entirely offline, including after refreshing the page without a connection.</p>
+
+    <h3>5. KKiaPay, an independent third-party service</h3>
+    <p>Payment is handled by KKiaPay, which applies its own privacy policy and its own terms, independent from Kalcul. For any question relating to the processing of its payment data, the user is invited to refer to it directly.</p>
+
+    <h3>6. Prohibited uses</h3>
+    <p>It is prohibited to use Kalcul to create fraudulent commercial documents, impersonate a third party, circumvent a tax or legal obligation, or for any unlawful activity. It is also prohibited to decompile, resell or redistribute the Application without Empire Donko's authorization.</p>
+
+    <h3>7. Changes to this policy</h3>
+    <p>This policy may evolve if new features change the operation described above. The version displayed in the Application is authoritative.</p>
+  `}},
+
+  apropos: { fr: { title:"À Propos", html: `
+    <h3>Kalcul, un outil pensé pour le commerce, partout</h3>
+    <p>Kalcul est une application de facturation, de devis et de calcul de marge, conçue à l'origine pour les commerçants, artisans et indépendants d'Afrique de l'Ouest — et accessible aujourd'hui partout dans le monde, grâce au paiement par carte bancaire (Visa/Mastercard) en plus du Mobile Money.</p>
 
     <h3>Pourquoi Kalcul existe</h3>
-    <p>Beaucoup de commerçants de la zone UEMOA gèrent encore leurs factures sur papier ou via WhatsApp, et fixent leurs prix sans réellement calculer leur marge. Kalcul répond à ce besoin avec un outil simple et rapide, accessible sans connexion internet permanente ni matériel coûteux : un simple navigateur suffit.</p>
+    <p>Beaucoup de commerçants gèrent encore leurs factures sur papier ou via WhatsApp, et fixent leurs prix sans réellement calculer leur marge. Kalcul répond à ce besoin avec un outil simple et rapide, accessible sans connexion internet permanente ni matériel coûteux : un simple navigateur suffit, où que l'on soit dans le monde.</p>
 
     <h3>Une application pensée pour le terrain</h3>
     <ul>
       <li>Fonctionne sans connexion internet, à l'exception du paiement de l'abonnement ;</li>
       <li>Ne demande aucune inscription ni compte ;</li>
       <li>Conserve toutes les données directement sur l'appareil de l'utilisateur ;</li>
-      <li>Propose un paiement unique et transparent via KKiaPay (Mobile Money &amp; carte bancaire), sans prélèvement automatique.</li>
+      <li>Propose un paiement unique et transparent via KKiaPay — Mobile Money ou carte bancaire selon le pays —, sans prélèvement automatique.</li>
     </ul>
 
     <h3>Qui est derrière Kalcul</h3>
@@ -2204,9 +2373,33 @@ const LEGAL_CONTENT = {
       <li>WhatsApp : +229 01 96 80 91 06</li>
       <li>Email : empiredonko@gmail.com</li>
     </ul>
-  `},
+  `}, en: { title:"About", html: `
+    <h3>Kalcul, a tool built for commerce, everywhere</h3>
+    <p>Kalcul is an invoicing, quoting and margin-calculation application, originally designed for merchants, tradespeople and independent workers in West Africa — and now accessible worldwide, thanks to bank card payment (Visa/Mastercard) in addition to Mobile Money.</p>
 
-  guide: { title:"Guide d'utilisation complet", html: `
+    <h3>Why Kalcul exists</h3>
+    <p>Many merchants still manage their invoices on paper or via WhatsApp, and set their prices without actually calculating their margin. Kalcul answers that need with a simple, fast tool, accessible without a permanent internet connection or expensive equipment: a plain browser is enough, wherever you are in the world.</p>
+
+    <h3>An application built for the field</h3>
+    <ul>
+      <li>Works without an internet connection, except for subscription payment;</li>
+      <li>Requires no sign-up or account;</li>
+      <li>Keeps all data directly on the user's device;</li>
+      <li>Offers a one-time, transparent payment via KKiaPay — Mobile Money or bank card depending on the country —, with no automatic debit.</li>
+    </ul>
+
+    <h3>Who's behind Kalcul</h3>
+    <p>Kalcul is developed and published by <strong>Empire Donko</strong>.</p>
+
+    <h3>Contact us</h3>
+    <p>For a partnership, a custom tool request, or any question:</p>
+    <ul>
+      <li>WhatsApp: +229 01 96 80 91 06</li>
+      <li>Email: empiredonko@gmail.com</li>
+    </ul>
+  `}},
+
+  guide: { fr: { title:"Guide d'utilisation complet", html: `
     <p class="legal-meta">Ce guide décrit chaque page de Kalcul en détail, étape par étape. Accessible à tout moment via le bouton ❓ en haut de l'écran.</p>
 
     <h3>🧭 Principe général</h3>
@@ -2262,17 +2455,85 @@ const LEGAL_CONTENT = {
     <ul>
       <li><strong>Installer l'application</strong> : ajoute Kalcul à l'écran d'accueil comme une vraie application.</li>
       <li><strong>Mon entreprise</strong> : nom, adresse, pays, téléphone, logo (Kalcul Pro), et message personnalisé en pied de document (Kalcul Pro).</li>
-      <li><strong>Devise d'affichage</strong> : FCFA, Euro ou Dollar US — les montants restent saisis en FCFA, seul l'affichage change, converti automatiquement.</li>
+      <li><strong>Devise d'affichage</strong> : FCFA, Euro, Dollar et bien d'autres — les montants restent saisis en FCFA, seul l'affichage change, converti automatiquement.</li>
       <li><strong>Langue</strong> : Français ou English, appliqué à toute l'application et aux documents générés.</li>
+      <li><strong>Verrouillage</strong> : un code local propre à cet appareil, avec verrouillage automatique après un délai que vous choisissez.</li>
       <li><strong>Sauvegarde &amp; restauration</strong> : téléchargez un fichier de sauvegarde et envoyez-le à un autre appareil. La restauration <strong>fusionne</strong> les données (rien n'est perdu) — pratique pour que plusieurs employés d'une même entreprise travaillent chacun sur son téléphone tout en se synchronisant régulièrement.</li>
     </ul>
 
     <h3>★ Kalcul Pro</h3>
-    <p>10 essais gratuits, partagés entre la création de factures/devis, de produits en Stock, et de ventes en Caisse (modifier un élément déjà créé reste toujours gratuit). Pendant l'essai gratuit : pas de photos produit, pas de logo sur les documents, pied de page fixe « Généré par Kalcul ». Kalcul Pro débloque tout, sans limite, avec choix du plan (Mensuel à À vie), payé en une seule fois via KKiaPay Mobile Money — jamais de prélèvement automatique.</p>
+    <p>10 essais gratuits, partagés entre la création de factures/devis, de produits en Stock, et de ventes en Caisse (modifier un élément déjà créé reste toujours gratuit). Pendant l'essai gratuit : pas de photos produit, pas de logo sur les documents, pied de page fixe « Généré par Kalcul ». Kalcul Pro débloque tout, sans limite, avec choix du plan (Mensuel à À vie), payé en une seule fois via KKiaPay — Mobile Money ou carte bancaire — jamais de prélèvement automatique.</p>
 
     <h3>💬 Boîte à suggestions</h3>
-    <p>Disponible en pied de page : proposez une idée ou signalez un problème directement à Empire Donko, par email ou WhatsApp, sans quitter l'application.</p>
-  `}
+    <p>Disponible en pied de page et via les deux boutons flottants (WhatsApp / Email) : proposez une idée ou signalez un problème directement à Empire Donko, sans quitter l'application.</p>
+  `}, en: { title:"Full User Guide", html: `
+    <p class="legal-meta">This guide describes every page of Kalcul in detail, step by step. Accessible at any time via the ❓ button at the top of the screen.</p>
+
+    <h3>🧭 General principle</h3>
+    <p>Kalcul works 100% on your device: no sign-up, no internet connection needed day-to-day. The only times a connection is useful: paying for a Kalcul Pro plan via KKiaPay, visiting the Empire Donko store, refreshing exchange rates, sending a suggestion, or fetching a possible configuration update published by Empire Donko. Everything else — creating invoices, managing stock, selling at the counter — works offline, even after closing and reopening the app, or turning off mobile data and refreshing the page.</p>
+    <p>Navigation happens via the bottom bar: <strong>POS</strong>, <strong>Stock</strong>, <strong>Document</strong>, <strong>History</strong>, and <strong>More</strong> (which groups Margin, Settings and Kalcul Pro).</p>
+
+    <h3>🧺 POS — quick counter sales</h3>
+    <p>This is the home screen, built for selling fast:</p>
+    <ol style="padding-left:20px;">
+      <li>Type in the search bar to find a product, or scroll the list.</li>
+      <li>Tap a product to add it to the cart (it appears below in "Current cart").</li>
+      <li>Adjust each line's quantity with the − and + buttons.</li>
+      <li>The total updates automatically.</li>
+      <li>Tap "Validate sale": the product's stock decreases automatically, the sale is saved in History, and a receipt is offered for printing.</li>
+    </ol>
+    <p class="legal-meta">The POS needs products already created in Stock to work — always start by filling in your Stock.</p>
+
+    <h3>📦 Stock — your product catalog</h3>
+    <p>At the top: the "Add a product" form.</p>
+    <ol style="padding-left:20px;">
+      <li>Enter the name, reference or barcode, purchase price, selling price and available quantity.</li>
+      <li>Add up to 4 product photos (Kalcul Pro feature).</li>
+      <li>Tap "Save product".</li>
+    </ol>
+    <p>Below: your product list. A red "Low stock" badge appears as soon as 5 units or fewer remain, as a restocking reminder. Each product has two actions: <strong>Edit</strong> (reloads its info into the form above for correction — never uses up a free trial) and <strong>Delete</strong> (asks for confirmation).</p>
+
+    <h3>🧾 Document — Invoices &amp; Quotes</h3>
+    <p>For a formal commercial document with client information:</p>
+    <ol style="padding-left:20px;">
+      <li>Choose <strong>Invoice</strong> or <strong>Quote</strong> at the top.</li>
+      <li>Enter the client's name and phone number, and the date.</li>
+      <li>Add one or more item/service lines (description, quantity, unit price) — the amount is calculated automatically.</li>
+      <li>Set a discount and/or tax percentage if needed.</li>
+      <li>Add notes or terms at the bottom if needed (e.g. payment deadline).</li>
+      <li>Tap <strong>Save</strong> — this is required before you can print, download or send the document.</li>
+      <li>Once saved: <strong>Print/PDF</strong>, <strong>Download as image</strong> and <strong>Send via WhatsApp</strong> become active.</li>
+    </ol>
+    <p><strong>Invoice</strong> and <strong>Quote</strong> deliberately have a different look when printed: the Quote takes the form of a simple ticket (like a receipt), while the Invoice keeps a full layout with a header — so your clients can tell the two apart at a glance on paper.</p>
+    <p>The <strong>New</strong> button clears the form to start a different document. To correct an already-saved document, use the <strong>Edit</strong> button from History rather than typing over an existing document.</p>
+
+    <h3>🗂️ History — everything that happened</h3>
+    <p>At the top: a Revenue / Purchase cost / Net profit summary, filterable by <strong>Today</strong>, <strong>Week</strong>, <strong>This month</strong>, <strong>Year</strong>, or a <strong>specific date</strong> of your choice (📅 button).</p>
+    <p>Below, two tabs: <strong>POS sales</strong> and <strong>Invoices &amp; quotes</strong>. For each item: review/reprint by tapping it, or use the Edit / Image / WhatsApp / Delete actions depending on the type.</p>
+
+    <h3>➗ Margin (in "More")</h3>
+    <p>Two small calculators, independent from Stock, useful for a quick calculation:</p>
+    <ul>
+      <li><strong>Suggested selling price</strong>: enter your purchase price, any additional costs, and your target margin — Kalcul calculates the selling price to apply.</li>
+      <li><strong>Actual margin</strong>: enter your total cost and your current selling price — Kalcul calculates the margin actually achieved.</li>
+    </ul>
+
+    <h3>⚙️ Settings (in "More")</h3>
+    <ul>
+      <li><strong>Install the app</strong>: adds Kalcul to your home screen like a real app.</li>
+      <li><strong>My business</strong>: name, address, country, phone, logo (Kalcul Pro), and a custom message in the document footer (Kalcul Pro).</li>
+      <li><strong>Display currency</strong>: FCFA, Euro, Dollar and several others — amounts are still entered in FCFA, only the display changes, converted automatically.</li>
+      <li><strong>Language</strong>: French or English, applied across the whole app and to generated documents.</li>
+      <li><strong>Lock</strong>: a local code specific to this device, with automatic locking after a delay you choose.</li>
+      <li><strong>Backup &amp; restore</strong>: download a backup file and send it to another device. Restoring <strong>merges</strong> the data (nothing is lost) — handy for several employees of the same business to each work on their own phone while syncing regularly.</li>
+    </ul>
+
+    <h3>★ Kalcul Pro</h3>
+    <p>10 free trial uses, shared between creating invoices/quotes, products in Stock, and sales in the POS (editing an already-created item is always free). During the free trial: no product photos, no logo on documents, fixed "Generated with Kalcul" footer. Kalcul Pro unlocks everything, without limit, with your choice of plan (Monthly to Lifetime), paid once via KKiaPay — Mobile Money or bank card — never an automatic debit.</p>
+
+    <h3>💬 Suggestion box</h3>
+    <p>Available in the footer and via the two floating buttons (WhatsApp / Email): send an idea or report an issue directly to Empire Donko, without leaving the app.</p>
+  `}}
 };
 
 function openInfoModal(title, html){
@@ -2281,10 +2542,18 @@ function openInfoModal(title, html){
   document.getElementById("legalModalBody").scrollTop = 0;
   document.getElementById("legalModalOverlay").style.display = "flex";
 }
+let lastOpenedLegalKey = null;
 function openLegalModal(key){
-  const data = LEGAL_CONTENT[key];
-  if(!data) return;
+  const entry = LEGAL_CONTENT[key];
+  if(!entry) return;
+  lastOpenedLegalKey = key;
+  const data = entry[lang] || entry.fr;
   openInfoModal(data.title, data.html);
+}
+function refreshOpenLegalModalLang(){
+  if(lastOpenedLegalKey && document.getElementById("legalModalOverlay").style.display === "flex"){
+    openLegalModal(lastOpenedLegalKey);
+  }
 }
 function closeLegalModal(){
   document.getElementById("legalModalOverlay").style.display = "none";

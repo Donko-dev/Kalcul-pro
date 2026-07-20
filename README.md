@@ -58,7 +58,7 @@ Devise d'affichage : FCFA, Euro ou Dollar US — les montants restent saisis en 
 Langue : Français ou English, appliqué à toute l'application et aux documents générés.
 Sauvegarde & restauration : téléchargez un fichier de sauvegarde et envoyez-le à un autre appareil. La restauration fusionne les données (rien n'est perdu) — pratique pour que plusieurs employés d'une même entreprise travaillent chacun sur son téléphone tout en se synchronisant régulièrement.
 ★ Kalcul Pro
-10 essais gratuits, partagés entre la création de factures/devis, de produits en Stock, et de ventes en Caisse (modifier un élément déjà créé reste toujours gratuit). Pendant l'essai gratuit : pas de photos produit, pas de logo sur les documents, pied de page fixe « Généré par Kalcul ». Kalcul Pro débloque tout, sans limite, avec choix du plan (Mensuel à À vie), payé en une seule fois via FedaPay Mobile Money — jamais de prélèvement automatique.
+10 essais gratuits, partagés entre la création de factures/devis, de produits en Stock, et de ventes en Caisse (modifier un élément déjà créé reste toujours gratuit). Pendant l'essai gratuit : pas de photos produit, pas de logo sur les documents, pied de page fixe « Généré par Kalcul ». Kalcul Pro débloque tout, sans limite, avec choix du plan (Mensuel à À vie), payé en une seule fois via Kikiapay Mobile Money & carte bancaire (visa/MasterCard)— jamais de prélèvement automatique.
 
 💬 Boîte à suggestions
 Disponible en pied de page : proposez une idée ou signalez un problème directement à Empire Donko, par email ou WhatsApp, sans quitter l'applicomplet

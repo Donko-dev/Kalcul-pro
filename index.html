@@ -904,6 +904,28 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
       <label for="admTrialLimit">Nombre d'essais gratuits</label>
       <input type="number" id="admTrialLimit" min="0">
 
+      <h3 style="margin-top:16px;font-size:13.5px;">🎁 Attribuer un accès à une entreprise</h3>
+      <div class="notice">Demandez à l'entreprise son fichier de sauvegarde (Réglages → Sauvegarde), importez-le ci-dessous, choisissez le niveau d'accès à lui donner, puis générez le fichier à lui renvoyer — elle l'importera de son côté via Réglages → Restaurer.</div>
+      <div class="file-picker">
+        <input type="file" id="admGrantImportFile" accept="application/json,.json">
+        <button type="button" class="file-picker-btn" data-for="admGrantImportFile">Choisir le fichier de l'entreprise</button>
+        <span class="file-picker-status" id="admGrantImportFile_status">Aucun fichier choisi</span>
+      </div>
+      <div id="admGrantCompanyInfo" class="hint" style="display:none; font-weight:600;"></div>
+      <div id="admGrantControls" style="display:none;">
+        <label for="admGrantLevel">Niveau d'accès à attribuer</label>
+        <select id="admGrantLevel"></select>
+        <button type="button" class="btn btn-ochre btn-block" id="admGrantGenerateBtn" style="margin-top:10px;">⬇️ Générer le fichier d'accès à renvoyer</button>
+      </div>
+
+      <h3 style="margin-top:16px;font-size:13.5px;">🛠️ Accès démo — sur cet appareil (le vôtre)</h3>
+      <div class="notice">Pour vos propres démonstrations : active un accès Pro illimité directement sur cet appareil, sans passer par un paiement ni par un fichier.</div>
+      <div id="admSelfStatusLine" class="hint" style="font-weight:600;"></div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" id="admSelfUnlimitedBtn">Activer l'accès illimité ici</button>
+        <button type="button" class="btn btn-ghost" id="admSelfRemoveBtn">Revenir à l'essai standard</button>
+      </div>
+
       <h3 style="margin-top:16px;font-size:13.5px;">Sécurité de l'Espace Réservé</h3>
       <label for="admNewPassword">Changer le mot de passe d'accès</label>
       <input type="password" id="admNewPassword" placeholder="Laisser vide pour ne pas changer">
@@ -1317,7 +1339,10 @@ const CONFIG = {
    gratuit et ne recompte jamais — seule la CRÉATION d'un nouvel
    enregistrement est comptabilisée. */
 function trialUsed(){ return docs.length + products.length + sales.length; }
-function trialRemaining(){ return Math.max(0, CONFIG.TRIAL_LIMIT - trialUsed()); }
+function effectiveTrialLimit(){
+  return (typeof trialLimitOverride === "number" && trialLimitOverride != null) ? trialLimitOverride : CONFIG.TRIAL_LIMIT;
+}
+function trialRemaining(){ return Math.max(0, effectiveTrialLimit() - trialUsed()); }
 
 // Plans d'abonnement — prix en FCFA (devise réelle du prélèvement).
 // "days: null" = plan à vie, jamais d'expiration. Modifiable librement ici.
@@ -1369,7 +1394,8 @@ const KEYS = {
   lang: "kalcul_lang_v1",
   security: "kalcul_security_v1",
   adminSecurity: "kalcul_admin_security_v1",
-  siteConfig: "kalcul_site_config_v1"
+  siteConfig: "kalcul_site_config_v1",
+  trialOverride: "kalcul_trial_override_v1"
 };
 
 /* ============================================================
@@ -1384,6 +1410,7 @@ function save(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
 let settings = load(KEYS.settings, {name:"", address:"", phone:"", country:"BJ", logo:""});
 let docs = load(KEYS.docs, []);
 let pro = load(KEYS.pro, {active:false, expiresAt:null, planId:null});
+let trialLimitOverride = load(KEYS.trialOverride, null); // bonus/illimité attribué depuis l'Espace Réservé
 let counters = load(KEYS.counters, {facture:0, devis:0});
 let currency = load(KEYS.currency, "XOF");
 let rates = load(KEYS.rates, {EUR_USD:null, updatedAt:null});
@@ -1628,7 +1655,7 @@ function renderTrialUiRestrictions(){
   if(photoInput) photoInput.disabled = !pro;
   if(photoUpsell){
     photoUpsell.style.display = pro ? "none" : "block";
-    photoUpsell.textContent = t("upsell_photos", {n: CONFIG.TRIAL_LIMIT});
+    photoUpsell.textContent = t("upsell_photos", {n: effectiveTrialLimit()});
   }
 }
 
@@ -1832,7 +1859,8 @@ function buildBackupPayload(){
       counters: load(KEYS.counters, counters),
       pro: load(KEYS.pro, pro),
       products: load(KEYS.products, products),
-      sales: load(KEYS.sales, sales)
+      sales: load(KEYS.sales, sales),
+      trialLimitOverride: load(KEYS.trialOverride, trialLimitOverride)
     }
   };
 }
@@ -1936,11 +1964,26 @@ document.getElementById("restoreBackupBtn").addEventListener("click", ()=>{
     if(!ok) return;
     const d = parsed.data;
 
-    // Réglages et statut Pro : FUSION qui ne retire jamais rien de local
-    // (voir mergeSettings / mergeProStatus ci-dessus). Compteurs : toujours
-    // le maximum des deux appareils, pour ne jamais réutiliser un numéro.
+    // Réglages : FUSION qui ne retire jamais rien de local (voir mergeSettings).
     if(d.settings) save(KEYS.settings, mergeSettings(settings, d.settings));
-    if(d.pro) save(KEYS.pro, mergeProStatus(pro, d.pro));
+
+    if(parsed.grantedByAdmin){
+      // Fichier généré depuis l'Espace Réservé pour attribuer un accès :
+      // on applique le statut Pro et le bonus d'essais EXACTEMENT tels que
+      // décidés (pas de fusion "plus avantageux"), sinon il serait impossible
+      // de retirer un accès déjà donné.
+      save(KEYS.pro, d.pro || {active:false, expiresAt:null, planId:null});
+      save(KEYS.trialOverride, (d.trialLimitOverride != null) ? d.trialLimitOverride : null);
+    } else {
+      // Restauration normale (entre collègues, ou sur son propre appareil) :
+      // FUSION qui ne retire jamais rien de local.
+      if(d.pro) save(KEYS.pro, mergeProStatus(pro, d.pro));
+      if(d.trialLimitOverride != null){
+        const localOverride = load(KEYS.trialOverride, null);
+        const merged = (localOverride != null) ? Math.max(localOverride, d.trialLimitOverride) : d.trialLimitOverride;
+        save(KEYS.trialOverride, merged);
+      }
+    }
     if(d.counters){
       const mergedCounters = {
         facture: Math.max(counters.facture||0, d.counters.facture||0),
@@ -2698,9 +2741,129 @@ function openAdminPanel(){
   admPendingLogo = cfg.logo || null;
   const grid = document.getElementById("admLogoPreviewGrid");
   grid.innerHTML = admPendingLogo ? `<img src="${admPendingLogo}" alt="" style="width:52px;height:52px;border-radius:8px;object-fit:cover;border:1px solid var(--line);">` : "";
+  populateGrantLevelSelect();
+  admGrantImportedPayload = null;
+  document.getElementById("admGrantCompanyInfo").style.display = "none";
+  document.getElementById("admGrantControls").style.display = "none";
+  document.getElementById("admGrantImportFile").value = "";
+  if(typeof refreshAllFilePickerStatuses === "function") refreshAllFilePickerStatuses();
+  renderAdmSelfStatus();
   document.getElementById("adminPanel").style.display = "flex";
 }
 document.getElementById("adminPanelClose").addEventListener("click", ()=> document.getElementById("adminPanel").style.display="none");
+
+/* ============================================================
+   ATTRIBUER UN ACCÈS — Espace Réservé.
+   Fonctionne à partir du fichier de sauvegarde que l'entreprise vous
+   envoie (Réglages → Sauvegarde de son côté). On modifie uniquement son
+   statut Kalcul Pro / son quota d'essai dans une COPIE du fichier, marquée
+   "grantedByAdmin" pour que la restauration l'applique directement (sans
+   la fusion "toujours le plus avantageux" utilisée entre collègues) —
+   sinon on ne pourrait jamais reprendre un accès déjà donné.
+   ============================================================ */
+function populateGrantLevelSelect(){
+  const sel = document.getElementById("admGrantLevel");
+  const opts = [
+    `<option value="free">Gratuit (retire Pro, essai standard)</option>`,
+    `<option value="trial_bonus">Essais gratuits illimités (bonus, sans badge Pro)</option>`
+  ];
+  PLANS.forEach(p=> opts.push(`<option value="${p.id}">Plan ${p.label} (${fmt(p.price)})</option>`));
+  opts.push(`<option value="admin_unlimited">🎁 Accès illimité offert (démo / partenaire, sans expiration)</option>`);
+  sel.innerHTML = opts.join("");
+}
+let admGrantImportedPayload = null;
+document.getElementById("admGrantImportFile").addEventListener("change", (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const parsed = JSON.parse(reader.result);
+      if(!parsed || parsed.app !== "kalcul" || !parsed.data) throw new Error("invalid");
+      admGrantImportedPayload = parsed;
+      const name = (parsed.data.settings && parsed.data.settings.name) || "(entreprise sans nom)";
+      const p = parsed.data.pro || {};
+      let statusTxt = "Gratuit / essai en cours";
+      if(p.active) statusTxt = (p.expiresAt===null) ? "Pro à vie" : ("Pro jusqu'au " + new Date(p.expiresAt).toLocaleDateString("fr-FR"));
+      document.getElementById("admGrantCompanyInfo").style.display = "block";
+      document.getElementById("admGrantCompanyInfo").textContent = `Entreprise détectée : ${name} — statut actuel : ${statusTxt}`;
+      document.getElementById("admGrantControls").style.display = "block";
+    }catch(err){
+      admGrantImportedPayload = null;
+      document.getElementById("admGrantCompanyInfo").style.display = "none";
+      document.getElementById("admGrantControls").style.display = "none";
+      alert("Ce fichier n'est pas une sauvegarde Kalcul valide.");
+    }
+  };
+  reader.readAsText(file);
+});
+document.getElementById("admGrantGenerateBtn").addEventListener("click", ()=>{
+  if(!admGrantImportedPayload){ alert("Importez d'abord le fichier de l'entreprise."); return; }
+  const level = document.getElementById("admGrantLevel").value;
+  const payload = JSON.parse(JSON.stringify(admGrantImportedPayload)); // copie profonde, ne touche pas l'original
+  payload.data.settings = payload.data.settings || {};
+
+  if(level === "free"){
+    payload.data.pro = {active:false, expiresAt:null, planId:null};
+    payload.data.trialLimitOverride = null;
+  } else if(level === "trial_bonus"){
+    payload.data.pro = {active:false, expiresAt:null, planId:null};
+    payload.data.trialLimitOverride = 999999;
+  } else if(level === "admin_unlimited"){
+    payload.data.pro = {active:true, expiresAt:null, planId:"admin_unlimited"};
+    payload.data.trialLimitOverride = null;
+  } else {
+    const plan = PLANS.find(pl=>pl.id===level);
+    if(!plan){ alert("Plan inconnu."); return; }
+    const expiresAt = plan.days===null ? null : new Date(Date.now() + plan.days*24*60*60*1000).toISOString();
+    payload.data.pro = {active:true, expiresAt, planId:plan.id};
+    payload.data.trialLimitOverride = null;
+  }
+  payload.exportedAt = new Date().toISOString();
+  payload.grantedByAdmin = true; // indique à la restauration d'appliquer directement, sans la fusion "plus avantageux"
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const safeName = (payload.data.settings.name || "entreprise").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g,"") || "entreprise";
+  const a = document.createElement("a");
+  a.href = url; a.download = `kalcul-acces-${safeName}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  alert("Fichier d'accès généré. Renvoyez-le à l'entreprise : elle l'importera de son côté via Réglages → Restaurer.");
+});
+
+/* Accès démo directement sur cet appareil (le vôtre), sans fichier ni paiement. */
+function renderAdmSelfStatus(){
+  const el = document.getElementById("admSelfStatusLine");
+  if(!el) return;
+  if(isPro()){
+    el.textContent = pro.expiresAt===null
+      ? "🎁 Cet appareil a un accès Pro illimité actif."
+      : "🎁 Cet appareil a un accès Pro actif jusqu'au " + new Date(pro.expiresAt).toLocaleDateString("fr-FR") + ".";
+  } else if(trialLimitOverride){
+    el.textContent = "🎁 Cet appareil a un bonus d'essais gratuits actif (" + trialLimitOverride + ").";
+  } else {
+    el.textContent = "Cet appareil est en essai gratuit standard.";
+  }
+}
+document.getElementById("admSelfUnlimitedBtn").addEventListener("click", ()=>{
+  pro = {active:true, expiresAt:null, planId:"admin_demo"};
+  save(KEYS.pro, pro);
+  renderAdmSelfStatus();
+  renderQuota(); renderStockQuota(); renderCaisseQuota(); renderTrialUiRestrictions();
+  if(document.getElementById("view-pro").classList.contains("active")) renderProView();
+  alert("Accès illimité activé sur cet appareil.");
+});
+document.getElementById("admSelfRemoveBtn").addEventListener("click", ()=>{
+  pro = {active:false, expiresAt:null, planId:null};
+  trialLimitOverride = null;
+  save(KEYS.pro, pro);
+  save(KEYS.trialOverride, null);
+  renderAdmSelfStatus();
+  renderQuota(); renderStockQuota(); renderCaisseQuota(); renderTrialUiRestrictions();
+  if(document.getElementById("view-pro").classList.contains("active")) renderProView();
+  alert("Retour à l'essai standard sur cet appareil.");
+});
 document.getElementById("admLogoFile").addEventListener("change", (e)=>{
   const file = e.target.files[0];
   if(!file) return;
@@ -3004,7 +3167,7 @@ function renderQuota(){
   if(remaining > 0){
     card.style.display = "block";
     card.className = "card";
-    card.innerHTML = `<span class="badge free">${t("badge_free_label")}</span> <span class="hint" style="display:inline;">${remaining} ${t("quota_remaining")} ${CONFIG.TRIAL_LIMIT}.</span>`;
+    card.innerHTML = `<span class="badge free">${t("badge_free_label")}</span> <span class="hint" style="display:inline;">${remaining} ${t("quota_remaining")} ${effectiveTrialLimit()}.</span>`;
     editor.style.display = "block";
   } else if(editingDocId !== null && (isDocSaved || allowFreeUpdate)){
     // Quota épuisé, mais le document affiché est déjà enregistré (ou dispose encore
@@ -3017,7 +3180,7 @@ function renderQuota(){
     card.style.display = "block";
     card.className = "card paywall";
     card.innerHTML = `<h2>${t("quota_limit_title")}</h2>
-      <div class="sub">${t("quota_limit_sub", {n: CONFIG.TRIAL_LIMIT})}</div>
+      <div class="sub">${t("quota_limit_sub", {n: effectiveTrialLimit()})}</div>
       <button type="button" class="btn btn-ochre" id="goProBtn">${t("quota_unlock_btn")}</button>`;
     editor.style.display = "none";
     document.getElementById("goProBtn").addEventListener("click", ()=> showView("view-pro"));
@@ -3924,7 +4087,7 @@ function renderStockQuota(){
   if(remaining > 0){
     card.style.display = "block";
     card.className = "card";
-    card.innerHTML = `<span class="badge free">${t("badge_free_label")}</span> <span class="hint" style="display:inline;">${remaining} ${t("quota_remaining")} ${CONFIG.TRIAL_LIMIT}.</span>`;
+    card.innerHTML = `<span class="badge free">${t("badge_free_label")}</span> <span class="hint" style="display:inline;">${remaining} ${t("quota_remaining")} ${effectiveTrialLimit()}.</span>`;
     form.style.display = "block";
   } else if(editingProductId){
     card.style.display = "block";
@@ -3935,7 +4098,7 @@ function renderStockQuota(){
     card.style.display = "block";
     card.className = "card paywall";
     card.innerHTML = `<h2>${t("quota_limit_title")}</h2>
-      <div class="sub">${t("quota_limit_sub", {n: CONFIG.TRIAL_LIMIT})}</div>
+      <div class="sub">${t("quota_limit_sub", {n: effectiveTrialLimit()})}</div>
       <button type="button" class="btn btn-ochre" id="goProBtnStock">${t("quota_unlock_btn")}</button>`;
     form.style.display = "none";
     document.getElementById("goProBtnStock").addEventListener("click", ()=> showView("view-pro"));
@@ -4159,13 +4322,13 @@ function renderCaisseQuota(){
   if(remaining > 0){
     card.style.display = "block";
     card.className = "card";
-    card.innerHTML = `<span class="badge free">${t("badge_free_label")}</span> <span class="hint" style="display:inline;">${remaining} ${t("quota_remaining")} ${CONFIG.TRIAL_LIMIT}.</span>`;
+    card.innerHTML = `<span class="badge free">${t("badge_free_label")}</span> <span class="hint" style="display:inline;">${remaining} ${t("quota_remaining")} ${effectiveTrialLimit()}.</span>`;
     if(btn) btn.disabled = false;
   } else {
     card.style.display = "block";
     card.className = "card paywall";
     card.innerHTML = `<h2>${t("quota_limit_title")}</h2>
-      <div class="sub">${t("quota_limit_sub", {n: CONFIG.TRIAL_LIMIT})}</div>
+      <div class="sub">${t("quota_limit_sub", {n: effectiveTrialLimit()})}</div>
       <button type="button" class="btn btn-ochre" id="goProBtnCaisse">${t("quota_unlock_btn")}</button>`;
     if(btn) btn.disabled = true;
     document.getElementById("goProBtnCaisse").addEventListener("click", ()=> showView("view-pro"));
@@ -4298,7 +4461,7 @@ function renderProView(){
     }
     details.innerHTML = `<div class="notice">${t("pro_details_active")}</div>`;
   } else {
-    line.innerHTML = `<span class="badge free">${t("badge_free_label")}</span> ${trialUsed()}/${CONFIG.TRIAL_LIMIT} ${t("pro_free_used")}`;
+    line.innerHTML = `<span class="badge free">${t("badge_free_label")}</span> ${trialUsed()}/${effectiveTrialLimit()} ${t("pro_free_used")}`;
     details.innerHTML = `<div class="notice">${t("pro_details_free")}</div>`;
   }
 }

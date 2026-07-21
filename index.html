@@ -866,83 +866,10 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
       <span>Centre de contrôle Kalcul</span>
       <button type="button" id="adminPanelClose" aria-label="Fermer">✕</button>
     </div>
-    <div class="legal-modal-body">
-      <div class="notice">Ces réglages sont enregistrés sur <b>cet appareil</b>. Pour les pousser chez tous les utilisateurs sans toucher au code : réglez ici, cliquez « Exporter data.json », puis déposez ce fichier à côté de index.html sur GitHub. L'application de chaque utilisateur le récupère automatiquement au prochain chargement en ligne (et garde la dernière version connue hors ligne).</div>
-
-      <h3 style="margin-top:16px;font-size:13.5px;">Identité du site</h3>
-      <label for="admTitle">Titre de l'application (onglet du navigateur)</label>
-      <input type="text" id="admTitle">
-      <label for="admTag">Sous-titre / accroche (sous le logo)</label>
-      <input type="text" id="admTag">
-      <label for="admDescription">Description (référencement)</label>
-      <textarea id="admDescription"></textarea>
-      <label for="admLogoFile">Logo du site (remplace le K par défaut)</label>
-      <div class="file-picker">
-        <input type="file" id="admLogoFile" accept="image/*">
-        <button type="button" class="file-picker-btn" data-for="admLogoFile" data-i18n="file_choose_btn">Choisir un fichier</button>
-        <span class="file-picker-status" id="admLogoFile_status" data-i18n="file_none_chosen">Aucun fichier choisi</span>
-      </div>
-      <div class="photo-grid" id="admLogoPreviewGrid"></div>
-
-      <h3 style="margin-top:16px;font-size:13.5px;">Couleurs</h3>
-      <div class="row">
-        <div><label for="admColorPrimary">Couleur principale (indigo)</label><input type="text" id="admColorPrimary" placeholder="#1B3358"></div>
-        <div><label for="admColorAccent">Couleur d'accent (ochre)</label><input type="text" id="admColorAccent" placeholder="#C08A28"></div>
-      </div>
-
-      <h3 style="margin-top:16px;font-size:13.5px;">Textes &amp; pied de page</h3>
-      <label for="admFooterDefault">Message par défaut en pied de document (essai gratuit)</label>
-      <input type="text" id="admFooterDefault">
-      <label for="admWhatsapp">Numéro WhatsApp de contact</label>
-      <input type="text" id="admWhatsapp">
-      <label for="admEmail">Email de contact</label>
-      <input type="text" id="admEmail">
-
-      <h3 style="margin-top:16px;font-size:13.5px;">Fonctionnalités</h3>
-      <label style="display:flex;align-items:center;gap:8px;font-weight:400;"><input type="checkbox" id="admFeatCaisse" style="width:auto;"> Activer la Caisse</label>
-      <label style="display:flex;align-items:center;gap:8px;font-weight:400;"><input type="checkbox" id="admFeatWa" style="width:auto;"> Activer le partage WhatsApp</label>
-      <label for="admTrialLimit">Nombre d'essais gratuits</label>
-      <input type="number" id="admTrialLimit" min="0">
-
-      <h3 style="margin-top:16px;font-size:13.5px;">🎁 Attribuer un accès à une entreprise</h3>
-      <div class="notice">Demandez à l'entreprise son fichier de sauvegarde (Réglages → Sauvegarde), importez-le ci-dessous, choisissez le niveau d'accès à lui donner, puis générez le fichier à lui renvoyer — elle l'importera de son côté via Réglages → Restaurer.</div>
-      <div class="file-picker">
-        <input type="file" id="admGrantImportFile" accept="application/json,.json">
-        <button type="button" class="file-picker-btn" data-for="admGrantImportFile">Choisir le fichier de l'entreprise</button>
-        <span class="file-picker-status" id="admGrantImportFile_status">Aucun fichier choisi</span>
-      </div>
-      <div id="admGrantCompanyInfo" class="hint" style="display:none; font-weight:600;"></div>
-      <div id="admGrantControls" style="display:none;">
-        <label for="admGrantLevel">Niveau d'accès à attribuer</label>
-        <select id="admGrantLevel"></select>
-        <button type="button" class="btn btn-ochre btn-block" id="admGrantGenerateBtn" style="margin-top:10px;">⬇️ Générer le fichier d'accès à renvoyer</button>
-      </div>
-
-      <h3 style="margin-top:16px;font-size:13.5px;">🛠️ Accès démo — sur cet appareil (le vôtre)</h3>
-      <div class="notice">Pour vos propres démonstrations : active un accès Pro illimité directement sur cet appareil, sans passer par un paiement ni par un fichier.</div>
-      <div id="admSelfStatusLine" class="hint" style="font-weight:600;"></div>
-      <div class="btn-row">
-        <button type="button" class="btn btn-primary" id="admSelfUnlimitedBtn">Activer l'accès illimité ici</button>
-        <button type="button" class="btn btn-ghost" id="admSelfRemoveBtn">Revenir à l'essai standard</button>
-      </div>
-
-      <h3 style="margin-top:16px;font-size:13.5px;">Sécurité de l'Espace Réservé</h3>
-      <label for="admNewPassword">Changer le mot de passe d'accès</label>
-      <input type="password" id="admNewPassword" placeholder="Laisser vide pour ne pas changer">
-      <label for="admNewPassword2">Confirmer le nouveau mot de passe</label>
-      <input type="password" id="admNewPassword2">
-
-      <div class="btn-row">
-        <button type="button" class="btn btn-primary" id="admApplyBtn">Appliquer sur cet appareil</button>
-        <button type="button" class="btn btn-ochre" id="admExportBtn">⬇️ Exporter data.json</button>
-        <button type="button" class="btn btn-ghost" id="admResetBtn">Réinitialiser</button>
-      </div>
-      <label for="admImportFile" style="margin-top:14px;">Importer un data.json</label>
-      <div class="file-picker">
-        <input type="file" id="admImportFile" accept="application/json,.json">
-        <button type="button" class="file-picker-btn" data-for="admImportFile" data-i18n="file_choose_btn">Choisir un fichier</button>
-        <span class="file-picker-status" id="admImportFile_status" data-i18n="file_none_chosen">Aucun fichier choisi</span>
-      </div>
+    <div class="legal-modal-body" id="adminPanelBody">
+      <!-- Volontairement vide : le contenu réel n'est construit en JS
+           qu'après validation du mot de passe (voir buildAdminPanelHTML),
+           pour qu'il n'existe dans la page à aucun moment avant ça. -->
     </div>
   </div>
 </div>
@@ -1609,14 +1536,18 @@ function updateFilePickerStatus(input){
     status.textContent = t("file_none_chosen");
   }
 }
-document.querySelectorAll(".file-picker-btn").forEach(btn=>{
-  btn.addEventListener("click", ()=>{
-    const input = document.getElementById(btn.dataset.for);
-    if(input) input.click();
-  });
+/* Délégation d'événements (plutôt que des écouteurs posés une fois au
+   chargement) : fonctionne aussi pour les sélecteurs de fichier construits
+   dynamiquement plus tard (ex. dans l'Espace Réservé, injecté seulement
+   après le mot de passe — voir buildAdminPanelHTML). */
+document.addEventListener("click", (e)=>{
+  const btn = e.target.closest(".file-picker-btn");
+  if(!btn) return;
+  const input = document.getElementById(btn.dataset.for);
+  if(input) input.click();
 });
-document.querySelectorAll(".file-picker input[type=file]").forEach(input=>{
-  input.addEventListener("change", ()=> updateFilePickerStatus(input));
+document.addEventListener("change", (e)=>{
+  if(e.target.matches && e.target.matches(".file-picker input[type=file]")) updateFilePickerStatus(e.target);
 });
 function refreshAllFilePickerStatuses(){
   document.querySelectorAll(".file-picker input[type=file]").forEach(updateFilePickerStatus);
@@ -2708,7 +2639,7 @@ document.getElementById("adminGateSubmit").addEventListener("click", async ()=>{
   if(h === effectiveAdminHash()){
     admAttempts = 0;
     document.getElementById("adminGate").style.display = "none";
-    openAdminPanel();
+    unlockAdminPanel();
   } else {
     admAttempts++;
     if(admAttempts >= 5){
@@ -2722,7 +2653,117 @@ document.getElementById("adminGateSubmit").addEventListener("click", async ()=>{
 });
 document.getElementById("adminGatePassword").addEventListener("keydown",(e)=>{ if(e.key==="Enter") document.getElementById("adminGateSubmit").click(); });
 
+/* ============================================================
+   CONTENU DE L'ESPACE RÉSERVÉ — construit en JavaScript et injecté dans
+   le DOM SEULEMENT après une réussite au mot de passe (voir
+   unlockAdminPanel). Avant ça, #adminPanelBody est vide : personne ne
+   peut afficher les contrôles depuis les outils développeur sans passer
+   par la vérification, contrairement à un simple display:none. Fermer le
+   panneau vide à nouveau le contenu (voir closeAdminPanel) : chaque
+   ouverture doit repasser par le mot de passe.
+   ============================================================ */
+function buildAdminPanelHTML(){
+  return `
+    <div class="notice">Ces réglages sont enregistrés sur <b>cet appareil</b>. Pour les pousser chez tous les utilisateurs sans toucher au code : réglez ici, cliquez « Exporter data.json », puis déposez ce fichier à côté de index.html sur GitHub. L'application de chaque utilisateur le récupère automatiquement au prochain chargement en ligne (et garde la dernière version connue hors ligne).</div>
+
+    <h3 style="margin-top:16px;font-size:13.5px;">Identité du site</h3>
+    <label for="admTitle">Titre de l'application (onglet du navigateur)</label>
+    <input type="text" id="admTitle">
+    <label for="admTag">Sous-titre / accroche (sous le logo)</label>
+    <input type="text" id="admTag">
+    <label for="admDescription">Description (référencement)</label>
+    <textarea id="admDescription"></textarea>
+    <label for="admLogoFile">Logo du site (remplace le K par défaut)</label>
+    <div class="file-picker">
+      <input type="file" id="admLogoFile" accept="image/*">
+      <button type="button" class="file-picker-btn" data-for="admLogoFile">Choisir un fichier</button>
+      <span class="file-picker-status" id="admLogoFile_status">Aucun fichier choisi</span>
+    </div>
+    <div class="photo-grid" id="admLogoPreviewGrid"></div>
+
+    <h3 style="margin-top:16px;font-size:13.5px;">Couleurs</h3>
+    <div class="row">
+      <div><label for="admColorPrimary">Couleur principale (indigo)</label><input type="text" id="admColorPrimary" placeholder="#1B3358"></div>
+      <div><label for="admColorAccent">Couleur d'accent (ochre)</label><input type="text" id="admColorAccent" placeholder="#C08A28"></div>
+    </div>
+
+    <h3 style="margin-top:16px;font-size:13.5px;">Textes &amp; pied de page</h3>
+    <label for="admFooterDefault">Message par défaut en pied de document (essai gratuit)</label>
+    <input type="text" id="admFooterDefault">
+    <label for="admWhatsapp">Numéro WhatsApp de contact</label>
+    <input type="text" id="admWhatsapp">
+    <label for="admEmail">Email de contact</label>
+    <input type="text" id="admEmail">
+
+    <h3 style="margin-top:16px;font-size:13.5px;">Fonctionnalités</h3>
+    <label style="display:flex;align-items:center;gap:8px;font-weight:400;"><input type="checkbox" id="admFeatCaisse" style="width:auto;"> Activer la Caisse</label>
+    <label style="display:flex;align-items:center;gap:8px;font-weight:400;"><input type="checkbox" id="admFeatWa" style="width:auto;"> Activer le partage WhatsApp</label>
+    <label for="admTrialLimit">Nombre d'essais gratuits</label>
+    <input type="number" id="admTrialLimit" min="0">
+
+    <h3 style="margin-top:16px;font-size:13.5px;">🎁 Attribuer un accès à une entreprise</h3>
+    <div class="notice">Demandez à l'entreprise son fichier de sauvegarde (Réglages → Sauvegarde), importez-le ci-dessous, choisissez le niveau d'accès à lui donner, puis générez le fichier à lui renvoyer — elle l'importera de son côté via Réglages → Restaurer.</div>
+    <div class="file-picker">
+      <input type="file" id="admGrantImportFile" accept="application/json,.json">
+      <button type="button" class="file-picker-btn" data-for="admGrantImportFile">Choisir le fichier de l'entreprise</button>
+      <span class="file-picker-status" id="admGrantImportFile_status">Aucun fichier choisi</span>
+    </div>
+    <div id="admGrantCompanyInfo" class="hint" style="display:none; font-weight:600;"></div>
+    <div id="admGrantControls" style="display:none;">
+      <label for="admGrantLevel">Niveau d'accès à attribuer</label>
+      <select id="admGrantLevel"></select>
+      <button type="button" class="btn btn-ochre btn-block" id="admGrantGenerateBtn" style="margin-top:10px;">⬇️ Générer le fichier d'accès à renvoyer</button>
+    </div>
+
+    <h3 style="margin-top:16px;font-size:13.5px;">🛠️ Accès démo — sur cet appareil (le vôtre)</h3>
+    <div class="notice">Pour vos propres démonstrations : active un accès Pro illimité directement sur cet appareil, sans passer par un paiement ni par un fichier.</div>
+    <div id="admSelfStatusLine" class="hint" style="font-weight:600;"></div>
+    <div class="btn-row">
+      <button type="button" class="btn btn-primary" id="admSelfUnlimitedBtn">Activer l'accès illimité ici</button>
+      <button type="button" class="btn btn-ghost" id="admSelfRemoveBtn">Revenir à l'essai standard</button>
+    </div>
+
+    <h3 style="margin-top:16px;font-size:13.5px;">Sécurité de l'Espace Réservé</h3>
+    <label for="admNewPassword">Changer le mot de passe d'accès</label>
+    <input type="password" id="admNewPassword" placeholder="Laisser vide pour ne pas changer">
+    <label for="admNewPassword2">Confirmer le nouveau mot de passe</label>
+    <input type="password" id="admNewPassword2">
+
+    <div class="btn-row">
+      <button type="button" class="btn btn-primary" id="admApplyBtn">Appliquer sur cet appareil</button>
+      <button type="button" class="btn btn-ochre" id="admExportBtn">⬇️ Exporter data.json</button>
+      <button type="button" class="btn btn-ghost" id="admResetBtn">Réinitialiser</button>
+    </div>
+    <label for="admImportFile" style="margin-top:14px;">Importer un data.json</label>
+    <div class="file-picker">
+      <input type="file" id="admImportFile" accept="application/json,.json">
+      <button type="button" class="file-picker-btn" data-for="admImportFile">Choisir un fichier</button>
+      <span class="file-picker-status" id="admImportFile_status">Aucun fichier choisi</span>
+    </div>
+  `;
+}
+
 let admPendingLogo = null;
+let admGrantImportedPayload = null;
+let admPanelWired = false;
+
+function unlockAdminPanel(){
+  document.getElementById("adminPanelBody").innerHTML = buildAdminPanelHTML();
+  admPanelWired = false;
+  wireAdminPanelEvents();
+  openAdminPanel();
+}
+
+function closeAdminPanel(){
+  document.getElementById("adminPanel").style.display = "none";
+  // On vide le contenu réel : rouvrir exigera de repasser par le mot de
+  // passe, et rien de fonctionnel ne reste dans la page entre-temps.
+  document.getElementById("adminPanelBody").innerHTML = "";
+  admPanelWired = false;
+  admGrantImportedPayload = null;
+}
+document.getElementById("adminPanelClose").addEventListener("click", closeAdminPanel);
+
 function openAdminPanel(){
   const cfg = siteConfig || {};
   document.getElementById("admTitle").value = cfg.title || document.title || "";
@@ -2750,7 +2791,6 @@ function openAdminPanel(){
   renderAdmSelfStatus();
   document.getElementById("adminPanel").style.display = "flex";
 }
-document.getElementById("adminPanelClose").addEventListener("click", ()=> document.getElementById("adminPanel").style.display="none");
 
 /* ============================================================
    ATTRIBUER UN ACCÈS — Espace Réservé.
@@ -2771,66 +2811,6 @@ function populateGrantLevelSelect(){
   opts.push(`<option value="admin_unlimited">🎁 Accès illimité offert (démo / partenaire, sans expiration)</option>`);
   sel.innerHTML = opts.join("");
 }
-let admGrantImportedPayload = null;
-document.getElementById("admGrantImportFile").addEventListener("change", (e)=>{
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = ()=>{
-    try{
-      const parsed = JSON.parse(reader.result);
-      if(!parsed || parsed.app !== "kalcul" || !parsed.data) throw new Error("invalid");
-      admGrantImportedPayload = parsed;
-      const name = (parsed.data.settings && parsed.data.settings.name) || "(entreprise sans nom)";
-      const p = parsed.data.pro || {};
-      let statusTxt = "Gratuit / essai en cours";
-      if(p.active) statusTxt = (p.expiresAt===null) ? "Pro à vie" : ("Pro jusqu'au " + new Date(p.expiresAt).toLocaleDateString("fr-FR"));
-      document.getElementById("admGrantCompanyInfo").style.display = "block";
-      document.getElementById("admGrantCompanyInfo").textContent = `Entreprise détectée : ${name} — statut actuel : ${statusTxt}`;
-      document.getElementById("admGrantControls").style.display = "block";
-    }catch(err){
-      admGrantImportedPayload = null;
-      document.getElementById("admGrantCompanyInfo").style.display = "none";
-      document.getElementById("admGrantControls").style.display = "none";
-      alert("Ce fichier n'est pas une sauvegarde Kalcul valide.");
-    }
-  };
-  reader.readAsText(file);
-});
-document.getElementById("admGrantGenerateBtn").addEventListener("click", ()=>{
-  if(!admGrantImportedPayload){ alert("Importez d'abord le fichier de l'entreprise."); return; }
-  const level = document.getElementById("admGrantLevel").value;
-  const payload = JSON.parse(JSON.stringify(admGrantImportedPayload)); // copie profonde, ne touche pas l'original
-  payload.data.settings = payload.data.settings || {};
-
-  if(level === "free"){
-    payload.data.pro = {active:false, expiresAt:null, planId:null};
-    payload.data.trialLimitOverride = null;
-  } else if(level === "trial_bonus"){
-    payload.data.pro = {active:false, expiresAt:null, planId:null};
-    payload.data.trialLimitOverride = 999999;
-  } else if(level === "admin_unlimited"){
-    payload.data.pro = {active:true, expiresAt:null, planId:"admin_unlimited"};
-    payload.data.trialLimitOverride = null;
-  } else {
-    const plan = PLANS.find(pl=>pl.id===level);
-    if(!plan){ alert("Plan inconnu."); return; }
-    const expiresAt = plan.days===null ? null : new Date(Date.now() + plan.days*24*60*60*1000).toISOString();
-    payload.data.pro = {active:true, expiresAt, planId:plan.id};
-    payload.data.trialLimitOverride = null;
-  }
-  payload.exportedAt = new Date().toISOString();
-  payload.grantedByAdmin = true; // indique à la restauration d'appliquer directement, sans la fusion "plus avantageux"
-
-  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
-  const url = URL.createObjectURL(blob);
-  const safeName = (payload.data.settings.name || "entreprise").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g,"") || "entreprise";
-  const a = document.createElement("a");
-  a.href = url; a.download = `kalcul-acces-${safeName}.json`;
-  document.body.appendChild(a); a.click(); a.remove();
-  URL.revokeObjectURL(url);
-  alert("Fichier d'accès généré. Renvoyez-le à l'entreprise : elle l'importera de son côté via Réglages → Restaurer.");
-});
 
 /* Accès démo directement sur cet appareil (le vôtre), sans fichier ni paiement. */
 function renderAdmSelfStatus(){
@@ -2846,34 +2826,6 @@ function renderAdmSelfStatus(){
     el.textContent = "Cet appareil est en essai gratuit standard.";
   }
 }
-document.getElementById("admSelfUnlimitedBtn").addEventListener("click", ()=>{
-  pro = {active:true, expiresAt:null, planId:"admin_demo"};
-  save(KEYS.pro, pro);
-  renderAdmSelfStatus();
-  renderQuota(); renderStockQuota(); renderCaisseQuota(); renderTrialUiRestrictions();
-  if(document.getElementById("view-pro").classList.contains("active")) renderProView();
-  alert("Accès illimité activé sur cet appareil.");
-});
-document.getElementById("admSelfRemoveBtn").addEventListener("click", ()=>{
-  pro = {active:false, expiresAt:null, planId:null};
-  trialLimitOverride = null;
-  save(KEYS.pro, pro);
-  save(KEYS.trialOverride, null);
-  renderAdmSelfStatus();
-  renderQuota(); renderStockQuota(); renderCaisseQuota(); renderTrialUiRestrictions();
-  if(document.getElementById("view-pro").classList.contains("active")) renderProView();
-  alert("Retour à l'essai standard sur cet appareil.");
-});
-document.getElementById("admLogoFile").addEventListener("change", (e)=>{
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = ()=>{
-    admPendingLogo = reader.result;
-    document.getElementById("admLogoPreviewGrid").innerHTML = `<img src="${admPendingLogo}" alt="" style="width:52px;height:52px;border-radius:8px;object-fit:cover;border:1px solid var(--line);">`;
-  };
-  reader.readAsDataURL(file);
-});
 
 function readAdminForm(){
   return {
@@ -2892,55 +2844,156 @@ function readAdminForm(){
   };
 }
 
-document.getElementById("admApplyBtn").addEventListener("click", async ()=>{
-  const p1 = document.getElementById("admNewPassword").value;
-  const p2 = document.getElementById("admNewPassword2").value;
-  if(p1 || p2){
-    if(p1 !== p2){ alert("Les deux mots de passe ne correspondent pas."); return; }
-    if(p1.length < 4){ alert("Choisissez un mot de passe d'au moins 4 caractères."); return; }
-    adminSecurity.passHash = await hashText(p1);
-    save(KEYS.adminSecurity, adminSecurity);
-  }
-  siteConfig = readAdminForm();
-  save(KEYS.siteConfig, siteConfig);
-  applySiteConfig(siteConfig);
-  alert("Appliqué sur cet appareil. Exportez data.json si vous voulez le pousser chez tous les utilisateurs.");
-});
-document.getElementById("admExportBtn").addEventListener("click", ()=>{
-  const cfg = readAdminForm();
-  const blob = new Blob([JSON.stringify(cfg, null, 2)], {type:"application/json"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = "data.json";
-  document.body.appendChild(a); a.click(); a.remove();
-  URL.revokeObjectURL(url);
-});
-document.getElementById("admResetBtn").addEventListener("click", ()=>{
-  if(!confirm("Réinitialiser la configuration locale (couleurs, textes, logo) ? L'application reviendra à ses réglages d'origine sur cet appareil au prochain chargement.")) return;
-  siteConfig = null;
-  save(KEYS.siteConfig, null);
-  alert("Configuration locale réinitialisée. Rechargement...");
-  location.reload();
-});
-document.getElementById("admImportFile").addEventListener("change", (e)=>{
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = ()=>{
-    try{
-      const cfg = JSON.parse(reader.result);
-      if(!cfg || typeof cfg !== "object") throw new Error("invalid");
-      siteConfig = cfg;
-      save(KEYS.siteConfig, siteConfig);
-      openAdminPanel();
-      applySiteConfig(siteConfig);
-      alert("data.json importé et appliqué sur cet appareil.");
-    }catch(err){
-      alert("Ce fichier n'est pas un data.json Kalcul valide.");
+/* Pose tous les écouteurs des champs de l'Espace Réservé. Appelée une
+   seule fois à chaque reconstruction du panneau (unlockAdminPanel), après
+   l'injection du HTML — jamais au chargement de la page, puisque ces
+   éléments n'existent pas encore à ce moment-là. */
+function wireAdminPanelEvents(){
+  if(admPanelWired) return;
+  admPanelWired = true;
+
+  document.getElementById("admGrantImportFile").addEventListener("change", (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      try{
+        const parsed = JSON.parse(reader.result);
+        if(!parsed || parsed.app !== "kalcul" || !parsed.data) throw new Error("invalid");
+        admGrantImportedPayload = parsed;
+        const name = (parsed.data.settings && parsed.data.settings.name) || "(entreprise sans nom)";
+        const p = parsed.data.pro || {};
+        let statusTxt = "Gratuit / essai en cours";
+        if(p.active) statusTxt = (p.expiresAt===null) ? "Pro à vie" : ("Pro jusqu'au " + new Date(p.expiresAt).toLocaleDateString("fr-FR"));
+        document.getElementById("admGrantCompanyInfo").style.display = "block";
+        document.getElementById("admGrantCompanyInfo").textContent = `Entreprise détectée : ${name} — statut actuel : ${statusTxt}`;
+        document.getElementById("admGrantControls").style.display = "block";
+      }catch(err){
+        admGrantImportedPayload = null;
+        document.getElementById("admGrantCompanyInfo").style.display = "none";
+        document.getElementById("admGrantControls").style.display = "none";
+        alert("Ce fichier n'est pas une sauvegarde Kalcul valide.");
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById("admGrantGenerateBtn").addEventListener("click", ()=>{
+    if(!admGrantImportedPayload){ alert("Importez d'abord le fichier de l'entreprise."); return; }
+    const level = document.getElementById("admGrantLevel").value;
+    const payload = JSON.parse(JSON.stringify(admGrantImportedPayload)); // copie profonde, ne touche pas l'original
+    payload.data.settings = payload.data.settings || {};
+
+    if(level === "free"){
+      payload.data.pro = {active:false, expiresAt:null, planId:null};
+      payload.data.trialLimitOverride = null;
+    } else if(level === "trial_bonus"){
+      payload.data.pro = {active:false, expiresAt:null, planId:null};
+      payload.data.trialLimitOverride = 999999;
+    } else if(level === "admin_unlimited"){
+      payload.data.pro = {active:true, expiresAt:null, planId:"admin_unlimited"};
+      payload.data.trialLimitOverride = null;
+    } else {
+      const plan = PLANS.find(pl=>pl.id===level);
+      if(!plan){ alert("Plan inconnu."); return; }
+      const expiresAt = plan.days===null ? null : new Date(Date.now() + plan.days*24*60*60*1000).toISOString();
+      payload.data.pro = {active:true, expiresAt, planId:plan.id};
+      payload.data.trialLimitOverride = null;
     }
-  };
-  reader.readAsText(file);
-});
+    payload.exportedAt = new Date().toISOString();
+    payload.grantedByAdmin = true; // indique à la restauration d'appliquer directement, sans la fusion "plus avantageux"
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const safeName = (payload.data.settings.name || "entreprise").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g,"") || "entreprise";
+    const a = document.createElement("a");
+    a.href = url; a.download = `kalcul-acces-${safeName}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    alert("Fichier d'accès généré. Renvoyez-le à l'entreprise : elle l'importera de son côté via Réglages → Restaurer.");
+  });
+
+  document.getElementById("admSelfUnlimitedBtn").addEventListener("click", ()=>{
+    pro = {active:true, expiresAt:null, planId:"admin_demo"};
+    save(KEYS.pro, pro);
+    renderAdmSelfStatus();
+    renderQuota(); renderStockQuota(); renderCaisseQuota(); renderTrialUiRestrictions();
+    if(document.getElementById("view-pro").classList.contains("active")) renderProView();
+    alert("Accès illimité activé sur cet appareil.");
+  });
+  document.getElementById("admSelfRemoveBtn").addEventListener("click", ()=>{
+    pro = {active:false, expiresAt:null, planId:null};
+    trialLimitOverride = null;
+    save(KEYS.pro, pro);
+    save(KEYS.trialOverride, null);
+    renderAdmSelfStatus();
+    renderQuota(); renderStockQuota(); renderCaisseQuota(); renderTrialUiRestrictions();
+    if(document.getElementById("view-pro").classList.contains("active")) renderProView();
+    alert("Retour à l'essai standard sur cet appareil.");
+  });
+
+  document.getElementById("admLogoFile").addEventListener("change", (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      admPendingLogo = reader.result;
+      document.getElementById("admLogoPreviewGrid").innerHTML = `<img src="${admPendingLogo}" alt="" style="width:52px;height:52px;border-radius:8px;object-fit:cover;border:1px solid var(--line);">`;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById("admApplyBtn").addEventListener("click", async ()=>{
+    const p1 = document.getElementById("admNewPassword").value;
+    const p2 = document.getElementById("admNewPassword2").value;
+    if(p1 || p2){
+      if(p1 !== p2){ alert("Les deux mots de passe ne correspondent pas."); return; }
+      if(p1.length < 4){ alert("Choisissez un mot de passe d'au moins 4 caractères."); return; }
+      adminSecurity.passHash = await hashText(p1);
+      save(KEYS.adminSecurity, adminSecurity);
+    }
+    siteConfig = readAdminForm();
+    save(KEYS.siteConfig, siteConfig);
+    applySiteConfig(siteConfig);
+    alert("Appliqué sur cet appareil. Exportez data.json si vous voulez le pousser chez tous les utilisateurs.");
+  });
+  document.getElementById("admExportBtn").addEventListener("click", ()=>{
+    const cfg = readAdminForm();
+    const blob = new Blob([JSON.stringify(cfg, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "data.json";
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById("admResetBtn").addEventListener("click", ()=>{
+    if(!confirm("Réinitialiser la configuration locale (couleurs, textes, logo) ? L'application reviendra à ses réglages d'origine sur cet appareil au prochain chargement.")) return;
+    siteConfig = null;
+    save(KEYS.siteConfig, null);
+    alert("Configuration locale réinitialisée. Rechargement...");
+    location.reload();
+  });
+  document.getElementById("admImportFile").addEventListener("change", (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      try{
+        const cfg = JSON.parse(reader.result);
+        if(!cfg || typeof cfg !== "object") throw new Error("invalid");
+        siteConfig = cfg;
+        save(KEYS.siteConfig, siteConfig);
+        openAdminPanel();
+        applySiteConfig(siteConfig);
+        alert("data.json importé et appliqué sur cet appareil.");
+      }catch(err){
+        alert("Ce fichier n'est pas un data.json Kalcul valide.");
+      }
+    };
+    reader.readAsText(file);
+  });
+}
+
 
 /* ============================================================
    BOÎTES À SUGGESTIONS — 2 boutons flottants (WhatsApp / Email),

@@ -264,9 +264,10 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
 
 #print-area{display:none;}
 @media print{
+  @page{ size: A4; margin: 16mm 14mm; }
   body *{visibility:hidden;}
   #print-area, #print-area *{visibility:visible;}
-  #print-area{display:block; position:absolute; top:0; left:0; width:100%; padding:24px; font-family:var(--body); color:#000;}
+  #print-area{display:block; position:absolute; top:0; left:0; width:100%; padding:0; font-family:var(--body); color:#000;}
   nav.bottom, header.top{display:none;}
 }
 @media (max-width:400px){
@@ -1067,6 +1068,7 @@ fr: {
   powered_by:"Propulsé par", theme_toggle_label:"Changer de thème",
 
   tpl_facture:"FACTURE", tpl_devis:"DEVIS", tpl_ticket:"TICKET",
+  tpl_devis_subtitle:"Devis — sans valeur de facture", tpl_signature:"Signature",
   tpl_client:"Client", tpl_no:"N°", tpl_generated:"Généré avec Kalcul",
   tpl_generated_trial:"Généré par Kalcul", tpl_generated_pro:"Généré par Kalcul Pro",
   upsell_photos:"🔒 Réservé à Kalcul Pro — vos {n} essais gratuits ne permettent pas de photos produit.",
@@ -1234,6 +1236,7 @@ en: {
   powered_by:"Powered by", theme_toggle_label:"Toggle theme",
 
   tpl_facture:"INVOICE", tpl_devis:"QUOTE", tpl_ticket:"RECEIPT",
+  tpl_devis_subtitle:"Quote — not an invoice", tpl_signature:"Signature",
   tpl_client:"Client", tpl_no:"No.", tpl_generated:"Generated with Kalcul",
   tpl_generated_trial:"Generated with Kalcul", tpl_generated_pro:"Generated with Kalcul Pro",
   upsell_photos:"🔒 Kalcul Pro only — your {n} free trial uses don't include product photos.",
@@ -2411,7 +2414,7 @@ const LEGAL_CONTENT = {
       <li>Appuyez sur <strong>Enregistrer</strong> — c'est obligatoire avant de pouvoir imprimer, télécharger ou envoyer le document.</li>
       <li>Une fois enregistré : <strong>Imprimer/PDF</strong>, <strong>Télécharger en image</strong> et <strong>Envoyer via WhatsApp</strong> s'activent.</li>
     </ol>
-    <p><strong>Facture</strong> et <strong>Devis</strong> n'ont pas la même présentation à l'impression, volontairement : le Devis prend la forme d'un ticket simple (comme un reçu), la Facture garde une mise en page complète avec en-tête — pour que vos clients distinguent les deux d'un coup d'œil sur le papier.</p>
+    <p><strong>Facture</strong> et <strong>Devis</strong> partagent la même présentation professionnelle au format A4, avec le logo de votre entreprise (Kalcul Pro) et une signature discrète Kalcul. Seuls le titre et la couleur d'accent changent — indigo pour la Facture, violet pour le Devis, comme leurs badges dans l'Historique — pour que vos clients distinguent les deux d'un coup d'œil, sans que l'un ait l'air moins soigné que l'autre.</p>
     <p>Le bouton <strong>Nouveau</strong> vide le formulaire pour commencer un document différent. Pour corriger un document déjà enregistré, utilisez le bouton <strong>Modifier</strong> depuis l'Historique plutôt que de retaper par-dessus un document existant.</p>
 
     <h3>🗂️ Historique — tout ce qui s'est passé</h3>
@@ -2478,7 +2481,7 @@ const LEGAL_CONTENT = {
       <li>Tap <strong>Save</strong> — this is required before you can print, download or send the document.</li>
       <li>Once saved: <strong>Print/PDF</strong>, <strong>Download as image</strong> and <strong>Send via WhatsApp</strong> become active.</li>
     </ol>
-    <p><strong>Invoice</strong> and <strong>Quote</strong> deliberately have a different look when printed: the Quote takes the form of a simple ticket (like a receipt), while the Invoice keeps a full layout with a header — so your clients can tell the two apart at a glance on paper.</p>
+    <p><strong>Invoice</strong> and <strong>Quote</strong> share the same professional A4 layout, with your business logo (Kalcul Pro) and a discreet Kalcul signature. Only the title and accent color change — indigo for the Invoice, purple for the Quote, matching their badges in History — so your clients can tell the two apart at a glance, with neither looking less polished than the other.</p>
     <p>The <strong>New</strong> button clears the form to start a different document. To correct an already-saved document, use the <strong>Edit</strong> button from History rather than typing over an existing document.</p>
 
     <h3>🗂️ History — everything that happened</h3>
@@ -3298,18 +3301,14 @@ document.getElementById("saveDocBtn").addEventListener("click", ()=>{
   renderStockQuota();
 });
 
-/* Bascule vers le bon modèle visuel selon le type de document :
-   Devis → présentation "ticket" (comme les reçus Caisse), pour que le client
-   distingue clairement un devis d'une facture au premier coup d'œil.
-   Facture → modèle formel existant, inchangé. */
-function outputPrint(doc){
-  if(doc.type === "devis"){ printTicket(docToTicketData(doc)); }
-  else { printDocument(doc); }
-}
-function outputImage(doc){
-  if(doc.type === "devis"){ ticketToImage(docToTicketData(doc)); }
-  else { downloadDocAsImage(doc); }
-}
+/* Facture et Devis partagent désormais la même présentation professionnelle
+   au format A4 — seuls le titre, le sous-titre et la couleur d'accent
+   changent (indigo pour facture, violet pour devis, comme les badges déjà
+   utilisés ailleurs dans l'app) pour que vos clients distinguent les deux
+   d'un coup d'œil sans que l'un ait l'air moins soigné que l'autre. Le
+   style "ticket" reste réservé aux reçus de vente Caisse. */
+function outputPrint(doc){ printDocument(doc); }
+function outputImage(doc){ downloadDocAsImage(doc); }
 
 document.getElementById("printDocBtn").addEventListener("click", ()=>{
   const doc = getCurrentSavedDoc();
@@ -3341,50 +3340,71 @@ function docFooterText(){
 
 function printDocument(doc){
   const area = document.getElementById("print-area");
-  const rows = doc.items.map(i=>`
-    <tr>
-      <td style="padding:6px 4px;border-bottom:1px solid #ddd;">${escapeHtml(i.desc||"")}</td>
-      <td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:right;">${i.qty}</td>
-      <td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:right;">${fmtNum(i.price)}</td>
-      <td style="padding:6px 4px;border-bottom:1px solid #ddd;text-align:right;">${fmtNum(i.qty*i.price)}</td>
+  const isDevis = doc.type === "devis";
+  const accent = isDevis ? "#4B3585" : "#1B3358";
+  const accentLight = isDevis ? "#F1EDF7" : "#E9EEF5";
+  const rows = doc.items.map((i,idx)=>`
+    <tr style="background:${idx%2? accentLight : "#fff"};">
+      <td style="padding:9px 10px;">${escapeHtml(i.desc||"")}</td>
+      <td style="padding:9px 10px;text-align:right;white-space:nowrap;">${i.qty}</td>
+      <td style="padding:9px 10px;text-align:right;white-space:nowrap;">${fmtNum(i.price)}</td>
+      <td style="padding:9px 10px;text-align:right;white-space:nowrap;">${fmtNum(i.qty*i.price)}</td>
     </tr>`).join("");
   const tot = doc.totals || computeTotals();
+  const kalculMark = `
+    <div style="display:flex;align-items:center;gap:6px;opacity:.6;">
+      <svg viewBox="0 0 100 130" width="16" height="21" aria-hidden="true"><rect x="0" y="0" width="100" height="100" rx="24" fill="#0F1D33"/><text x="50" y="77" font-family="Georgia, serif" font-size="68" font-weight="700" fill="#D9A544" text-anchor="middle">K</text></svg>
+      <span style="font-size:10px;letter-spacing:1.5px;color:#777;font-weight:700;">KALCUL</span>
+    </div>`;
+  const clientLogo = (isPro() && settings.logo) ? `<img src="${settings.logo}" alt="" style="width:46px;height:46px;object-fit:cover;border-radius:8px;">` : "";
   area.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1B3358;padding-bottom:14px;margin-bottom:18px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      ${kalculMark}
+      ${clientLogo}
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid ${accent};padding-bottom:16px;margin-bottom:22px;">
       <div>
-        ${(isPro() && settings.logo) ? `<img src="${settings.logo}" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:6px;margin-bottom:6px;">` : ""}
-        <div style="font-size:20px;font-weight:700;">${escapeHtml(settings.name||"Kalcul")}</div>
-        <div style="font-size:12px;color:#555;">${escapeHtml(settings.address||"")}</div>
+        <div style="font-size:21px;font-weight:700;">${escapeHtml(settings.name||"Kalcul")}</div>
+        <div style="font-size:12px;color:#555;margin-top:3px;">${escapeHtml(settings.address||"")}</div>
         <div style="font-size:12px;color:#555;">${escapeHtml(settings.phone||"")}</div>
       </div>
       <div style="text-align:right;">
-        <div style="font-size:18px;font-weight:700;text-transform:uppercase;">${doc.type==="facture"?t("tpl_facture"):t("tpl_devis")}</div>
-        <div style="font-size:13px;">${t("tpl_no")} ${escapeHtml(doc.number)}</div>
-        <div style="font-size:13px;">${escapeHtml(doc.date||"")}</div>
+        <div style="font-size:27px;font-weight:800;letter-spacing:.5px;color:${accent};">${isDevis?t("tpl_devis"):t("tpl_facture")}</div>
+        ${isDevis ? `<div style="font-size:11px;color:#888;font-style:italic;margin-top:2px;">${t("tpl_devis_subtitle")}</div>` : ""}
+        <div style="font-size:13px;color:#555;margin-top:6px;">${t("tpl_no")} ${escapeHtml(doc.number)}</div>
+        <div style="font-size:13px;color:#555;">${escapeHtml(doc.date||"")}</div>
       </div>
     </div>
-    <div style="margin-bottom:14px;">
-      <div style="font-size:11px;text-transform:uppercase;color:#888;">${t("tpl_client")}</div>
-      <div style="font-size:14px;font-weight:600;">${escapeHtml(doc.clientName||"")}</div>
+    <div style="background:${accentLight};border-radius:8px;padding:12px 16px;margin-bottom:22px;max-width:280px;margin-left:auto;">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#888;">${t("tpl_client")}</div>
+      <div style="font-size:14px;font-weight:700;margin-top:3px;">${escapeHtml(doc.clientName||"")}</div>
       <div style="font-size:12px;color:#555;">${escapeHtml(doc.clientPhone||"")}</div>
     </div>
     <table style="width:100%;border-collapse:collapse;font-size:13px;">
-      <thead><tr>
-        <th style="text-align:left;padding:6px 4px;border-bottom:2px solid #1B3358;">${t("th_desc")}</th>
-        <th style="text-align:right;padding:6px 4px;border-bottom:2px solid #1B3358;">${t("th_qty")}</th>
-        <th style="text-align:right;padding:6px 4px;border-bottom:2px solid #1B3358;">${t("th_price")}</th>
-        <th style="text-align:right;padding:6px 4px;border-bottom:2px solid #1B3358;">${t("th_amount")}</th>
+      <thead><tr style="background:${accent};color:#fff;">
+        <th style="text-align:left;padding:10px;font-weight:600;">${t("th_desc")}</th>
+        <th style="text-align:right;padding:10px;font-weight:600;">${t("th_qty")}</th>
+        <th style="text-align:right;padding:10px;font-weight:600;">${t("th_price")}</th>
+        <th style="text-align:right;padding:10px;font-weight:600;">${t("th_amount")}</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
-    <div style="margin-top:14px;margin-left:auto;width:260px;font-size:13px;">
-      <div style="display:flex;justify-content:space-between;padding:2px 0;"><span>${t("sub_subtotal")}</span><span>${fmt(tot.subtotal)}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:2px 0;"><span>${t("sub_discount")}</span><span>-${fmt(tot.discountAmt)}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:2px 0;"><span>${t("sub_tax")}</span><span>${fmt(tot.taxAmt)}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:6px 0;font-weight:700;font-size:16px;border-top:2px solid #000;margin-top:4px;"><span>${t("sub_total")}</span><span>${fmt(tot.total)}</span></div>
+    <div style="margin-top:18px;margin-left:auto;width:280px;font-size:13px;">
+      <div style="display:flex;justify-content:space-between;padding:3px 4px;"><span>${t("sub_subtotal")}</span><span>${fmt(tot.subtotal)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:3px 4px;"><span>${t("sub_discount")}</span><span>-${fmt(tot.discountAmt)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:3px 4px;"><span>${t("sub_tax")}</span><span>${fmt(tot.taxAmt)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:11px 12px;font-weight:700;font-size:16px;background:${accent};color:#fff;border-radius:6px;margin-top:6px;"><span>${t("sub_total")}</span><span>${fmt(tot.total)}</span></div>
     </div>
-    ${doc.notes ? `<div style="margin-top:20px;font-size:12px;color:#555;white-space:pre-wrap;">${escapeHtml(doc.notes)}</div>` : ""}
-    <div style="margin-top:30px;font-size:10px;color:#999;text-align:center;">${escapeHtml(docFooterText())}</div>
+    ${doc.notes ? `<div style="margin-top:24px;font-size:12px;color:#555;white-space:pre-wrap;border-left:3px solid ${accentLight};padding-left:10px;">${escapeHtml(doc.notes)}</div>` : ""}
+    <div style="display:flex;justify-content:flex-end;margin-top:48px;">
+      <div style="text-align:center;">
+        <div style="border-top:1px solid #999;width:170px;padding-top:6px;font-size:11px;color:#777;">${t("tpl_signature")}</div>
+      </div>
+    </div>
+    <div style="margin-top:34px;padding-top:12px;border-top:1px solid #ddd;text-align:center;font-size:10px;color:#999;line-height:1.6;">
+      ${escapeHtml(settings.name||"")}${settings.address?" · "+escapeHtml(settings.address):""}${settings.phone?" · "+escapeHtml(settings.phone):""}
+      <br>${escapeHtml(docFooterText())}
+    </div>
   `;
   window.print();
 }
@@ -3421,12 +3441,25 @@ function loadImage(src){
   });
 }
 
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y, x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r);
+  ctx.arcTo(x, y, x+w, y, r);
+  ctx.closePath();
+}
+
 async function buildDocCanvas(doc){
   const scale = 2;
   const W = 900;
-  const marginX = 40;
+  const marginX = 44;
   const contentW = W - marginX*2;
   const descColW = contentW*0.44;
+  const isDevis = doc.type === "devis";
+  const accent = isDevis ? "#4B3585" : "#1B3358";
+  const accentLight = isDevis ? "#F1EDF7" : "#E9EEF5";
 
   const meas = document.createElement("canvas").getContext("2d");
   meas.font = "13px " + IMG_BODY_FONT;
@@ -3436,12 +3469,12 @@ async function buildDocCanvas(doc){
   });
   const itemsBlockH = rowsLayout.reduce((s,r)=>s+r.height, 0);
   meas.font = "11px " + IMG_BODY_FONT;
-  const notesLines = doc.notes ? wrapCanvasText(meas, doc.notes, contentW) : [];
+  const notesLines = doc.notes ? wrapCanvasText(meas, doc.notes, contentW-14) : [];
 
-  const headerH = 110, clientH = 60, tableHeadH = 34, totalsH = 116;
-  const notesH = notesLines.length ? (notesLines.length*15 + 26) : 0;
-  const footerH = 34;
-  const H = headerH + clientH + tableHeadH + itemsBlockH + totalsH + notesH + footerH + 40;
+  const topRowH = 40, headerH = 92, clientH = 74, tableHeadH = 34, totalsH = 128, signatureH = 60;
+  const notesH = notesLines.length ? (notesLines.length*15 + 30) : 0;
+  const footerH = 46;
+  const H = topRowH + headerH + clientH + tableHeadH + itemsBlockH + totalsH + notesH + signatureH + footerH + 30;
 
   const canvas = document.createElement("canvas");
   canvas.width = W*scale;
@@ -3451,15 +3484,26 @@ async function buildDocCanvas(doc){
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, W, H);
 
-  let y = 30;
-  let textX = marginX;
+  let y = 26;
+  // Ligne de marque : logo Kalcul (discret) à gauche, logo de l'entreprise (Kalcul Pro) à droite
+  ctx.globalAlpha = 0.6;
+  ctx.fillStyle = "#0F1D33";
+  roundRect(ctx, marginX, y-14, 18, 18, 5); ctx.fill();
+  ctx.fillStyle = "#D9A544"; ctx.font = "bold 12px " + IMG_DISPLAY_FONT; ctx.textAlign = "center";
+  ctx.fillText("K", marginX+9, y+1);
+  ctx.fillStyle = "#777"; ctx.font = "bold 9px " + IMG_BODY_FONT; ctx.textAlign = "left";
+  ctx.fillText("KALCUL", marginX+24, y+1);
+  ctx.globalAlpha = 1;
   if(isPro() && settings.logo){
     try{
-      const img = await loadImage(settings.logo);
-      ctx.drawImage(img, marginX, y-6, 48, 48);
-      textX = marginX + 58;
+      const clientLogoImg = await loadImage(settings.logo);
+      ctx.drawImage(clientLogoImg, W-marginX-40, y-20, 40, 40);
     }catch(e){ /* logo illisible : on continue sans */ }
   }
+  y += topRowH;
+
+  // En-tête : coordonnées entreprise à gauche, titre + numéro à droite
+  let textX = marginX;
   ctx.fillStyle = "#241B10";
   ctx.textAlign = "left";
   ctx.font = "bold 20px " + IMG_DISPLAY_FONT;
@@ -3470,85 +3514,111 @@ async function buildDocCanvas(doc){
   ctx.fillText(settings.phone || "", textX, y+44);
 
   ctx.textAlign = "right";
-  ctx.fillStyle = "#241B10";
-  ctx.font = "bold 18px " + IMG_BODY_FONT;
-  ctx.fillText(doc.type==="facture" ? t("tpl_facture") : t("tpl_devis"), W-marginX, y+8);
+  ctx.fillStyle = accent;
+  ctx.font = "bold 24px " + IMG_BODY_FONT;
+  ctx.fillText(isDevis ? t("tpl_devis") : t("tpl_facture"), W-marginX, y+10);
+  let rightY = y + 28;
+  if(isDevis){
+    ctx.font = "italic 10.5px " + IMG_BODY_FONT; ctx.fillStyle = "#888";
+    ctx.fillText(t("tpl_devis_subtitle"), W-marginX, rightY);
+    rightY += 16;
+  }
   ctx.font = "13px " + IMG_BODY_FONT;
   ctx.fillStyle = "#5B4E3A";
-  ctx.fillText(t("tpl_no") + " " + doc.number, W-marginX, y+26);
-  ctx.fillText(doc.date || "", W-marginX, y+42);
+  ctx.fillText(t("tpl_no") + " " + doc.number, W-marginX, rightY);
+  ctx.fillText(doc.date || "", W-marginX, rightY+18);
 
-  y += headerH - 30;
-  ctx.strokeStyle = "#1B3358"; ctx.lineWidth = 3;
+  y += headerH - 20;
+  ctx.strokeStyle = accent; ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(marginX, y); ctx.lineTo(W-marginX, y); ctx.stroke();
-  y += 24;
+  y += 22;
 
+  // Bloc client, encadré et teinté, aligné à droite comme dans la version imprimée
+  const clientBoxW = 260, clientBoxH = 58, clientBoxX = W-marginX-clientBoxW;
+  ctx.fillStyle = accentLight;
+  roundRect(ctx, clientBoxX, y, clientBoxW, clientBoxH, 8); ctx.fill();
   ctx.textAlign = "left";
-  ctx.fillStyle = "#888"; ctx.font = "10px " + IMG_BODY_FONT;
-  ctx.fillText(t("tpl_client").toUpperCase(), marginX, y);
-  ctx.fillStyle = "#241B10"; ctx.font = "bold 14px " + IMG_BODY_FONT;
-  ctx.fillText(doc.clientName || "", marginX, y+18);
-  ctx.font = "12px " + IMG_BODY_FONT; ctx.fillStyle = "#5B4E3A";
-  ctx.fillText(doc.clientPhone || "", marginX, y+34);
+  ctx.fillStyle = "#888"; ctx.font = "9px " + IMG_BODY_FONT;
+  ctx.fillText(t("tpl_client").toUpperCase(), clientBoxX+14, y+18);
+  ctx.fillStyle = "#241B10"; ctx.font = "bold 13px " + IMG_BODY_FONT;
+  ctx.fillText(doc.clientName || "", clientBoxX+14, y+35);
+  ctx.font = "11.5px " + IMG_BODY_FONT; ctx.fillStyle = "#5B4E3A";
+  ctx.fillText(doc.clientPhone || "", clientBoxX+14, y+50);
   y += clientH;
 
   const col = { desc:marginX, qty:marginX+contentW*0.50, price:marginX+contentW*0.72, amount:W-marginX };
-  ctx.strokeStyle = "#1B3358"; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(marginX, y); ctx.lineTo(W-marginX, y); ctx.stroke();
-  y += 18;
-  ctx.font = "bold 11px " + IMG_BODY_FONT; ctx.fillStyle = "#5B4E3A";
-  ctx.textAlign = "left"; ctx.fillText(t("th_desc").toUpperCase(), col.desc, y);
+  ctx.fillStyle = accent;
+  ctx.fillRect(marginX, y, contentW, tableHeadH);
+  ctx.fillStyle = "#fff"; ctx.font = "bold 11px " + IMG_BODY_FONT;
+  ctx.textAlign = "left"; ctx.fillText(t("th_desc").toUpperCase(), col.desc+8, y+21);
   ctx.textAlign = "right";
-  ctx.fillText(t("th_qty").toUpperCase(), col.qty, y);
-  ctx.fillText(t("th_price").toUpperCase(), col.price, y);
-  ctx.fillText(t("th_amount").toUpperCase(), col.amount, y);
-  y += 10;
-  ctx.beginPath(); ctx.moveTo(marginX, y); ctx.lineTo(W-marginX, y); ctx.stroke();
-  y += 6;
+  ctx.fillText(t("th_qty").toUpperCase(), col.qty, y+21);
+  ctx.fillText(t("th_price").toUpperCase(), col.price, y+21);
+  ctx.fillText(t("th_amount").toUpperCase(), col.amount-8, y+21);
+  y += tableHeadH;
 
   ctx.font = "13px " + IMG_BODY_FONT;
-  rowsLayout.forEach(r=>{
+  rowsLayout.forEach((r, idx)=>{
     const rowTop = y;
+    if(idx % 2 === 1){ ctx.fillStyle = accentLight; ctx.fillRect(marginX, rowTop, contentW, r.height); }
     ctx.fillStyle = "#241B10";
     ctx.textAlign = "left";
-    r.lines.forEach((line,i)=> ctx.fillText(line, col.desc, rowTop+14+i*17));
+    r.lines.forEach((line,i)=> ctx.fillText(line, col.desc+8, rowTop+14+i*17));
     ctx.textAlign = "right";
     const midY = rowTop + (r.height/2) + 4;
     ctx.fillText(String(r.item.qty), col.qty, midY);
     ctx.fillText(fmtNum(r.item.price), col.price, midY);
-    ctx.fillText(fmtNum(r.item.qty*r.item.price), col.amount, midY);
+    ctx.fillText(fmtNum(r.item.qty*r.item.price), col.amount-8, midY);
     y += r.height;
-    ctx.strokeStyle = "#EFE6CC"; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(marginX, y-2); ctx.lineTo(W-marginX, y-2); ctx.stroke();
   });
+  ctx.strokeStyle = "#ddd"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(marginX, y); ctx.lineTo(W-marginX, y); ctx.stroke();
 
-  y += 16;
+  y += 20;
   const tot = doc.totals || computeTotals();
+  const totBoxW = 280, totBoxX = W-marginX-totBoxW;
   const drawTotalLine = (label, valStr, bold)=>{
     ctx.textAlign = "left"; ctx.font = (bold?"bold ":"") + "13px " + IMG_BODY_FONT;
     ctx.fillStyle = "#241B10";
-    ctx.fillText(label, W-marginX-220, y);
+    ctx.fillText(label, totBoxX+10, y);
     ctx.textAlign = "right";
-    ctx.fillText(valStr, W-marginX, y);
-    y += 20;
+    ctx.fillText(valStr, W-marginX-10, y);
+    y += 21;
   };
   drawTotalLine(t("sub_subtotal"), fmt(tot.subtotal));
   drawTotalLine(t("sub_discount"), "-" + fmt(tot.discountAmt));
   drawTotalLine(t("sub_tax"), fmt(tot.taxAmt));
-  ctx.strokeStyle = "#000"; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(W-marginX-220, y); ctx.lineTo(W-marginX, y); ctx.stroke();
-  y += 22;
-  ctx.font = "bold 16px " + IMG_BODY_FONT;
-  drawTotalLine(t("sub_total"), fmt(tot.total), true);
+  y += 6;
+  ctx.fillStyle = accent;
+  roundRect(ctx, totBoxX, y, totBoxW, 34, 6); ctx.fill();
+  ctx.fillStyle = "#fff"; ctx.font = "bold 15px " + IMG_BODY_FONT;
+  ctx.textAlign = "left"; ctx.fillText(t("sub_total"), totBoxX+12, y+22);
+  ctx.textAlign = "right"; ctx.fillText(fmt(tot.total), W-marginX-12, y+22);
+  y += 34;
 
   if(notesLines.length){
-    y += 8;
+    y += 18;
+    ctx.fillStyle = accentLight;
+    ctx.fillRect(marginX, y-14, 3, notesLines.length*15+8);
     ctx.font = "11px " + IMG_BODY_FONT; ctx.fillStyle = "#5B4E3A"; ctx.textAlign = "left";
-    notesLines.forEach(l=>{ ctx.fillText(l, marginX, y); y += 15; });
+    notesLines.forEach(l=>{ ctx.fillText(l, marginX+12, y); y += 15; });
   }
 
+  // Ligne de signature
+  y += 30;
+  ctx.strokeStyle = "#999"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(W-marginX-170, y); ctx.lineTo(W-marginX, y); ctx.stroke();
+  ctx.fillStyle = "#777"; ctx.font = "11px " + IMG_BODY_FONT; ctx.textAlign = "center";
+  ctx.fillText(t("tpl_signature"), W-marginX-85, y+16);
+
+  // Pied de page
+  y += footerH;
+  ctx.strokeStyle = "#ddd"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(marginX, y-footerH+18); ctx.lineTo(W-marginX, y-footerH+18); ctx.stroke();
   ctx.textAlign = "center"; ctx.font = "10px " + IMG_BODY_FONT; ctx.fillStyle = "#999";
-  ctx.fillText(docFooterText(), W/2, H-18);
+  const footerLine1 = [settings.name, settings.address, settings.phone].filter(Boolean).join(" · ");
+  ctx.fillText(footerLine1, W/2, y-footerH+34);
+  ctx.fillText(docFooterText(), W/2, y-footerH+48);
 
   return canvas;
 }
@@ -3760,7 +3830,7 @@ function waMessageForDoc(doc){
   return t("wa_share_message", {label, number: doc.number, company: settings.name||"Kalcul", total});
 }
 async function shareDocViaWhatsApp(doc){
-  const canvas = doc.type === "devis" ? await buildTicketCanvas(docToTicketData(doc)) : await buildDocCanvas(doc);
+  const canvas = await buildDocCanvas(doc);
   shareImageViaWhatsApp(canvas, (doc.number||"document")+".png", waMessageForDoc(doc), doc.clientPhone);
 }
 async function shareSaleViaWhatsApp(sale){

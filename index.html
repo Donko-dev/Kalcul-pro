@@ -2439,7 +2439,7 @@ const LEGAL_CONTENT = {
     </ul>
 
     <h3>★ Kalcul Pro</h3>
-    <p>10 essais gratuits, partagés entre la création de factures/devis, de produits en Stock, et de ventes en Caisse (modifier un élément déjà créé reste toujours gratuit). Pendant l'essai gratuit : pas de photos produit, pas de logo sur les documents, pied de page fixe « Généré par Kalcul ». Kalcul Pro débloque tout, sans limite, avec choix du plan (Mensuel à À vie), payé en une seule fois via KKiaPay — Mobile Money ou carte bancaire — jamais de prélèvement automatique.</p>
+    <p>10 essais gratuits, partagés entre la création de factures/devis, de produits en Stock, et de ventes en Caisse (modifier un élément déjà créé reste toujours gratuit). Pendant l'essai gratuit : pas de photos produit, pas de logo sur les documents, pied de page fixe « Généré par Kalcul ». Kalcul Pro débloque tout, sans limite — dont le logo de votre entreprise en filigrane discret sur vos factures et devis, pour limiter les falsifications — avec choix du plan (Mensuel à À vie), payé en une seule fois via KKiaPay — Mobile Money ou carte bancaire — jamais de prélèvement automatique.</p>
 
     <h3>💬 Boîte à suggestions</h3>
     <p>Disponible en pied de page et via les deux boutons flottants (WhatsApp / Email) : proposez une idée ou signalez un problème directement à Empire Donko, sans quitter l'application.</p>
@@ -2506,7 +2506,7 @@ const LEGAL_CONTENT = {
     </ul>
 
     <h3>★ Kalcul Pro</h3>
-    <p>10 free trial uses, shared between creating invoices/quotes, products in Stock, and sales in the POS (editing an already-created item is always free). During the free trial: no product photos, no logo on documents, fixed "Generated with Kalcul" footer. Kalcul Pro unlocks everything, without limit, with your choice of plan (Monthly to Lifetime), paid once via KKiaPay — Mobile Money or bank card — never an automatic debit.</p>
+    <p>10 free trial uses, shared between creating invoices/quotes, products in Stock, and sales in the POS (editing an already-created item is always free). During the free trial: no product photos, no logo on documents, fixed "Generated with Kalcul" footer. Kalcul Pro unlocks everything, without limit — including your business logo as a discreet watermark on your invoices and quotes, to limit forgery — with your choice of plan (Monthly to Lifetime), paid once via KKiaPay — Mobile Money or bank card — never an automatic debit.</p>
 
     <h3>💬 Suggestion box</h3>
     <p>Available in the footer and via the two floating buttons (WhatsApp / Email): send an idea or report an issue directly to Empire Donko, without leaving the app.</p>
@@ -3357,7 +3357,18 @@ function printDocument(doc){
       <span style="font-size:10px;letter-spacing:1.5px;color:#777;font-weight:700;">KALCUL</span>
     </div>`;
   const clientLogo = (isPro() && settings.logo) ? `<img src="${settings.logo}" alt="" style="width:46px;height:46px;object-fit:cover;border-radius:8px;">` : "";
+  // Filigrane anti-falsification : le logo de l'entreprise en très faible
+  // opacité, centré derrière tout le contenu — uniquement pour les abonnés
+  // Kalcul Pro ayant configuré un logo. Rend plus difficile la copie du
+  // document pour en fabriquer un faux (un client malintentionné qui
+  // effacerait juste le texte laisserait le filigrane visible).
+  const watermark = (isPro() && settings.logo) ? `
+    <div style="position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:0; pointer-events:none;">
+      <img src="${settings.logo}" alt="" style="width:55%; max-width:420px; opacity:.08; object-fit:contain;">
+    </div>` : "";
   area.innerHTML = `
+    ${watermark}
+    <div style="position:relative; z-index:1;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
       ${kalculMark}
       ${clientLogo}
@@ -3404,6 +3415,7 @@ function printDocument(doc){
     <div style="margin-top:34px;padding-top:12px;border-top:1px solid #ddd;text-align:center;font-size:10px;color:#999;line-height:1.6;">
       ${escapeHtml(settings.name||"")}${settings.address?" · "+escapeHtml(settings.address):""}${settings.phone?" · "+escapeHtml(settings.phone):""}
       <br>${escapeHtml(docFooterText())}
+    </div>
     </div>
   `;
   window.print();
@@ -3483,6 +3495,23 @@ async function buildDocCanvas(doc){
   ctx.scale(scale, scale);
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, W, H);
+
+  // Filigrane anti-falsification : logo de l'entreprise, très faible
+  // opacité, centré sur toute la hauteur du document — uniquement pour
+  // les abonnés Kalcul Pro ayant configuré un logo. Dessiné en tout
+  // premier, donc derrière tout le reste (ordre de dessin = ordre d'empilement).
+  if(isPro() && settings.logo){
+    try{
+      const wmImg = await loadImage(settings.logo);
+      const ratio = wmImg.width / wmImg.height;
+      let wmW = W * 0.55, wmH = wmW / ratio;
+      if(wmH > H * 0.7){ wmH = H * 0.7; wmW = wmH * ratio; }
+      ctx.save();
+      ctx.globalAlpha = 0.08;
+      ctx.drawImage(wmImg, W/2 - wmW/2, H/2 - wmH/2, wmW, wmH);
+      ctx.restore();
+    }catch(e){ /* logo illisible : pas de filigrane, le reste du document continue normalement */ }
+  }
 
   let y = 26;
   // Ligne de marque : logo Kalcul (discret) à gauche, logo de l'entreprise (Kalcul Pro) à droite

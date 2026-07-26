@@ -95,7 +95,7 @@ header.top{
   padding:14px 18px 14px;
   position:sticky; top:0; z-index:20;
 }
-.top-row{display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}
+.top-row{display:flex; align-items:flex-start; justify-content:space-between; gap:10px; max-width:640px; width:100%; margin:0 auto;}
 header.top .brand{
   display:flex; align-items:center; gap:9px;
 }
@@ -104,7 +104,7 @@ header.top .brand .mark{
   font-family:var(--display); font-size:22px; font-weight:700; letter-spacing:.5px;
 }
 header.top .brand .tag{font-size:11px; color:var(--ochre-soft); text-transform:uppercase; letter-spacing:1.5px;}
-header.top .company{margin-top:6px; font-size:13px; color:#D9CFE0; display:flex; align-items:center; gap:8px;}
+header.top .company{margin:6px auto 0; max-width:640px; width:100%; font-size:13px; color:#D9CFE0; display:flex; align-items:center; gap:8px; box-sizing:border-box;}
 header.top .company img{width:22px;height:22px;border-radius:5px;object-fit:cover;background:#fff;}
 .header-btns{display:flex; gap:8px; flex-shrink:0;}
 .theme-toggle{
@@ -250,6 +250,7 @@ table.items td.amount{text-align:right; font-size:13.5px; white-space:nowrap;}
 
 nav.bottom{
   position:fixed; bottom:0; left:0; right:0; z-index:30;
+  max-width:640px; margin:0 auto;
   background:var(--indigo); border-top:1px solid var(--indigo-deep);
   display:flex; padding:6px 4px calc(6px + env(safe-area-inset-bottom));
 }
@@ -310,13 +311,19 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
 
 /* modale CGU / mentions / politique / à propos */
 .legal-overlay{
-  position:fixed; inset:0; background:rgba(18,14,8,.6); z-index:100;
-  display:flex; align-items:flex-end; justify-content:center;
+  position:fixed; top:0; right:0; bottom:0; left:0; inset:0; background:rgba(18,14,8,.6); z-index:100;
+  display:flex; align-items:flex-end; justify-content:center; padding:0;
 }
 .legal-modal{
   background:var(--white); width:100%; max-width:640px; max-height:86vh;
   border-radius:16px 16px 0 0; display:flex; flex-direction:column; overflow:hidden;
   box-shadow:0 -8px 30px rgba(0,0,0,.25);
+}
+@media (min-width:700px){
+  /* Sur grand écran, une feuille collée en bas de l'écran passe facilement
+     inaperçue : on affiche plutôt une vraie boîte de dialogue centrée. */
+  .legal-overlay{ align-items:center; padding:24px; }
+  .legal-modal{ max-height:80vh; border-radius:16px; box-shadow:0 12px 40px rgba(0,0,0,.3); }
 }
 .legal-modal-header{
   display:flex; justify-content:space-between; align-items:center; gap:10px;
@@ -392,6 +399,37 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
 .plan-old-price{font-size:12.5px; color:var(--ink-soft); text-decoration:line-through; margin-top:5px;}
 .plan-price{font-size:17px; font-weight:700; color:var(--indigo-deep); margin-top:1px;}
 .plan-sub{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
+
+/* ============================================================
+   AFFICHAGE ORDINATEUR — au-delà de 900px, l'app s'élargit en un
+   véritable format bureau : colonne centrée plus large, fond neutre
+   autour pour bien la distinguer, listes en grille sur plusieurs
+   colonnes. En dessous de 900px (téléphones, tablettes), rien ne change.
+   ============================================================ */
+@media (min-width:900px){
+  body{ background:var(--paper-2); padding-bottom:0; }
+  header.top{ padding:18px 28px; }
+  .top-row, header.top .company{ max-width:900px; }
+  .weave{ max-width:900px; margin:0 auto; }
+  main{ max-width:900px; padding:28px 24px 100px; }
+  nav.bottom{ max-width:900px; border-radius:14px 14px 0 0; box-shadow:0 -6px 24px rgba(0,0,0,.12); }
+
+  .card{ padding:20px 24px; }
+  h2{ font-size:18.5px; }
+
+  /* Stock et Caisse profitent de la largeur en deux colonnes */
+  #stockList{ display:grid; grid-template-columns:repeat(2, 1fr); gap:4px 16px; align-content:start; }
+  .stock-item{ break-inside:avoid; }
+  #posProductList{ display:grid; grid-template-columns:repeat(2, 1fr); gap:2px 16px; align-content:start; }
+
+  /* Boutons flottants de suggestion : décalés pour rester hors de la
+     colonne centrale plutôt que de flotter au hasard sur un fond neutre */
+  #suggestFab{ right:calc(50% - 450px + 14px); }
+}
+@media (min-width:1180px){
+  .top-row, header.top .company, .weave, main, nav.bottom{ max-width:1080px; }
+  #suggestFab{ right:calc(50% - 540px + 14px); }
+}
 </style>
 </head>
 <body>

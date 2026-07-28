@@ -441,6 +441,23 @@ nav.bottom button.active{color:#fff; background:rgba(255,255,255,.08);}
   .top-row, header.top .company, .weave, main, nav.bottom{ max-width:1080px; }
   #suggestFab{ right:calc(50% - 540px + 14px); }
 }
+
+/* ============================================================
+   FILET DE SÉCURITÉ — widget de paiement KKiaPay.
+   Sur ordinateur, certains widgets tiers (ouverts en superposition)
+   peuvent se retrouver mal empilés par rapport au reste de la page —
+   une partie visible, le formulaire caché derrière le contenu. On force
+   ici tout élément que KKiaPay pourrait injecter (par nom de classe/id
+   probable, ou tout iframe pointant vers leur domaine) à toujours passer
+   strictement au-dessus de tout le reste, quel que soit l'écran. Cette
+   règle n'a aucun effet si KKiaPay utilise déjà ses propres noms — elle
+   sert uniquement de garde-fou, sans rien changer d'autre sur le site. */
+iframe[src*="kkiapay"],
+[id*="kkiapay" i], [class*="kkiapay" i],
+[id*="widget" i][id*="pay" i], [class*="widget" i][class*="pay" i]{
+  position:fixed !important;
+  z-index:999999 !important;
+}
 </style>
 </head>
 <body>

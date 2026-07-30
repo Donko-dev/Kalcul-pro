@@ -611,6 +611,18 @@ iframe[src*="kkiapay"],
         </div>
       </div>
 
+      <label for="clientCountry" data-i18n="client_country_label">Pays du client</label>
+      <select id="clientCountry"></select>
+
+      <label style="display:flex;align-items:center;gap:8px;font-weight:400;margin-top:12px;">
+        <input type="checkbox" id="clientIsB2B" style="width:auto;">
+        <span data-i18n="client_b2b_label">Client entreprise (B2B)</span>
+      </label>
+      <div id="clientTaxIdWrap" style="display:none;">
+        <label for="clientTaxId" data-i18n="client_taxid_label">Numéro fiscal / IFU / TVA intracommunautaire du client</label>
+        <input type="text" id="clientTaxId">
+      </div>
+
       <label style="margin-top:16px;" data-i18n="items_label">Articles / prestations</label>
       <table class="items">
         <thead>
@@ -626,10 +638,13 @@ iframe[src*="kkiapay"],
           <input type="number" id="discountPct" class="mono-input" min="0" max="100" value="0">
         </div>
         <div>
-          <label for="taxPct" data-i18n="tax_label">TVA (%)</label>
+          <label for="taxPct" id="taxPctLabel" data-i18n="tax_label">TVA (%)</label>
           <input type="number" id="taxPct" class="mono-input" min="0" max="100" value="0">
         </div>
       </div>
+      <div id="taxAutoHint" class="hint" style="display:none;"></div>
+      <div id="reverseChargeHint" class="notice" style="display:none;" data-i18n="reverse_charge_hint">Autoliquidation : le client déclare et paie lui-même la TVA dans son pays. Le taux est donc de 0% sur ce document.</div>
+      <div id="taxExemptHint" class="notice" style="display:none;" data-i18n="tax_exempt_hint">La TVA est désactivée dans vos Réglages — une mention d'exonération sera ajoutée automatiquement sur le document.</div>
 
       <label for="notes" data-i18n="notes_label">Notes / conditions</label>
       <textarea id="notes" data-i18n-placeholder="notes_placeholder" placeholder="Ex : Paiement à réception, validité du devis 15 jours..."></textarea>
@@ -637,7 +652,8 @@ iframe[src*="kkiapay"],
       <div class="totals">
         <div class="line"><span data-i18n="sub_subtotal">Sous-total</span><span class="amount" id="tSubtotal">0</span></div>
         <div class="line"><span data-i18n="sub_discount">Remise</span><span class="amount" id="tDiscount">0</span></div>
-        <div class="line"><span data-i18n="sub_tax">TVA</span><span class="amount" id="tTax">0</span></div>
+        <div class="line"><span data-i18n="sub_ht">Total HT</span><span class="amount" id="tHT">0</span></div>
+        <div class="line"><span id="tTaxLabel" data-i18n="sub_tax">TVA</span><span class="amount" id="tTax">0</span></div>
         <div class="line total"><span data-i18n="sub_total">Total</span><span class="amount" id="tTotal">0 F CFA</span></div>
       </div>
 
@@ -755,9 +771,30 @@ iframe[src*="kkiapay"],
       <div class="sub" data-i18n="footer_msg_sub">Remplace « Généré par Kalcul Pro » par votre propre message sur tous vos documents.</div>
       <div class="notice" id="footerMsgUpsell" style="display:none;"></div>
 
+      <label for="setTaxId" data-i18n="settax_id_label">Numéro fiscal de l'entreprise (IFU, TVA intracommunautaire, USt-IdNr...)</label>
+      <input type="text" id="setTaxId" data-i18n-placeholder="settax_id_placeholder" placeholder="Ex : 0202112291540">
+      <div class="sub" data-i18n="settax_id_sub">Optionnel. Affiché sur vos factures et devis si renseigné.</div>
+
       <div class="btn-row">
         <button type="button" class="btn btn-primary" id="saveSettingsBtn" data-i18n="save_settings_btn">Enregistrer</button>
       </div>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="tax_t">Taxes &amp; TVA</h2>
+      <div class="sub" data-i18n="tax_s">Calcul automatique de la TVA selon le pays du client, avec gestion B2B/B2C — modifiable manuellement à tout moment.</div>
+      <label style="display:flex;align-items:center;gap:8px;font-weight:400;">
+        <input type="checkbox" id="setTaxEnabled" style="width:auto;" checked>
+        <span data-i18n="tax_enable_toggle">Activer la TVA</span>
+      </label>
+      <div class="notice" id="taxDisabledNotice" style="display:none;" data-i18n="tax_disabled_notice">TVA désactivée : aucune taxe ne sera appliquée, et une mention d'exonération adaptée à votre pays sera ajoutée automatiquement sur vos documents.</div>
+      <div class="hint" data-i18n="tax_rates_hint">Les taux par défaut sont fournis à titre indicatif par pays et peuvent ne pas être exacts partout (notamment États-Unis et Canada, où la taxe varie localement) — vérifiez auprès d'un comptable pour votre situation exacte.</div>
+
+      <label style="display:flex;align-items:center;gap:8px;font-weight:400;margin-top:16px;">
+        <input type="checkbox" id="setInvoiceLock" style="width:auto;">
+        <span data-i18n="invoice_lock_toggle">Verrouiller les factures après enregistrement (anti-modification)</span>
+      </label>
+      <div class="notice" data-i18n="invoice_lock_notice">Une fois activé, toute facture enregistrée devient définitive : la corriger nécessite de générer un avoir plutôt que de la modifier directement — utile pour la traçabilité comptable. N'équivaut pas à une certification fiscale officielle (ex. TSE allemand), qui nécessite un dispositif tiers certifié.</div>
     </div>
 
     <div class="card">
@@ -1013,6 +1050,12 @@ fr: {
   th_desc:"Description", th_qty:"Qté", th_price:"Prix U.", th_amount:"Montant", th_actions:"Actions",
   add_item_btn:"+ Ajouter une ligne",
   discount_label:"Remise (%)", tax_label:"TVA (%)",
+  client_country_label:"Pays du client", client_b2b_label:"Client entreprise (B2B)",
+  client_taxid_label:"Numéro fiscal / IFU / TVA intracommunautaire du client",
+  sub_ht:"Total HT",
+  reverse_charge_hint:"Autoliquidation : le client déclare et paie lui-même la TVA dans son pays. Le taux est donc de 0% sur ce document.",
+  tax_exempt_hint:"La TVA est désactivée dans vos Réglages — une mention d'exonération sera ajoutée automatiquement sur le document.",
+  tax_manual_needed_hint:"Taux non disponible automatiquement pour ce pays (varie localement, ex. par État/province) — indiquez-le vous-même ci-dessus.",
   notes_label:"Notes / conditions", notes_placeholder:"Ex : Paiement à réception, validité du devis 15 jours...",
   sub_subtotal:"Sous-total", sub_discount:"Remise", sub_tax:"TVA", sub_total:"Total",
   save_btn:"Enregistrer", print_btn:"Imprimer / PDF", image_btn:"Télécharger en image", new_btn:"Nouveau",
@@ -1060,6 +1103,8 @@ fr: {
   rep_ca:"Chiffre d'affaires", rep_cost:"Coût d'achat", rep_profit:"Bénéfice net",
   empty_sales:"Aucune vente pour l'instant.", empty_docs:"Aucun document pour l'instant.",
   action_edit:"Modifier", action_image:"Image", action_delete:"Supprimer", action_confirm:"Confirmer ?",
+  action_credit_note:"Avoir", frozen_badge_title:"Facture verrouillée (inaltérable)",
+  frozen_delete_blocked:"La facture {number} est verrouillée et ne peut pas être supprimée — générez un avoir si besoin de l'annuler.",
   confirm_delete_sale:"Supprimer cette vente de l'historique ?",
 
   settings_install_t:"Installer l'application", settings_install_s:"Ajoutez Kalcul à votre écran d'accueil pour l'ouvrir comme une vraie application, en un tap, même hors connexion.",
@@ -1161,6 +1206,25 @@ fr: {
   footer_msg_label:"Message en pied de facture/devis",
   footer_msg_placeholder:"Ex : Merci pour votre confiance ! — Boutique Awa",
   footer_msg_sub:"Remplace « Généré par Kalcul Pro » par votre propre message sur tous vos documents.",
+  settax_id_label:"Numéro fiscal de l'entreprise (IFU, TVA intracommunautaire, USt-IdNr...)",
+  settax_id_placeholder:"Ex : 0202112291540",
+  settax_id_sub:"Optionnel. Affiché sur vos factures et devis si renseigné.",
+  settax_id_short:"N° fiscal :",
+  tax_t:"Taxes & TVA",
+  tax_s:"Calcul automatique de la TVA selon le pays du client, avec gestion B2B/B2C — modifiable manuellement à tout moment.",
+  tax_enable_toggle:"Activer la TVA",
+  tax_disabled_notice:"TVA désactivée : aucune taxe ne sera appliquée, et une mention d'exonération adaptée à votre pays sera ajoutée automatiquement sur vos documents.",
+  tax_rates_hint:"Les taux par défaut sont fournis à titre indicatif par pays et peuvent ne pas être exacts partout (notamment États-Unis et Canada, où la taxe varie localement) — vérifiez auprès d'un comptable pour votre situation exacte.",
+  invoice_lock_toggle:"Verrouiller les factures après enregistrement (anti-modification)",
+  invoice_lock_notice:"Une fois activé, toute facture enregistrée devient définitive : la corriger nécessite de générer un avoir plutôt que de la modifier directement — utile pour la traçabilité comptable. N'équivaut pas à une certification fiscale officielle (ex. TSE allemand), qui nécessite un dispositif tiers certifié.",
+  reverse_charge_notice:"Autoliquidation - TVA due par le preneur.",
+  tax_exempt_de:"En vertu du § 19 UStG (régime des petites entreprises), aucune TVA n'est facturée.",
+  tax_exempt_generic:"Exonéré de TVA.",
+  invoice_locked_alert:"La facture {number} est verrouillée et ne peut plus être modifiée directement. Utilisez « Avoir » depuis l'Historique pour la corriger.",
+  credit_note_notes:"Avoir sur la facture {number}.",
+  credit_note_started_alert:"Avoir préparé pour la facture {number} — vérifiez les lignes (quantités négatives) puis enregistrez.",
+  credit_note_saved_alert:"Avoir {number} enregistré, annulant la facture {original}.",
+  credit_note_confirm:"La facture {number} est verrouillée. Générer un avoir pour la corriger ?",
   upsell_footer_msg:"🔒 Réservé à Kalcul Pro — pendant l'essai gratuit, ce pied de page est fixe.",
   upsell_generic_btn:"Passer à Kalcul Pro",
   tpl_thanks:"MERCI DE VOTRE VISITE !",
@@ -1185,6 +1249,12 @@ en: {
   th_desc:"Description", th_qty:"Qty", th_price:"Unit price", th_amount:"Amount", th_actions:"Actions",
   add_item_btn:"+ Add a line",
   discount_label:"Discount (%)", tax_label:"Tax (%)",
+  client_country_label:"Client's country", client_b2b_label:"Business client (B2B)",
+  client_taxid_label:"Client's tax ID / VAT number",
+  sub_ht:"Total excl. tax",
+  reverse_charge_hint:"Reverse charge: the client declares and pays VAT themselves in their own country. The rate is therefore 0% on this document.",
+  tax_exempt_hint:"VAT is disabled in your Settings — an exemption notice will be added automatically to the document.",
+  tax_manual_needed_hint:"Rate not available automatically for this country (varies locally, e.g. by state/province) — enter it yourself above.",
   notes_label:"Notes / terms", notes_placeholder:"E.g.: Payment on receipt, quote valid 15 days...",
   sub_subtotal:"Subtotal", sub_discount:"Discount", sub_tax:"Tax", sub_total:"Total",
   save_btn:"Save", print_btn:"Print / PDF", image_btn:"Download as image", new_btn:"New",
@@ -1232,6 +1302,8 @@ en: {
   rep_ca:"Revenue", rep_cost:"Purchase cost", rep_profit:"Net profit",
   empty_sales:"No sales yet.", empty_docs:"No documents yet.",
   action_edit:"Edit", action_image:"Image", action_delete:"Delete", action_confirm:"Confirm?",
+  action_credit_note:"Credit note", frozen_badge_title:"Locked invoice (immutable)",
+  frozen_delete_blocked:"Invoice {number} is locked and cannot be deleted — generate a credit note if you need to cancel it.",
   confirm_delete_sale:"Delete this sale from history?",
 
   settings_install_t:"Install the app", settings_install_s:"Add Kalcul to your home screen to open it like a real app, in one tap, even offline.",
@@ -1333,6 +1405,25 @@ en: {
   footer_msg_label:"Invoice/quote footer message",
   footer_msg_placeholder:"E.g.: Thank you for your business! — Awa Shop",
   footer_msg_sub:"Replaces \"Generated with Kalcul Pro\" with your own message on all your documents.",
+  settax_id_label:"Business tax ID (VAT number, USt-IdNr, EIN...)",
+  settax_id_placeholder:"E.g.: 0202112291540",
+  settax_id_sub:"Optional. Shown on your invoices and quotes if filled in.",
+  settax_id_short:"Tax ID:",
+  tax_t:"Taxes & VAT",
+  tax_s:"Automatic VAT calculation based on the client's country, with B2B/B2C handling — always manually adjustable.",
+  tax_enable_toggle:"Enable VAT",
+  tax_disabled_notice:"VAT disabled: no tax will be applied, and an exemption notice suited to your country will be added automatically to your documents.",
+  tax_rates_hint:"Default rates are provided as a guide per country and may not be accurate everywhere (notably the US and Canada, where tax varies locally) — check with an accountant for your exact situation.",
+  invoice_lock_toggle:"Lock invoices after saving (anti-tampering)",
+  invoice_lock_notice:"Once enabled, every saved invoice becomes final: correcting it requires generating a credit note rather than editing it directly — useful for accounting traceability. This is not an official tax certification (e.g. the German TSE), which requires a certified third-party device.",
+  reverse_charge_notice:"Reverse charge - VAT due by the recipient.",
+  tax_exempt_de:"Pursuant to § 19 UStG (German small business regulation), no VAT is charged.",
+  tax_exempt_generic:"VAT exempt.",
+  invoice_locked_alert:"Invoice {number} is locked and can no longer be edited directly. Use \"Credit note\" from History to correct it.",
+  credit_note_notes:"Credit note for invoice {number}.",
+  credit_note_started_alert:"Credit note prepared for invoice {number} — check the lines (negative quantities) then save.",
+  credit_note_saved_alert:"Credit note {number} saved, cancelling invoice {original}.",
+  credit_note_confirm:"Invoice {number} is locked. Generate a credit note to correct it?",
   upsell_footer_msg:"🔒 Kalcul Pro only — this footer is fixed during the free trial.",
   upsell_generic_btn:"Upgrade to Kalcul Pro",
   tpl_thanks:"THANK YOU FOR YOUR VISIT!",
@@ -1414,7 +1505,8 @@ const KEYS = {
   security: "kalcul_security_v1",
   adminSecurity: "kalcul_admin_security_v1",
   siteConfig: "kalcul_site_config_v1",
-  trialOverride: "kalcul_trial_override_v1"
+  trialOverride: "kalcul_trial_override_v1",
+  integrityChain: "kalcul_integrity_chain_v1"
 };
 
 /* ============================================================
@@ -1426,7 +1518,10 @@ function load(key, fallback){
 }
 function save(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
 
-let settings = load(KEYS.settings, {name:"", address:"", phone:"", country:"BJ", logo:""});
+let settings = load(KEYS.settings, {name:"", address:"", phone:"", country:"BJ", logo:"", taxEnabled:true, taxId:"", invoiceLockEnabled:false});
+if(settings.taxEnabled === undefined) settings.taxEnabled = true; // compat anciennes sauvegardes
+if(settings.taxId === undefined) settings.taxId = "";
+if(settings.invoiceLockEnabled === undefined) settings.invoiceLockEnabled = false;
 let docs = load(KEYS.docs, []);
 let pro = load(KEYS.pro, {active:false, expiresAt:null, planId:null});
 let trialLimitOverride = load(KEYS.trialOverride, null); // bonus/illimité attribué depuis l'Espace Réservé
@@ -1435,6 +1530,7 @@ let currency = load(KEYS.currency, "XOF");
 let rates = load(KEYS.rates, {EUR_USD:null, updatedAt:null});
 let selectedPlanId = "month1";
 let editingDocId = null;   // null = nouveau document ; sinon id du document en cours de modification
+let pendingCreditNoteFor = null; // numéro de la facture d'origine si le document en cours est un avoir
 /* allowFreeUpdate : n'est vrai que juste après un clic explicite sur "Modifier"
    dans l'historique, et retombe à false dès le premier enregistrement qui suit.
    Ferme la faille : sans ça, un document resté ouvert après un premier
@@ -1721,80 +1817,85 @@ document.getElementById("setName").value = settings.name;
    exemple générique (indicatif + 8 chiffres) pour les autres.
    ============================================================ */
 const COUNTRIES = [
-  {code:"BJ", dial:"229", fr:"Bénin", en:"Benin", example:"+2290190000000"},
-  {code:"TG", dial:"228", fr:"Togo", en:"Togo", example:"+22890000000"},
-  {code:"CI", dial:"225", fr:"Côte d'Ivoire", en:"Ivory Coast", example:"+2250100000000"},
-  {code:"SN", dial:"221", fr:"Sénégal", en:"Senegal", example:"+221771234567"},
-  {code:"NE", dial:"227", fr:"Niger", en:"Niger", example:"+22790000000"},
-  {code:"ML", dial:"223", fr:"Mali", en:"Mali", example:"+22370000000"},
-  {code:"BF", dial:"226", fr:"Burkina Faso", en:"Burkina Faso", example:"+22670000000"},
-  {code:"GW", dial:"245", fr:"Guinée-Bissau", en:"Guinea-Bissau"},
-  {code:"CM", dial:"237", fr:"Cameroun", en:"Cameroon"},
-  {code:"GA", dial:"241", fr:"Gabon", en:"Gabon"},
-  {code:"CG", dial:"242", fr:"Congo-Brazzaville", en:"Congo-Brazzaville"},
-  {code:"CD", dial:"243", fr:"RD Congo", en:"DR Congo"},
-  {code:"TD", dial:"235", fr:"Tchad", en:"Chad"},
-  {code:"CF", dial:"236", fr:"Centrafrique", en:"Central African Republic"},
-  {code:"GQ", dial:"240", fr:"Guinée équatoriale", en:"Equatorial Guinea"},
-  {code:"GN", dial:"224", fr:"Guinée", en:"Guinea"},
-  {code:"GH", dial:"233", fr:"Ghana", en:"Ghana"},
-  {code:"NG", dial:"234", fr:"Nigeria", en:"Nigeria"},
-  {code:"LR", dial:"231", fr:"Liberia", en:"Liberia"},
-  {code:"SL", dial:"232", fr:"Sierra Leone", en:"Sierra Leone"},
-  {code:"GM", dial:"220", fr:"Gambie", en:"Gambia"},
-  {code:"CV", dial:"238", fr:"Cap-Vert", en:"Cape Verde"},
-  {code:"MR", dial:"222", fr:"Mauritanie", en:"Mauritania"},
-  {code:"MA", dial:"212", fr:"Maroc", en:"Morocco"},
-  {code:"DZ", dial:"213", fr:"Algérie", en:"Algeria"},
-  {code:"TN", dial:"216", fr:"Tunisie", en:"Tunisia"},
-  {code:"LY", dial:"218", fr:"Libye", en:"Libya"},
-  {code:"EG", dial:"20", fr:"Égypte", en:"Egypt"},
-  {code:"KE", dial:"254", fr:"Kenya", en:"Kenya"},
-  {code:"TZ", dial:"255", fr:"Tanzanie", en:"Tanzania"},
-  {code:"UG", dial:"256", fr:"Ouganda", en:"Uganda"},
-  {code:"RW", dial:"250", fr:"Rwanda", en:"Rwanda"},
-  {code:"ET", dial:"251", fr:"Éthiopie", en:"Ethiopia"},
-  {code:"ZA", dial:"27", fr:"Afrique du Sud", en:"South Africa"},
-  {code:"ZM", dial:"260", fr:"Zambie", en:"Zambia"},
-  {code:"ZW", dial:"263", fr:"Zimbabwe", en:"Zimbabwe"},
-  {code:"MZ", dial:"258", fr:"Mozambique", en:"Mozambique"},
-  {code:"MG", dial:"261", fr:"Madagascar", en:"Madagascar"},
-  {code:"MU", dial:"230", fr:"Maurice", en:"Mauritius"},
-  {code:"DJ", dial:"253", fr:"Djibouti", en:"Djibouti"},
-  {code:"KM", dial:"269", fr:"Comores", en:"Comoros"},
-  {code:"FR", dial:"33", fr:"France", en:"France"},
-  {code:"BE", dial:"32", fr:"Belgique", en:"Belgium"},
-  {code:"CH", dial:"41", fr:"Suisse", en:"Switzerland"},
-  {code:"DE", dial:"49", fr:"Allemagne", en:"Germany"},
-  {code:"GB", dial:"44", fr:"Royaume-Uni", en:"United Kingdom"},
-  {code:"ES", dial:"34", fr:"Espagne", en:"Spain"},
-  {code:"PT", dial:"351", fr:"Portugal", en:"Portugal"},
-  {code:"IT", dial:"39", fr:"Italie", en:"Italy"},
-  {code:"NL", dial:"31", fr:"Pays-Bas", en:"Netherlands"},
-  {code:"LU", dial:"352", fr:"Luxembourg", en:"Luxembourg"},
-  {code:"US", dial:"1", fr:"États-Unis", en:"United States"},
-  {code:"CA", dial:"1", fr:"Canada", en:"Canada"},
-  {code:"BR", dial:"55", fr:"Brésil", en:"Brazil"},
-  {code:"HT", dial:"509", fr:"Haïti", en:"Haiti"},
-  {code:"MX", dial:"52", fr:"Mexique", en:"Mexico"},
-  {code:"SA", dial:"966", fr:"Arabie saoudite", en:"Saudi Arabia"},
-  {code:"AE", dial:"971", fr:"Émirats arabes unis", en:"United Arab Emirates"},
-  {code:"QA", dial:"974", fr:"Qatar", en:"Qatar"},
-  {code:"LB", dial:"961", fr:"Liban", en:"Lebanon"},
-  {code:"TR", dial:"90", fr:"Turquie", en:"Turkey"},
-  {code:"IN", dial:"91", fr:"Inde", en:"India"},
-  {code:"CN", dial:"86", fr:"Chine", en:"China"},
-  {code:"JP", dial:"81", fr:"Japon", en:"Japan"},
-  {code:"AU", dial:"61", fr:"Australie", en:"Australia"}
+  {code:"BJ", dial:"229", fr:"Bénin", en:"Benin", example:"+2290190000000", vat:18},
+  {code:"TG", dial:"228", fr:"Togo", en:"Togo", example:"+22890000000", vat:18},
+  {code:"CI", dial:"225", fr:"Côte d'Ivoire", en:"Ivory Coast", example:"+2250100000000", vat:18},
+  {code:"SN", dial:"221", fr:"Sénégal", en:"Senegal", example:"+221771234567", vat:18},
+  {code:"NE", dial:"227", fr:"Niger", en:"Niger", example:"+22790000000", vat:19},
+  {code:"ML", dial:"223", fr:"Mali", en:"Mali", example:"+22370000000", vat:18},
+  {code:"BF", dial:"226", fr:"Burkina Faso", en:"Burkina Faso", example:"+22670000000", vat:18},
+  {code:"GW", dial:"245", fr:"Guinée-Bissau", en:"Guinea-Bissau", vat:19},
+  {code:"CM", dial:"237", fr:"Cameroun", en:"Cameroon", vat:19.25},
+  {code:"GA", dial:"241", fr:"Gabon", en:"Gabon", vat:18},
+  {code:"CG", dial:"242", fr:"Congo-Brazzaville", en:"Congo-Brazzaville", vat:18},
+  {code:"CD", dial:"243", fr:"RD Congo", en:"DR Congo", vat:16},
+  {code:"TD", dial:"235", fr:"Tchad", en:"Chad", vat:18},
+  {code:"CF", dial:"236", fr:"Centrafrique", en:"Central African Republic", vat:19},
+  {code:"GQ", dial:"240", fr:"Guinée équatoriale", en:"Equatorial Guinea", vat:15},
+  {code:"GN", dial:"224", fr:"Guinée", en:"Guinea", vat:18},
+  {code:"GH", dial:"233", fr:"Ghana", en:"Ghana", vat:15},
+  {code:"NG", dial:"234", fr:"Nigeria", en:"Nigeria", vat:7.5},
+  {code:"LR", dial:"231", fr:"Liberia", en:"Liberia", vat:10},
+  {code:"SL", dial:"232", fr:"Sierra Leone", en:"Sierra Leone", vat:15},
+  {code:"GM", dial:"220", fr:"Gambie", en:"Gambia", vat:15},
+  {code:"CV", dial:"238", fr:"Cap-Vert", en:"Cape Verde", vat:15},
+  {code:"MR", dial:"222", fr:"Mauritanie", en:"Mauritania", vat:16},
+  {code:"MA", dial:"212", fr:"Maroc", en:"Morocco", vat:20},
+  {code:"DZ", dial:"213", fr:"Algérie", en:"Algeria", vat:19},
+  {code:"TN", dial:"216", fr:"Tunisie", en:"Tunisia", vat:19},
+  {code:"LY", dial:"218", fr:"Libye", en:"Libya", vat:0},
+  {code:"EG", dial:"20", fr:"Égypte", en:"Egypt", vat:14},
+  {code:"KE", dial:"254", fr:"Kenya", en:"Kenya", vat:16},
+  {code:"TZ", dial:"255", fr:"Tanzanie", en:"Tanzania", vat:18},
+  {code:"UG", dial:"256", fr:"Ouganda", en:"Uganda", vat:18},
+  {code:"RW", dial:"250", fr:"Rwanda", en:"Rwanda", vat:18},
+  {code:"ET", dial:"251", fr:"Éthiopie", en:"Ethiopia", vat:15},
+  {code:"ZA", dial:"27", fr:"Afrique du Sud", en:"South Africa", vat:15},
+  {code:"ZM", dial:"260", fr:"Zambie", en:"Zambia", vat:16},
+  {code:"ZW", dial:"263", fr:"Zimbabwe", en:"Zimbabwe", vat:14.5},
+  {code:"MZ", dial:"258", fr:"Mozambique", en:"Mozambique", vat:16},
+  {code:"MG", dial:"261", fr:"Madagascar", en:"Madagascar", vat:20},
+  {code:"MU", dial:"230", fr:"Maurice", en:"Mauritius", vat:15},
+  {code:"DJ", dial:"253", fr:"Djibouti", en:"Djibouti", vat:10},
+  {code:"KM", dial:"269", fr:"Comores", en:"Comoros", vat:0},
+  {code:"FR", dial:"33", fr:"France", en:"France", vat:20},
+  {code:"BE", dial:"32", fr:"Belgique", en:"Belgium", vat:21},
+  {code:"CH", dial:"41", fr:"Suisse", en:"Switzerland", vat:8.1},
+  {code:"DE", dial:"49", fr:"Allemagne", en:"Germany", vat:19},
+  {code:"GB", dial:"44", fr:"Royaume-Uni", en:"United Kingdom", vat:20},
+  {code:"ES", dial:"34", fr:"Espagne", en:"Spain", vat:21},
+  {code:"PT", dial:"351", fr:"Portugal", en:"Portugal", vat:23},
+  {code:"IT", dial:"39", fr:"Italie", en:"Italy", vat:22},
+  {code:"NL", dial:"31", fr:"Pays-Bas", en:"Netherlands", vat:21},
+  {code:"LU", dial:"352", fr:"Luxembourg", en:"Luxembourg", vat:17},
+  {code:"US", dial:"1", fr:"États-Unis", en:"United States", vat:null},
+  {code:"CA", dial:"1", fr:"Canada", en:"Canada", vat:null},
+  {code:"BR", dial:"55", fr:"Brésil", en:"Brazil", vat:null},
+  {code:"HT", dial:"509", fr:"Haïti", en:"Haiti", vat:10},
+  {code:"MX", dial:"52", fr:"Mexique", en:"Mexico", vat:16},
+  {code:"SA", dial:"966", fr:"Arabie saoudite", en:"Saudi Arabia", vat:15},
+  {code:"AE", dial:"971", fr:"Émirats arabes unis", en:"United Arab Emirates", vat:5},
+  {code:"QA", dial:"974", fr:"Qatar", en:"Qatar", vat:0},
+  {code:"LB", dial:"961", fr:"Liban", en:"Lebanon", vat:11},
+  {code:"TR", dial:"90", fr:"Turquie", en:"Turkey", vat:20},
+  {code:"IN", dial:"91", fr:"Inde", en:"India", vat:18},
+  {code:"CN", dial:"86", fr:"Chine", en:"China", vat:13},
+  {code:"JP", dial:"81", fr:"Japon", en:"Japan", vat:10},
+  {code:"AU", dial:"61", fr:"Australie", en:"Australia", vat:10}
 ];
 function countryName(c){ return lang==="en" ? c.en : c.fr; }
-function populateCountrySelect(){
-  const sel = document.getElementById("setCountry");
+function populateCountrySelectEl(selId, fallbackCode){
+  const sel = document.getElementById(selId);
+  if(!sel) return;
   const sorted = COUNTRIES.slice().sort((a,b)=> countryName(a).localeCompare(countryName(b), lang==="en"?"en":"fr"));
-  const prevVal = sel.value || settings.country || "BJ";
+  const prevVal = sel.value || fallbackCode || "BJ";
   sel.innerHTML = sorted.map(c=>`<option value="${c.code}">${escapeHtml(countryName(c))}</option>`).join("");
   sel.value = prevVal;
   if(sel.value !== prevVal && sorted.length) sel.value = sorted[0].code;
+}
+function populateCountrySelect(){
+  populateCountrySelectEl("setCountry", settings.country);
+  populateCountrySelectEl("clientCountry", "BJ");
 }
 function updatePhoneExample(){
   const code = document.getElementById("setCountry").value || "BJ";
@@ -1804,11 +1905,81 @@ function updatePhoneExample(){
   document.getElementById("setPhone").placeholder = example;
 }
 
+/* ============================================================
+   MOTEUR DE TVA — détection du pays du client (indicatif téléphonique
+   ou sélection manuelle), taux par défaut par pays, gestion B2B
+   (autoliquidation) et B2C (taux du pays du client, logique de
+   destination façon OSS européen). Les taux par défaut sont indicatifs :
+   toujours modifiables à la main dans le champ TVA (%) du document.
+   ============================================================ */
+function guessCountryFromPhone(phone){
+  const digits = String(phone||"").replace(/[^0-9]/g,"");
+  if(!digits) return null;
+  // Le plus long indicatif correspondant d'abord (ex: 33 avant 3, 509 avant 50...)
+  const candidates = COUNTRIES.slice().sort((a,b)=> b.dial.length - a.dial.length);
+  for(const c of candidates){ if(digits.startsWith(c.dial)) return c.code; }
+  return null;
+}
+function getCountryVat(code){
+  const c = COUNTRIES.find(x=>x.code===code);
+  return c ? c.vat : null; // null = variable localement, pas de valeur fiable par défaut
+}
+function computeAutoTaxRate(){
+  if(!settings.taxEnabled) return 0;
+  if(document.getElementById("clientIsB2B").checked) return 0; // autoliquidation
+  const code = document.getElementById("clientCountry").value;
+  const rate = getCountryVat(code);
+  return (typeof rate === "number") ? rate : 0;
+}
+let clientCountryTouchedManually = false;
+function refreshTaxUI(){
+  const enabled = !!settings.taxEnabled;
+  const b2b = document.getElementById("clientIsB2B").checked;
+  const taxInput = document.getElementById("taxPct");
+  const autoHint = document.getElementById("taxAutoHint");
+  const reverseHint = document.getElementById("reverseChargeHint");
+  const exemptHint = document.getElementById("taxExemptHint");
+  document.getElementById("clientTaxIdWrap").style.display = b2b ? "block" : "none";
+  reverseHint.style.display = (enabled && b2b) ? "block" : "none";
+  exemptHint.style.display = enabled ? "none" : "block";
+  taxInput.disabled = !enabled;
+  if(!enabled){
+    taxInput.value = 0;
+    autoHint.style.display = "none";
+  } else if(b2b){
+    taxInput.value = 0;
+    autoHint.style.display = "none";
+  } else {
+    const code = document.getElementById("clientCountry").value;
+    const rate = getCountryVat(code);
+    if(typeof rate === "number"){
+      taxInput.value = rate;
+      autoHint.style.display = "none";
+    } else {
+      autoHint.textContent = t("tax_manual_needed_hint");
+      autoHint.style.display = "block";
+    }
+  }
+  computeTotals();
+}
+document.getElementById("clientPhone").addEventListener("input", ()=>{
+  if(clientCountryTouchedManually) return;
+  const guess = guessCountryFromPhone(document.getElementById("clientPhone").value);
+  if(guess){ document.getElementById("clientCountry").value = guess; refreshTaxUI(); }
+});
+document.getElementById("clientCountry").addEventListener("change", ()=>{
+  clientCountryTouchedManually = true;
+  refreshTaxUI(); markDirty();
+});
+document.getElementById("clientIsB2B").addEventListener("change", ()=>{ refreshTaxUI(); markDirty(); });
+document.getElementById("clientTaxId").addEventListener("input", markDirty);
+
 document.getElementById("setAddress").value = settings.address;
 document.getElementById("setPhone").value = settings.phone;
 populateCountrySelect();
 document.getElementById("setCountry").value = settings.country || "BJ";
 document.getElementById("footerMsgInput").value = settings.footerMessage || "";
+document.getElementById("setTaxId").value = settings.taxId || "";
 if(settings.logo){ document.getElementById("logoPreview").src = settings.logo; }
 
 document.getElementById("setCountry").addEventListener("change", updatePhoneExample);
@@ -1862,11 +2033,33 @@ document.getElementById("saveSettingsBtn").addEventListener("click", ()=>{
   settings.phone = document.getElementById("setPhone").value.trim();
   settings.country = document.getElementById("setCountry").value;
   if(isPro()) settings.footerMessage = document.getElementById("footerMsgInput").value.trim();
+  settings.taxId = document.getElementById("setTaxId").value.trim();
   if(settings._pendingLogo){ settings.logo = settings._pendingLogo; delete settings._pendingLogo; }
   save(KEYS.settings, settings);
   renderHeader();
   alert(t("settings_saved_alert"));
 });
+
+/* ============================================================
+   RÉGLAGES TVA — activer/désactiver globalement, et verrouillage des
+   factures (voir plus bas pour le mécanisme de gel + avoir correctif).
+   ============================================================ */
+function renderTaxSettingsUI(){
+  document.getElementById("setTaxEnabled").checked = !!settings.taxEnabled;
+  document.getElementById("setInvoiceLock").checked = !!settings.invoiceLockEnabled;
+  document.getElementById("taxDisabledNotice").style.display = settings.taxEnabled ? "none" : "block";
+}
+document.getElementById("setTaxEnabled").addEventListener("change", ()=>{
+  settings.taxEnabled = document.getElementById("setTaxEnabled").checked;
+  save(KEYS.settings, settings);
+  renderTaxSettingsUI();
+  if(typeof refreshTaxUI === "function") refreshTaxUI();
+});
+document.getElementById("setInvoiceLock").addEventListener("change", ()=>{
+  settings.invoiceLockEnabled = document.getElementById("setInvoiceLock").checked;
+  save(KEYS.settings, settings);
+});
+renderTaxSettingsUI();
 
 /* ============================================================
    SAUVEGARDE / RESTAURATION — pour changer d'appareil sans contact
@@ -1948,12 +2141,22 @@ function detectNumberingGaps(docsArr, prefix){
    déjà configuré. */
 function mergeSettings(local, imported){
   if(!imported) return local;
-  const fields = ["name","address","phone","country","logo","footerMessage"];
+  const fields = ["name","address","phone","country","logo","footerMessage","taxId"];
   const merged = {};
   fields.forEach(f=>{
     const localVal = local ? local[f] : "";
     merged[f] = (localVal && String(localVal).trim()) ? localVal : (imported[f] || "");
   });
+  // Les réglages de TVA (activée/désactivée, verrouillage) sont des choix
+  // métier propres à l'entreprise : sur un appareil déjà configuré (nom
+  // renseigné), on garde toujours le choix local plutôt que de le laisser
+  // être silencieusement modifié par une restauration. Sur un appareil pas
+  // encore configuré, on reprend ce que dit le fichier importé.
+  const localConfigured = local && local.name && String(local.name).trim();
+  merged.taxEnabled = localConfigured
+    ? (local.taxEnabled !== undefined ? local.taxEnabled : true)
+    : (imported.taxEnabled !== undefined ? imported.taxEnabled : true);
+  merged.invoiceLockEnabled = localConfigured ? !!local.invoiceLockEnabled : !!imported.invoiceLockEnabled;
   return merged;
 }
 
@@ -2524,6 +2727,7 @@ const LEGAL_CONTENT = {
       <li><strong>Devise d'affichage</strong> : FCFA, Euro, Dollar et bien d'autres — les montants restent saisis en FCFA, seul l'affichage change, converti automatiquement.</li>
       <li><strong>Langue</strong> : Français ou English, appliqué à toute l'application et aux documents générés.</li>
       <li><strong>Verrouillage</strong> : un code local propre à cet appareil, avec verrouillage automatique après un délai que vous choisissez.</li>
+      <li><strong>Taxes &amp; TVA</strong> : activez ou désactivez la TVA globalement ; quand elle est active, le taux se propose automatiquement selon le pays du client (modifiable à tout moment), avec autoliquidation à 0% pour les clients entreprises hors de votre pays.</li>
       <li><strong>Sauvegarde &amp; restauration</strong> : téléchargez un fichier de sauvegarde et envoyez-le à un autre appareil. La restauration <strong>fusionne</strong> les données (rien n'est perdu) — pratique pour que plusieurs employés d'une même entreprise travaillent chacun sur son téléphone tout en se synchronisant régulièrement.</li>
     </ul>
 
@@ -2591,6 +2795,7 @@ const LEGAL_CONTENT = {
       <li><strong>Display currency</strong>: FCFA, Euro, Dollar and several others — amounts are still entered in FCFA, only the display changes, converted automatically.</li>
       <li><strong>Language</strong>: French or English, applied across the whole app and to generated documents.</li>
       <li><strong>Lock</strong>: a local code specific to this device, with automatic locking after a delay you choose.</li>
+      <li><strong>Taxes &amp; VAT</strong>: turn VAT on or off globally; when active, the rate is suggested automatically based on the client's country (always editable), with 0% reverse charge for business clients outside your country.</li>
       <li><strong>Backup &amp; restore</strong>: download a backup file and send it to another device. Restoring <strong>merges</strong> the data (nothing is lost) — handy for several employees of the same business to each work on their own phone while syncing regularly.</li>
     </ul>
 
@@ -3221,15 +3426,19 @@ function computeTotals(){
   const discountPct = parseFloat(document.getElementById("discountPct").value) || 0;
   const taxPct = parseFloat(document.getElementById("taxPct").value) || 0;
   const discountAmt = subtotal * discountPct/100;
-  const taxable = subtotal - discountAmt;
+  const taxable = subtotal - discountAmt; // Base imposable (HT), après remise
   const taxAmt = taxable * taxPct/100;
   const total = taxable + taxAmt;
 
   document.getElementById("tSubtotal").textContent = fmt(subtotal);
   document.getElementById("tDiscount").textContent = "-" + fmt(discountAmt);
+  const htEl = document.getElementById("tHT");
+  if(htEl) htEl.textContent = fmt(taxable);
   document.getElementById("tTax").textContent = fmt(taxAmt);
+  const taxLabelEl = document.getElementById("tTaxLabel");
+  if(taxLabelEl) taxLabelEl.textContent = t("sub_tax") + " (" + (Math.round(taxPct*100)/100) + "%)";
   document.getElementById("tTotal").textContent = fmt(total);
-  return {subtotal, discountAmt, taxAmt, total};
+  return {subtotal, discountAmt, taxable, taxPct, taxAmt, total};
 }
 ["discountPct","taxPct"].forEach(id=> document.getElementById(id).addEventListener("input", ()=>{ computeTotals(); markDirty(); }));
 ["clientName","clientPhone","docDate","notes"].forEach(id=> document.getElementById(id).addEventListener("input", markDirty));
@@ -3240,7 +3449,11 @@ function resetEditor(){
   document.getElementById("clientPhone").value = "";
   document.getElementById("docDate").value = new Date().toISOString().slice(0,10);
   document.getElementById("discountPct").value = 0;
-  document.getElementById("taxPct").value = 0;
+  document.getElementById("clientCountry").value = settings.country || "BJ";
+  document.getElementById("clientIsB2B").checked = false;
+  document.getElementById("clientTaxId").value = "";
+  clientCountryTouchedManually = false;
+  pendingCreditNoteFor = null;
   document.getElementById("notes").value = "";
   currentType = "facture";
   document.querySelectorAll('[data-doctype]').forEach(b=> b.classList.toggle("active", b.dataset.doctype==="facture"));
@@ -3248,6 +3461,7 @@ function resetEditor(){
   allowFreeUpdate = false;
   setDocSaved(false);
   addItemRow();
+  refreshTaxUI();
 }
 document.getElementById("resetDocBtn").addEventListener("click", ()=>{ resetEditor(); renderQuota(); });
 
@@ -3263,6 +3477,10 @@ function loadDocIntoEditor(doc){
   document.getElementById("clientPhone").value = doc.clientPhone || "";
   document.getElementById("docDate").value = doc.date || new Date().toISOString().slice(0,10);
   document.getElementById("discountPct").value = doc.discountPct || 0;
+  document.getElementById("clientCountry").value = doc.clientCountry || settings.country || "BJ";
+  document.getElementById("clientIsB2B").checked = !!doc.isB2B;
+  document.getElementById("clientTaxId").value = doc.clientTaxId || "";
+  clientCountryTouchedManually = true; // on respecte le pays déjà enregistré, pas de ré-estimation depuis le téléphone
   document.getElementById("taxPct").value = doc.taxPct || 0;
   document.getElementById("notes").value = doc.notes || "";
   document.getElementById("itemsBody").innerHTML = "";
@@ -3274,7 +3492,7 @@ function loadDocIntoEditor(doc){
   editingDocId = doc.id;
   allowFreeUpdate = true;
   setDocSaved(true);
-  computeTotals();
+  refreshTaxUI();
 }
 
 function currentDocFromForm(){
@@ -3295,6 +3513,12 @@ function currentDocFromForm(){
     items,
     discountPct: parseFloat(document.getElementById("discountPct").value)||0,
     taxPct: parseFloat(document.getElementById("taxPct").value)||0,
+    clientCountry: document.getElementById("clientCountry").value,
+    isB2B: document.getElementById("clientIsB2B").checked,
+    clientTaxId: document.getElementById("clientTaxId").value.trim(),
+    taxEnabledAtIssue: !!settings.taxEnabled,
+    issuerCountryAtIssue: settings.country || "BJ",
+    creditNoteFor: pendingCreditNoteFor || null,
     notes: document.getElementById("notes").value.trim(),
     totals
   };
@@ -3333,11 +3557,75 @@ function renderQuota(){
 }
 
 
-document.getElementById("saveDocBtn").addEventListener("click", ()=>{
+/* ============================================================
+   VERROUILLAGE DES FACTURES (inaltérabilité) — Réglages → Taxes & TVA.
+   Dès qu'une facture est enregistrée (si l'option est active), elle est
+   "gelée" : son empreinte SHA-256 est calculée à partir de son contenu ET
+   de l'empreinte de la facture gelée précédente, formant une chaîne — le
+   même principe qu'une chaîne de blocs simplifiée. Toute modification du
+   contenu, une fois gelé, romprait la chaîne et serait détectable.
+   Ce n'est PAS une certification fiscale officielle (le TSE allemand par
+   exemple exige un dispositif matériel/logiciel certifié par le BSI) :
+   c'est une preuve d'intégrité technique honnête, réalisable sans serveur.
+   Seules les FACTURES sont concernées (pas les devis, qui ne sont pas des
+   pièces comptables définitives). */
+async function freezeDocumentIfNeeded(doc){
+  if(!settings.invoiceLockEnabled || doc.type !== "facture") return doc;
+  const previousHash = load(KEYS.integrityChain, null);
+  const canonical = JSON.stringify({
+    number: doc.number, date: doc.date, clientName: doc.clientName,
+    items: doc.items, taxPct: doc.taxPct, total: doc.totals ? doc.totals.total : null,
+    createdAt: doc.createdAt
+  });
+  const hash = await hashText((previousHash||"GENESIS") + "|" + canonical);
+  doc.frozen = true;
+  doc.integrityHash = hash;
+  doc.previousHash = previousHash || null;
+  save(KEYS.integrityChain, hash);
+  return doc;
+}
+
+/* Génère une facture d'avoir (credit note) qui annule une facture gelée,
+   au lieu de la modifier — c'est la seule façon de corriger une facture
+   verrouillée. Toutes les lignes sont reprises à l'identique mais en
+   quantités négatives, pour que le total de l'avoir soit l'exact opposé
+   de la facture d'origine. */
+function openCreditNoteFor(originalDoc){
+  resetEditor();
+  currentType = "facture";
+  document.querySelectorAll('[data-doctype]').forEach(b=> b.classList.toggle("active", b.dataset.doctype==="facture"));
+  document.getElementById("clientName").value = originalDoc.clientName || "";
+  document.getElementById("clientPhone").value = originalDoc.clientPhone || "";
+  document.getElementById("clientCountry").value = originalDoc.clientCountry || settings.country || "BJ";
+  document.getElementById("clientIsB2B").checked = !!originalDoc.isB2B;
+  document.getElementById("clientTaxId").value = originalDoc.clientTaxId || "";
+  clientCountryTouchedManually = true;
+  document.getElementById("discountPct").value = originalDoc.discountPct || 0;
+  document.getElementById("taxPct").value = originalDoc.taxPct || 0;
+  document.getElementById("notes").value = t("credit_note_notes", {number: originalDoc.number});
+  document.getElementById("itemsBody").innerHTML = "";
+  (originalDoc.items||[]).forEach(it=> addItemRow(it.desc, -Math.abs(it.qty), it.price));
+  pendingCreditNoteFor = originalDoc.number;
+  refreshTaxUI();
+  showView("view-new");
+  alert(t("credit_note_started_alert", {number: originalDoc.number}));
+}
+
+document.getElementById("saveDocBtn").addEventListener("click", async ()=>{
   // Rien n'a changé depuis le dernier enregistrement : no-op, pas de nouvelle écriture.
   if(isDocSaved && editingDocId !== null){
     alert(t("already_saved_alert"));
     return;
+  }
+
+  // Facture verrouillée (voir Réglages → Taxes & TVA) : toute modification directe
+  // est bloquée, il faut passer par un avoir — c'est le principe même du verrouillage.
+  if(editingDocId !== null){
+    const existing = docs.find(d=>d.id===editingDocId);
+    if(existing && existing.frozen){
+      alert(t("invoice_locked_alert", {number: existing.number}));
+      return;
+    }
   }
 
   const doc = currentDocFromForm();
@@ -3379,12 +3667,18 @@ document.getElementById("saveDocBtn").addEventListener("click", ()=>{
   doc.number = `${prefix}-${String(counters[doc.type]).padStart(4,"0")}`;
   doc.id = "d_" + Date.now();
   doc.createdAt = new Date().toISOString();
+  await freezeDocumentIfNeeded(doc);
 
   docs.unshift(doc);
   save(KEYS.docs, docs);
   editingDocId = doc.id;
   setDocSaved(true);
-  alert(`${doc.type === "facture" ? t("doctype_facture") : t("doctype_devis")} ${doc.number} ${t("saved_alert")}`);
+  if(doc.creditNoteFor){
+    alert(t("credit_note_saved_alert", {number: doc.number, original: doc.creditNoteFor}));
+  } else {
+    alert(`${doc.type === "facture" ? t("doctype_facture") : t("doctype_devis")} ${doc.number} ${t("saved_alert")}`);
+  }
+  pendingCreditNoteFor = null;
   renderHistory();
   renderQuota();
   renderStockQuota();
@@ -3427,6 +3721,20 @@ function docFooterText(){
   return t("tpl_generated_pro");
 }
 
+function getTaxExemptionText(issuerCode){
+  if(issuerCode === "DE") return t("tax_exempt_de");
+  return t("tax_exempt_generic");
+}
+function getTaxLegalNotes(doc){
+  const notes = [];
+  if(doc.taxEnabledAtIssue === false){
+    notes.push(getTaxExemptionText(doc.issuerCountryAtIssue || settings.country));
+  } else if(doc.isB2B === true){
+    notes.push(t("reverse_charge_notice"));
+  }
+  return notes;
+}
+
 function printDocument(doc){
   const area = document.getElementById("print-area");
   const isDevis = doc.type === "devis";
@@ -3467,6 +3775,7 @@ function printDocument(doc){
         <div style="font-size:21px;font-weight:700;">${escapeHtml(settings.name||"Kalcul")}</div>
         <div style="font-size:12px;color:#555;margin-top:3px;">${escapeHtml(settings.address||"")}</div>
         <div style="font-size:12px;color:#555;">${escapeHtml(settings.phone||"")}</div>
+        ${settings.taxId ? `<div style="font-size:11px;color:#888;margin-top:2px;">${t("settax_id_short")} ${escapeHtml(settings.taxId)}</div>` : ""}
       </div>
       <div style="text-align:right;">
         <div style="font-size:27px;font-weight:800;letter-spacing:.5px;color:${accent};">${isDevis?t("tpl_devis"):t("tpl_facture")}</div>
@@ -3479,6 +3788,7 @@ function printDocument(doc){
       <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#888;">${t("tpl_client")}</div>
       <div style="font-size:14px;font-weight:700;margin-top:3px;">${escapeHtml(doc.clientName||"")}</div>
       <div style="font-size:12px;color:#555;">${escapeHtml(doc.clientPhone||"")}</div>
+      ${doc.isB2B && doc.clientTaxId ? `<div style="font-size:11px;color:#888;margin-top:2px;">${t("settax_id_short")} ${escapeHtml(doc.clientTaxId)}</div>` : ""}
     </div>
     <table style="width:100%;border-collapse:collapse;font-size:13px;">
       <thead><tr style="background:${accent};color:#fff;">
@@ -3492,10 +3802,12 @@ function printDocument(doc){
     <div style="margin-top:18px;margin-left:auto;width:280px;font-size:13px;">
       <div style="display:flex;justify-content:space-between;padding:3px 4px;"><span>${t("sub_subtotal")}</span><span>${fmt(tot.subtotal)}</span></div>
       <div style="display:flex;justify-content:space-between;padding:3px 4px;"><span>${t("sub_discount")}</span><span>-${fmt(tot.discountAmt)}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:3px 4px;"><span>${t("sub_tax")}</span><span>${fmt(tot.taxAmt)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:3px 4px;"><span>${t("sub_ht")}</span><span>${fmt(tot.taxable!=null?tot.taxable:(tot.subtotal-tot.discountAmt))}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:3px 4px;"><span>${t("sub_tax")} (${Math.round((doc.taxPct||0)*100)/100}%)</span><span>${fmt(tot.taxAmt)}</span></div>
       <div style="display:flex;justify-content:space-between;padding:11px 12px;font-weight:700;font-size:16px;background:${accent};color:#fff;border-radius:6px;margin-top:6px;"><span>${t("sub_total")}</span><span>${fmt(tot.total)}</span></div>
     </div>
     ${doc.notes ? `<div style="margin-top:24px;font-size:12px;color:#555;white-space:pre-wrap;border-left:3px solid ${accentLight};padding-left:10px;">${escapeHtml(doc.notes)}</div>` : ""}
+    ${(()=>{ const legalNotes = getTaxLegalNotes(doc); return legalNotes.length ? `<div style="margin-top:14px;font-size:11px;color:#5B4E3A;font-style:italic;">${legalNotes.map(n=>escapeHtml(n)).join("<br>")}</div>` : ""; })()}
     <div style="display:flex;justify-content:flex-end;margin-top:48px;">
       <div style="text-align:center;">
         <div style="border-top:1px solid #999;width:170px;padding-top:6px;font-size:11px;color:#777;">${t("tpl_signature")}</div>
@@ -3571,11 +3883,17 @@ async function buildDocCanvas(doc){
   const itemsBlockH = rowsLayout.reduce((s,r)=>s+r.height, 0);
   meas.font = "11px " + IMG_BODY_FONT;
   const notesLines = doc.notes ? wrapCanvasText(meas, doc.notes, contentW-14) : [];
+  const legalNotes = getTaxLegalNotes(doc);
+  const legalNotesLines = [];
+  legalNotes.forEach(n=> legalNotesLines.push(...wrapCanvasText(meas, n, 280-20)));
 
-  const topRowH = 40, headerH = 92, clientH = 74, tableHeadH = 34, totalsH = 128, signatureH = 60;
+  const hasIssuerTaxId = !!settings.taxId;
+  const hasClientTaxId = doc.isB2B && doc.clientTaxId;
+  const topRowH = 40, headerH = 92 + (hasIssuerTaxId?16:0), clientH = 74 + (hasClientTaxId?16:0), tableHeadH = 34, totalsH = 128, signatureH = 60;
   const notesH = notesLines.length ? (notesLines.length*15 + 30) : 0;
+  const legalNotesH = legalNotesLines.length ? (legalNotesLines.length*14 + 20) : 0;
   const footerH = 46;
-  const H = topRowH + headerH + clientH + tableHeadH + itemsBlockH + totalsH + notesH + signatureH + footerH + 30;
+  const H = topRowH + headerH + clientH + tableHeadH + itemsBlockH + totalsH + notesH + legalNotesH + signatureH + footerH + 30;
 
   const canvas = document.createElement("canvas");
   canvas.width = W*scale;
@@ -3630,6 +3948,10 @@ async function buildDocCanvas(doc){
   ctx.fillStyle = "#5B4E3A";
   ctx.fillText(settings.address || "", textX, y+28);
   ctx.fillText(settings.phone || "", textX, y+44);
+  if(hasIssuerTaxId){
+    ctx.font = "10.5px " + IMG_BODY_FONT; ctx.fillStyle = "#999";
+    ctx.fillText(t("settax_id_short") + " " + settings.taxId, textX, y+58);
+  }
 
   ctx.textAlign = "right";
   ctx.fillStyle = accent;
@@ -3652,7 +3974,7 @@ async function buildDocCanvas(doc){
   y += 22;
 
   // Bloc client, encadré et teinté, aligné à droite comme dans la version imprimée
-  const clientBoxW = 260, clientBoxH = 58, clientBoxX = W-marginX-clientBoxW;
+  const clientBoxW = 260, clientBoxH = clientH-16, clientBoxX = W-marginX-clientBoxW;
   ctx.fillStyle = accentLight;
   roundRect(ctx, clientBoxX, y, clientBoxW, clientBoxH, 8); ctx.fill();
   ctx.textAlign = "left";
@@ -3662,6 +3984,10 @@ async function buildDocCanvas(doc){
   ctx.fillText(doc.clientName || "", clientBoxX+14, y+35);
   ctx.font = "11.5px " + IMG_BODY_FONT; ctx.fillStyle = "#5B4E3A";
   ctx.fillText(doc.clientPhone || "", clientBoxX+14, y+50);
+  if(hasClientTaxId){
+    ctx.font = "10px " + IMG_BODY_FONT; ctx.fillStyle = "#888";
+    ctx.fillText(t("settax_id_short") + " " + doc.clientTaxId, clientBoxX+14, y+65);
+  }
   y += clientH;
 
   const col = { desc:marginX, qty:marginX+contentW*0.50, price:marginX+contentW*0.72, amount:W-marginX };
@@ -3705,7 +4031,8 @@ async function buildDocCanvas(doc){
   };
   drawTotalLine(t("sub_subtotal"), fmt(tot.subtotal));
   drawTotalLine(t("sub_discount"), "-" + fmt(tot.discountAmt));
-  drawTotalLine(t("sub_tax"), fmt(tot.taxAmt));
+  drawTotalLine(t("sub_ht"), fmt(tot.taxable!=null?tot.taxable:(tot.subtotal-tot.discountAmt)));
+  drawTotalLine(t("sub_tax") + " (" + (Math.round((doc.taxPct||0)*100)/100) + "%)", fmt(tot.taxAmt));
   y += 6;
   ctx.fillStyle = accent;
   roundRect(ctx, totBoxX, y, totBoxW, 34, 6); ctx.fill();
@@ -3720,6 +4047,12 @@ async function buildDocCanvas(doc){
     ctx.fillRect(marginX, y-14, 3, notesLines.length*15+8);
     ctx.font = "11px " + IMG_BODY_FONT; ctx.fillStyle = "#5B4E3A"; ctx.textAlign = "left";
     notesLines.forEach(l=>{ ctx.fillText(l, marginX+12, y); y += 15; });
+  }
+
+  if(legalNotesLines.length){
+    y += 14;
+    ctx.font = "italic 10.5px " + IMG_BODY_FONT; ctx.fillStyle = "#5B4E3A"; ctx.textAlign = "left";
+    legalNotesLines.forEach(l=>{ ctx.fillText(l, marginX, y); y += 14; });
   }
 
   // Ligne de signature
@@ -4042,13 +4375,13 @@ function renderHistory(){
   list.innerHTML = docs.map(d=>`
     <div class="hist-item" data-id="${d.id}">
       <div class="meta">
-        <span class="num">${escapeHtml(d.number)} <span class="badge ${d.type}">${d.type==="facture"?t("doctype_facture"):t("doctype_devis")}</span></span>
+        <span class="num">${escapeHtml(d.number)} <span class="badge ${d.type}">${d.type==="facture"?t("doctype_facture"):t("doctype_devis")}</span>${d.frozen?` <span class="badge free" title="${t("frozen_badge_title")}">🔒</span>`:""}</span>
         <span class="client">${escapeHtml(d.clientName)} · ${escapeHtml(d.date||"")}</span>
       </div>
       <div class="right">
         <span class="amount">${fmt(d.totals ? d.totals.total : 0)}</span>
         <div class="hist-actions">
-          <span class="edit-doc" data-id="${d.id}">${t("action_edit")}</span>
+          <span class="edit-doc" data-id="${d.id}">${d.frozen ? t("action_credit_note") : t("action_edit")}</span>
           <span class="wa-doc" data-id="${d.id}" data-action="doc-wa">${t("wa_send_btn")}</span>
           <span class="img-doc" data-id="${d.id}">${t("action_image")}</span>
           <span class="del-doc" data-id="${d.id}" data-state="idle">${t("action_delete")}</span>
@@ -4104,8 +4437,12 @@ function initHistoryEvents(){
       e.stopPropagation();
       const doc = docs.find(d=>d.id===editBtn.dataset.id);
       if(doc){
-        loadDocIntoEditor(doc);
-        showView("view-new");
+        if(doc.frozen){
+          if(confirm(t("credit_note_confirm", {number: doc.number}))) openCreditNoteFor(doc);
+        } else {
+          loadDocIntoEditor(doc);
+          showView("view-new");
+        }
       }
       return;
     }
@@ -4113,6 +4450,11 @@ function initHistoryEvents(){
     if(delBtn){
       e.stopPropagation();
       const id = delBtn.dataset.id;
+      const targetDoc = docs.find(d=>d.id===id);
+      if(targetDoc && targetDoc.frozen){
+        alert(t("frozen_delete_blocked", {number: targetDoc.number}));
+        return;
+      }
       if(delBtn.dataset.state === "confirm"){
         docs = docs.filter(d=>d.id!==id);
         save(KEYS.docs, docs);
@@ -4795,6 +5137,8 @@ function rebindKkiaPay(){ initKkiaPay(); }
 document.getElementById("docDate").value = new Date().toISOString().slice(0,10);
 addItemRow();
 setDocSaved(false);
+document.getElementById("clientCountry").value = settings.country || "BJ";
+refreshTaxUI();
 initSecurity();
 if(siteConfig) applySiteConfig(siteConfig);
 renderHeader();

@@ -797,7 +797,7 @@ iframe[src*="kkiapay"],
       <div class="notice" data-i18n="invoice_lock_notice">Une fois activé, toute facture enregistrée devient définitive : la corriger nécessite de générer un avoir plutôt que de la modifier directement — utile pour la traçabilité comptable. N'équivaut pas à une certification fiscale officielle (ex. TSE allemand), qui nécessite un dispositif tiers certifié.</div>
     </div>
 
-    <div class="card">
+    <div class="card" id="donko_ads_card">
       <h2 data-i18n="donko_ads_t">DONKO ADS</h2>
       <div class="sub" data-i18n="donko_ads_s">Marketplace de produits physiques et digitaux — pour tous, partout dans le monde.</div>
       <p style="font-size:13px;color:var(--ink-soft);margin:2px 0 14px;line-height:1.55;" data-i18n="donko_ads_pitch">Vous voulez vendre plus, que ce soit des produits physiques ou digitaux ? DONKO ADS est fait pour promouvoir votre commerce auprès de nouveaux clients, où qu'ils soient.</p>
@@ -923,7 +923,6 @@ iframe[src*="kkiapay"],
       <a href="#" data-legal="cgu" data-i18n="legal_cgu">CGU</a> · <a href="#" data-legal="mentions" data-i18n="legal_mentions">Mentions légales</a> · <a href="#" data-legal="politique" data-i18n="legal_politique">Politique d'utilisation</a> · <a href="#" data-legal="guide" data-i18n="legal_guide">Guide d'utilisation</a> · <a href="#" data-legal="apropos" data-i18n="legal_apropos">À propos</a>
     </div>
     <div class="powered-by"><span data-i18n="powered_by">Propulsé par</span> <strong>EMPIRE DONKO</strong></div>
-    <div style="text-align:center;margin-top:9px;"><span id="adminAccessBtn" style="display:inline-block; width:100%; max-width:120px; height:16px; opacity:0; cursor:default; user-select:none;">accès réservé</span></div>
   </footer>
 
   <div id="legalModalOverlay" class="legal-overlay" style="display:none;">
@@ -959,36 +958,6 @@ iframe[src*="kkiapay"],
         <button type="button" class="plus-item" data-view="view-settings"><span class="ic">⚙️</span><span data-i18n="plus_reglages">Réglages</span></button>
         <button type="button" class="plus-item" data-view="view-pro"><span class="ic">★</span><span data-i18n="plus_pro">Kalcul Pro</span></button>
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- ===== ESPACE RÉSERVÉ — centre de contrôle caché, propriétaire uniquement ===== -->
-<div id="adminGate" class="legal-overlay" style="display:none;">
-  <div class="legal-modal" style="border-radius:16px; max-height:none;">
-    <div class="legal-modal-header">
-      <span>Espace réservé</span>
-      <button type="button" id="adminGateClose" aria-label="Fermer">✕</button>
-    </div>
-    <div class="legal-modal-body">
-      <label for="adminGatePassword">Mot de passe</label>
-      <input type="password" id="adminGatePassword" autocomplete="off">
-      <div id="adminGateError" class="hint" style="color:var(--clay); min-height:16px;"></div>
-      <button type="button" class="btn btn-primary btn-block" id="adminGateSubmit" style="margin-top:10px;">Entrer</button>
-    </div>
-  </div>
-</div>
-
-<div id="adminPanel" class="legal-overlay" style="display:none;">
-  <div class="legal-modal">
-    <div class="legal-modal-header">
-      <span>Centre de contrôle Kalcul</span>
-      <button type="button" id="adminPanelClose" aria-label="Fermer">✕</button>
-    </div>
-    <div class="legal-modal-body" id="adminPanelBody">
-      <!-- Volontairement vide : le contenu réel n'est construit en JS
-           qu'après validation du mot de passe (voir buildAdminPanelHTML),
-           pour qu'il n'existe dans la page à aucun moment avant ça. -->
     </div>
   </div>
 </div>
@@ -1430,8 +1399,10 @@ en: {
 }
 };
 
+let siteTextOverrides = null; // rempli par applySiteConfig(), voir plus bas — {key: "texte personnalisé"}
 function t(key, vars){
-  let s = (I18N[lang] && I18N[lang][key]) || I18N.fr[key] || key;
+  const override = siteTextOverrides && siteTextOverrides[key];
+  let s = override || (I18N[lang] && I18N[lang][key]) || I18N.fr[key] || key;
   if(vars) Object.keys(vars).forEach(k=> s = s.replace("{"+k+"}", vars[k]));
   return s;
 }
@@ -1503,7 +1474,6 @@ const KEYS = {
   sales: "kalcul_sales_v1",
   lang: "kalcul_lang_v1",
   security: "kalcul_security_v1",
-  adminSecurity: "kalcul_admin_security_v1",
   siteConfig: "kalcul_site_config_v1",
   trialOverride: "kalcul_trial_override_v1",
   integrityChain: "kalcul_integrity_chain_v1"
@@ -1725,9 +1695,8 @@ function updateFilePickerStatus(input){
   }
 }
 /* Délégation d'événements (plutôt que des écouteurs posés une fois au
-   chargement) : fonctionne aussi pour les sélecteurs de fichier construits
-   dynamiquement plus tard (ex. dans l'Espace Réservé, injecté seulement
-   après le mot de passe — voir buildAdminPanelHTML). */
+   chargement) : fonctionne aussi pour tout sélecteur de fichier construit
+   dynamiquement plus tard dans la page. */
 document.addEventListener("click", (e)=>{
   const btn = e.target.closest(".file-picker-btn");
   if(!btn) return;
@@ -2430,12 +2399,13 @@ const LEGAL_CONTENT = {
 
     <h3>Article 6 — Obligations de l'utilisateur</h3>
     <p>L'utilisateur s'engage à utiliser Kalcul conformément à la loi, notamment à ne pas produire de documents commerciaux frauduleux ni usurper l'identité d'un tiers. Il demeure seul responsable de l'exactitude des informations saisies dans ses factures et devis, ainsi que du respect des obligations fiscales, comptables et réglementaires applicables à son activité.</p>
+    <p>Kalcul propose un module de calcul de TVA fournissant des taux par défaut indicatifs selon le pays du client, ainsi qu'un mécanisme d'autoliquidation pour les clients professionnels. <strong>Ces taux et mécanismes sont fournis à titre purement informatif</strong> et ne constituent ni un conseil fiscal, ni une garantie d'exactitude, ni une confirmation que l'utilisateur est effectivement tenu de collecter, déclarer ou reverser une taxe dans le pays de son client. L'obligation de s'immatriculer, de collecter et de reverser toute taxe à une administration fiscale, quel que soit le pays concerné, incombe exclusivement à l'utilisateur, qui doit vérifier sa situation auprès d'un professionnel compétent (comptable, conseiller fiscal) avant de s'y fier. Empire Donko n'agit à aucun moment comme intermédiaire, mandataire ou redevable de ces taxes.</p>
 
     <h3>Article 7 — Propriété intellectuelle</h3>
     <p>L'Application Kalcul, son nom, son design, ses textes et son code source constituent des créations protégées. Toute reproduction ou exploitation commerciale non autorisée est interdite sans l'accord préalable d'Empire Donko.</p>
 
     <h3>Article 8 — Limitation de responsabilité</h3>
-    <p>Kalcul est fourni « en l'état ». L'Application ne remplace pas les conseils d'un comptable ou d'un conseiller fiscal. Empire Donko ne saurait être tenu responsable des pertes de données locales, des interruptions liées à l'hébergement, ni des dysfonctionnements imputables à KKiaPay ou à l'opérateur Mobile Money de l'utilisateur.</p>
+    <p>Kalcul est fourni « en l'état ». L'Application ne remplace pas les conseils d'un comptable ou d'un conseiller fiscal, y compris pour tout ce qui concerne les taux, mécanismes ou mentions de TVA générés par l'Application. Empire Donko ne saurait être tenu responsable des pertes de données locales, des interruptions liées à l'hébergement, des dysfonctionnements imputables à KKiaPay ou à l'opérateur Mobile Money de l'utilisateur, ni des conséquences d'une application incorrecte ou incomplète des règles fiscales par l'utilisateur.</p>
 
     <h3>Article 9 — Disponibilité du Service</h3>
     <p>L'Application dépend de l'hébergement GitHub Pages et, pour les paiements, du service KKiaPay. Empire Donko ne garantit pas une disponibilité continue de ces services tiers.</p>
@@ -2470,12 +2440,13 @@ const LEGAL_CONTENT = {
 
     <h3>Article 6 — User obligations</h3>
     <p>The user agrees to use Kalcul in accordance with the law, in particular not to produce fraudulent commercial documents or impersonate a third party. The user remains solely responsible for the accuracy of information entered in their invoices and quotes, as well as for compliance with the tax, accounting and regulatory obligations applicable to their business.</p>
+    <p>Kalcul offers a VAT calculation module providing indicative default rates based on the client's country, as well as a reverse-charge mechanism for business clients. <strong>These rates and mechanisms are provided for information purposes only</strong> and do not constitute tax advice, a guarantee of accuracy, or confirmation that the user is actually required to collect, declare, or remit any tax in the client's country. The obligation to register for, collect, and remit any tax to any tax authority, in any country, rests exclusively with the user, who must verify their situation with a qualified professional (accountant, tax advisor) before relying on it. Empire Donko never acts as an intermediary, agent, or party liable for these taxes.</p>
 
     <h3>Article 7 — Intellectual property</h3>
     <p>The Kalcul Application, its name, design, texts and source code are protected creations. Any unauthorized reproduction or commercial use is prohibited without Empire Donko's prior consent.</p>
 
     <h3>Article 8 — Limitation of liability</h3>
-    <p>Kalcul is provided "as is". The Application does not replace the advice of an accountant or tax advisor. Empire Donko cannot be held liable for local data loss, hosting-related interruptions, or malfunctions attributable to KKiaPay or the user's Mobile Money operator.</p>
+    <p>Kalcul is provided "as is". The Application does not replace the advice of an accountant or tax advisor, including for any VAT rates, mechanisms, or notices generated by the Application. Empire Donko cannot be held liable for local data loss, hosting-related interruptions, malfunctions attributable to KKiaPay or the user's Mobile Money operator, or the consequences of an incorrect or incomplete application of tax rules by the user.</p>
 
     <h3>Article 9 — Service availability</h3>
     <p>The Application depends on GitHub Pages hosting and, for payments, on the KKiaPay service. Empire Donko does not guarantee continuous availability of these third-party services.</p>
@@ -2841,27 +2812,17 @@ document.querySelectorAll("[data-legal]").forEach(a=>{
 });
 
 /* ============================================================
-   ESPACE RÉSERVÉ — centre de contrôle propriétaire, 100% local.
-   Le mot de passe n'est JAMAIS stocké en clair dans le code : seule son
-   empreinte SHA-256 y figure, calculée hors ligne par le navigateur.
-   Quiconque fouille le code source ne peut donc pas lire le mot de passe,
-   seulement son empreinte irréversible — exactement comme pour le code
-   de verrouillage de l'application.
-   Ce panneau modifie l'app sur CET appareil uniquement (promesse "hors
-   serveur, hors base de données" respectée). Pour répercuter un
-   changement chez tous les utilisateurs sans toucher au code : on exporte
-   "data.json" ici, on le dépose à côté de index.html sur GitHub Pages, et
-   chaque application le récupère toute seule au prochain chargement en
-   ligne (voir loadRemoteSiteConfig plus bas) — ce n'est jamais qu'un
-   fichier statique de plus sur le même hébergement déjà utilisé pour
-   index.html, donc aucune base de données ni serveur applicatif requis.
+   CONFIGURATION DU SITE (data.json) — cette partie applique ce que le
+   propriétaire configure depuis admin.html, une page séparée du reste
+   de l'application, non reliée par aucun lien ni bouton, protégée par
+   mot de passe (empreinte SHA-256 uniquement, jamais en clair) et non
+   indexée par les moteurs de recherche. Cette page kalcul.html n'a pas
+   besoin de connaître ce mot de passe : elle se contente de récupérer et
+   d'appliquer le résultat, un fichier "data.json" statique déposé à côté
+   d'elle sur le même hébergement (voir loadRemoteSiteConfig plus bas) —
+   toujours aucune base de données ni serveur applicatif requis.
    ============================================================ */
-const DEFAULT_ADMIN_HASH = "391a9dc924d6b2a6fde451b85559d328ad52c8f4013f02d94d48e64d7a460e1a";
-let adminSecurity = load(KEYS.adminSecurity, {passHash:null});
 let siteConfig = load(KEYS.siteConfig, null);
-let admAttempts = 0, admLockUntil = 0;
-
-function effectiveAdminHash(){ return adminSecurity.passHash || DEFAULT_ADMIN_HASH; }
 
 function applySiteConfig(cfg){
   if(!cfg) return;
@@ -2880,14 +2841,49 @@ function applySiteConfig(cfg){
       svg.replaceWith(img);
     }
   }
-  if(cfg.colorPrimary) document.documentElement.style.setProperty("--indigo", cfg.colorPrimary);
-  if(cfg.colorAccent) document.documentElement.style.setProperty("--ochre", cfg.colorAccent);
+  // Couleurs — chaque champ est optionnel, ne remplace que ce qui est fourni
+  const root = document.documentElement.style;
+  if(cfg.colorPrimary) root.setProperty("--indigo", cfg.colorPrimary);
+  if(cfg.colorPrimaryDeep) root.setProperty("--indigo-deep", cfg.colorPrimaryDeep);
+  if(cfg.colorAccent) root.setProperty("--ochre", cfg.colorAccent);
+  if(cfg.colorInk) root.setProperty("--ink", cfg.colorInk);
+  if(cfg.colorPaper) root.setProperty("--paper", cfg.colorPaper);
+  // Polices — familles système/web-safe uniquement, pour rester 100% hors ligne
+  if(cfg.fontDisplay) root.setProperty("--display", cfg.fontDisplay);
+  if(cfg.fontBody) root.setProperty("--body", cfg.fontBody);
+  // Textes — remplace n'importe quel libellé de l'application par une valeur
+  // personnalisée (titres, sous-titres, boutons...), clé par clé.
+  if(cfg.textOverrides && typeof cfg.textOverrides === "object"){
+    siteTextOverrides = cfg.textOverrides;
+    if(typeof applyI18n === "function") applyI18n();
+  }
   if(cfg.trialLimit != null && !isNaN(cfg.trialLimit)) CONFIG.TRIAL_LIMIT = parseInt(cfg.trialLimit,10);
+  // Tarifs Kalcul Pro — remplace le prix par défaut de chaque plan sans toucher au code
+  if(cfg.planPrices && typeof cfg.planPrices === "object" && typeof PLANS !== "undefined"){
+    PLANS.forEach(p=>{ if(cfg.planPrices[p.id] != null && !isNaN(cfg.planPrices[p.id])) p.price = parseFloat(cfg.planPrices[p.id]); });
+  }
   if(cfg.footerDefault) window.__kalculAdminFooterDefault = cfg.footerDefault;
   if(cfg.whatsapp) window.__kalculAdminWhatsapp = cfg.whatsapp;
   if(cfg.email) window.__kalculAdminEmail = cfg.email;
-  if(cfg.featCaisse === false){ const b=document.querySelector('nav.bottom button[data-view="view-pos"]'); if(b) b.style.display="none"; }
+  // Fonctionnalités — masque des blocs entiers déjà présents dans le code
+  // (rien de nouveau n'est créé, seulement montré/caché)
+  const navHideMap = {featCaisse:"view-pos", featStock:"view-stock", featDocument:"view-new", featHistory:"view-history"};
+  Object.keys(navHideMap).forEach(k=>{
+    if(cfg[k] === false){
+      const b = document.querySelector(`nav.bottom button[data-view="${navHideMap[k]}"]`);
+      if(b) b.style.display = "none";
+    }
+  });
   if(cfg.featWa === false){ document.querySelectorAll(".btn-wa, #suggestWaBtn").forEach(el=> el.style.display="none"); }
+  if(cfg.featSuggestFab === false){ const el=document.getElementById("suggestFab"); if(el) el.style.display="none"; }
+  if(cfg.featDonkoAds === false){
+    let el = document.getElementById("donko_ads_card");
+    if(!el){
+      const label = document.querySelector('[data-i18n="donko_ads_t"]');
+      if(label) el = label.closest(".card");
+    }
+    if(el) el.style.display = "none";
+  }
   if(cfg.whatsapp || cfg.email){
     const c = suggestContact();
     const waLink = document.getElementById("footWaLink");
@@ -2916,381 +2912,6 @@ async function loadRemoteSiteConfig(){
     // version mise en cache localement (déjà fait au démarrage), rien de plus.
   }
 }
-
-function openAdminGate(){
-  document.getElementById("adminGatePassword").value = "";
-  document.getElementById("adminGateError").textContent = "";
-  document.getElementById("adminGate").style.display = "flex";
-  setTimeout(()=>{ const i=document.getElementById("adminGatePassword"); if(i) i.focus(); }, 50);
-}
-document.getElementById("adminAccessBtn").addEventListener("click", openAdminGate);
-document.getElementById("adminGateClose").addEventListener("click", ()=> document.getElementById("adminGate").style.display="none");
-document.getElementById("adminGateSubmit").addEventListener("click", async ()=>{
-  const errEl = document.getElementById("adminGateError");
-  if(admLockUntil > Date.now()){
-    errEl.textContent = "Trop de tentatives. Réessayez dans " + Math.ceil((admLockUntil-Date.now())/1000) + " secondes.";
-    return;
-  }
-  const val = document.getElementById("adminGatePassword").value;
-  const h = await hashText(val);
-  if(h === effectiveAdminHash()){
-    admAttempts = 0;
-    document.getElementById("adminGate").style.display = "none";
-    unlockAdminPanel();
-  } else {
-    admAttempts++;
-    if(admAttempts >= 5){
-      admLockUntil = Date.now() + 60000;
-      admAttempts = 0;
-      errEl.textContent = "Trop de tentatives. Réessayez dans 60 secondes.";
-    } else {
-      errEl.textContent = "Mot de passe incorrect.";
-    }
-  }
-});
-document.getElementById("adminGatePassword").addEventListener("keydown",(e)=>{ if(e.key==="Enter") document.getElementById("adminGateSubmit").click(); });
-
-/* ============================================================
-   CONTENU DE L'ESPACE RÉSERVÉ — construit en JavaScript et injecté dans
-   le DOM SEULEMENT après une réussite au mot de passe (voir
-   unlockAdminPanel). Avant ça, #adminPanelBody est vide : personne ne
-   peut afficher les contrôles depuis les outils développeur sans passer
-   par la vérification, contrairement à un simple display:none. Fermer le
-   panneau vide à nouveau le contenu (voir closeAdminPanel) : chaque
-   ouverture doit repasser par le mot de passe.
-   ============================================================ */
-function buildAdminPanelHTML(){
-  return `
-    <div class="notice">Ces réglages sont enregistrés sur <b>cet appareil</b>. Pour les pousser chez tous les utilisateurs sans toucher au code : réglez ici, cliquez « Exporter data.json », puis déposez ce fichier à côté de index.html sur GitHub. L'application de chaque utilisateur le récupère automatiquement au prochain chargement en ligne (et garde la dernière version connue hors ligne).</div>
-
-    <h3 style="margin-top:16px;font-size:13.5px;">Identité du site</h3>
-    <label for="admTitle">Titre de l'application (onglet du navigateur)</label>
-    <input type="text" id="admTitle">
-    <label for="admTag">Sous-titre / accroche (sous le logo)</label>
-    <input type="text" id="admTag">
-    <label for="admDescription">Description (référencement)</label>
-    <textarea id="admDescription"></textarea>
-    <label for="admLogoFile">Logo du site (remplace le K par défaut)</label>
-    <div class="file-picker">
-      <input type="file" id="admLogoFile" accept="image/*">
-      <button type="button" class="file-picker-btn" data-for="admLogoFile">Choisir un fichier</button>
-      <span class="file-picker-status" id="admLogoFile_status">Aucun fichier choisi</span>
-    </div>
-    <div class="photo-grid" id="admLogoPreviewGrid"></div>
-
-    <h3 style="margin-top:16px;font-size:13.5px;">Couleurs</h3>
-    <div class="row">
-      <div><label for="admColorPrimary">Couleur principale (indigo)</label><input type="text" id="admColorPrimary" placeholder="#1B3358"></div>
-      <div><label for="admColorAccent">Couleur d'accent (ochre)</label><input type="text" id="admColorAccent" placeholder="#C08A28"></div>
-    </div>
-
-    <h3 style="margin-top:16px;font-size:13.5px;">Textes &amp; pied de page</h3>
-    <label for="admFooterDefault">Message par défaut en pied de document (essai gratuit)</label>
-    <input type="text" id="admFooterDefault">
-    <label for="admWhatsapp">Numéro WhatsApp de contact</label>
-    <input type="text" id="admWhatsapp">
-    <label for="admEmail">Email de contact</label>
-    <input type="text" id="admEmail">
-
-    <h3 style="margin-top:16px;font-size:13.5px;">Fonctionnalités</h3>
-    <label style="display:flex;align-items:center;gap:8px;font-weight:400;"><input type="checkbox" id="admFeatCaisse" style="width:auto;"> Activer la Caisse</label>
-    <label style="display:flex;align-items:center;gap:8px;font-weight:400;"><input type="checkbox" id="admFeatWa" style="width:auto;"> Activer le partage WhatsApp</label>
-    <label for="admTrialLimit">Nombre d'essais gratuits</label>
-    <input type="number" id="admTrialLimit" min="0">
-
-    <h3 style="margin-top:16px;font-size:13.5px;">🎁 Attribuer un accès à une entreprise</h3>
-    <div class="notice">Demandez à l'entreprise son fichier de sauvegarde (Réglages → Sauvegarde), importez-le ci-dessous, choisissez le niveau d'accès à lui donner, puis générez le fichier à lui renvoyer — elle l'importera de son côté via Réglages → Restaurer.</div>
-    <div class="file-picker">
-      <input type="file" id="admGrantImportFile" accept="application/json,.json">
-      <button type="button" class="file-picker-btn" data-for="admGrantImportFile">Choisir le fichier de l'entreprise</button>
-      <span class="file-picker-status" id="admGrantImportFile_status">Aucun fichier choisi</span>
-    </div>
-    <div id="admGrantCompanyInfo" class="hint" style="display:none; font-weight:600;"></div>
-    <div id="admGrantControls" style="display:none;">
-      <label for="admGrantLevel">Niveau d'accès à attribuer</label>
-      <select id="admGrantLevel"></select>
-      <button type="button" class="btn btn-ochre btn-block" id="admGrantGenerateBtn" style="margin-top:10px;">⬇️ Générer le fichier d'accès à renvoyer</button>
-    </div>
-
-    <h3 style="margin-top:16px;font-size:13.5px;">🛠️ Accès démo — sur cet appareil (le vôtre)</h3>
-    <div class="notice">Pour vos propres démonstrations : active un accès Pro illimité directement sur cet appareil, sans passer par un paiement ni par un fichier.</div>
-    <div id="admSelfStatusLine" class="hint" style="font-weight:600;"></div>
-    <div class="btn-row">
-      <button type="button" class="btn btn-primary" id="admSelfUnlimitedBtn">Activer l'accès illimité ici</button>
-      <button type="button" class="btn btn-ghost" id="admSelfRemoveBtn">Revenir à l'essai standard</button>
-    </div>
-
-    <h3 style="margin-top:16px;font-size:13.5px;">Sécurité de l'Espace Réservé</h3>
-    <label for="admNewPassword">Changer le mot de passe d'accès</label>
-    <input type="password" id="admNewPassword" placeholder="Laisser vide pour ne pas changer">
-    <label for="admNewPassword2">Confirmer le nouveau mot de passe</label>
-    <input type="password" id="admNewPassword2">
-
-    <div class="btn-row">
-      <button type="button" class="btn btn-primary" id="admApplyBtn">Appliquer sur cet appareil</button>
-      <button type="button" class="btn btn-ochre" id="admExportBtn">⬇️ Exporter data.json</button>
-      <button type="button" class="btn btn-ghost" id="admResetBtn">Réinitialiser</button>
-    </div>
-    <label for="admImportFile" style="margin-top:14px;">Importer un data.json</label>
-    <div class="file-picker">
-      <input type="file" id="admImportFile" accept="application/json,.json">
-      <button type="button" class="file-picker-btn" data-for="admImportFile">Choisir un fichier</button>
-      <span class="file-picker-status" id="admImportFile_status">Aucun fichier choisi</span>
-    </div>
-  `;
-}
-
-let admPendingLogo = null;
-let admGrantImportedPayload = null;
-let admPanelWired = false;
-
-function unlockAdminPanel(){
-  document.getElementById("adminPanelBody").innerHTML = buildAdminPanelHTML();
-  admPanelWired = false;
-  wireAdminPanelEvents();
-  openAdminPanel();
-}
-
-function closeAdminPanel(){
-  document.getElementById("adminPanel").style.display = "none";
-  // On vide le contenu réel : rouvrir exigera de repasser par le mot de
-  // passe, et rien de fonctionnel ne reste dans la page entre-temps.
-  document.getElementById("adminPanelBody").innerHTML = "";
-  admPanelWired = false;
-  admGrantImportedPayload = null;
-}
-document.getElementById("adminPanelClose").addEventListener("click", closeAdminPanel);
-
-function openAdminPanel(){
-  const cfg = siteConfig || {};
-  document.getElementById("admTitle").value = cfg.title || document.title || "";
-  document.getElementById("admTag").value = cfg.tagline || "";
-  document.getElementById("admDescription").value = cfg.description || "";
-  document.getElementById("admColorPrimary").value = cfg.colorPrimary || "";
-  document.getElementById("admColorAccent").value = cfg.colorAccent || "";
-  document.getElementById("admFooterDefault").value = cfg.footerDefault || "";
-  document.getElementById("admWhatsapp").value = cfg.whatsapp || "";
-  document.getElementById("admEmail").value = cfg.email || "";
-  document.getElementById("admFeatCaisse").checked = cfg.featCaisse !== false;
-  document.getElementById("admFeatWa").checked = cfg.featWa !== false;
-  document.getElementById("admTrialLimit").value = cfg.trialLimit != null ? cfg.trialLimit : CONFIG.TRIAL_LIMIT;
-  document.getElementById("admNewPassword").value = "";
-  document.getElementById("admNewPassword2").value = "";
-  admPendingLogo = cfg.logo || null;
-  const grid = document.getElementById("admLogoPreviewGrid");
-  grid.innerHTML = admPendingLogo ? `<img src="${admPendingLogo}" alt="" style="width:52px;height:52px;border-radius:8px;object-fit:cover;border:1px solid var(--line);">` : "";
-  populateGrantLevelSelect();
-  admGrantImportedPayload = null;
-  document.getElementById("admGrantCompanyInfo").style.display = "none";
-  document.getElementById("admGrantControls").style.display = "none";
-  document.getElementById("admGrantImportFile").value = "";
-  if(typeof refreshAllFilePickerStatuses === "function") refreshAllFilePickerStatuses();
-  renderAdmSelfStatus();
-  document.getElementById("adminPanel").style.display = "flex";
-}
-
-/* ============================================================
-   ATTRIBUER UN ACCÈS — Espace Réservé.
-   Fonctionne à partir du fichier de sauvegarde que l'entreprise vous
-   envoie (Réglages → Sauvegarde de son côté). On modifie uniquement son
-   statut Kalcul Pro / son quota d'essai dans une COPIE du fichier, marquée
-   "grantedByAdmin" pour que la restauration l'applique directement (sans
-   la fusion "toujours le plus avantageux" utilisée entre collègues) —
-   sinon on ne pourrait jamais reprendre un accès déjà donné.
-   ============================================================ */
-function populateGrantLevelSelect(){
-  const sel = document.getElementById("admGrantLevel");
-  const opts = [
-    `<option value="free">Gratuit (retire Pro, essai standard)</option>`,
-    `<option value="trial_bonus">Essais gratuits illimités (bonus, sans badge Pro)</option>`
-  ];
-  PLANS.forEach(p=> opts.push(`<option value="${p.id}">Plan ${p.label} (${fmt(p.price)})</option>`));
-  opts.push(`<option value="admin_unlimited">🎁 Accès illimité offert (démo / partenaire, sans expiration)</option>`);
-  sel.innerHTML = opts.join("");
-}
-
-/* Accès démo directement sur cet appareil (le vôtre), sans fichier ni paiement. */
-function renderAdmSelfStatus(){
-  const el = document.getElementById("admSelfStatusLine");
-  if(!el) return;
-  if(isPro()){
-    el.textContent = pro.expiresAt===null
-      ? "🎁 Cet appareil a un accès Pro illimité actif."
-      : "🎁 Cet appareil a un accès Pro actif jusqu'au " + new Date(pro.expiresAt).toLocaleDateString("fr-FR") + ".";
-  } else if(trialLimitOverride){
-    el.textContent = "🎁 Cet appareil a un bonus d'essais gratuits actif (" + trialLimitOverride + ").";
-  } else {
-    el.textContent = "Cet appareil est en essai gratuit standard.";
-  }
-}
-
-function readAdminForm(){
-  return {
-    title: document.getElementById("admTitle").value.trim(),
-    tagline: document.getElementById("admTag").value.trim(),
-    description: document.getElementById("admDescription").value.trim(),
-    logo: admPendingLogo || null,
-    colorPrimary: document.getElementById("admColorPrimary").value.trim(),
-    colorAccent: document.getElementById("admColorAccent").value.trim(),
-    footerDefault: document.getElementById("admFooterDefault").value.trim(),
-    whatsapp: document.getElementById("admWhatsapp").value.trim(),
-    email: document.getElementById("admEmail").value.trim(),
-    featCaisse: document.getElementById("admFeatCaisse").checked,
-    featWa: document.getElementById("admFeatWa").checked,
-    trialLimit: parseInt(document.getElementById("admTrialLimit").value, 10) || CONFIG.TRIAL_LIMIT
-  };
-}
-
-/* Pose tous les écouteurs des champs de l'Espace Réservé. Appelée une
-   seule fois à chaque reconstruction du panneau (unlockAdminPanel), après
-   l'injection du HTML — jamais au chargement de la page, puisque ces
-   éléments n'existent pas encore à ce moment-là. */
-function wireAdminPanelEvents(){
-  if(admPanelWired) return;
-  admPanelWired = true;
-
-  document.getElementById("admGrantImportFile").addEventListener("change", (e)=>{
-    const file = e.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = ()=>{
-      try{
-        const parsed = JSON.parse(reader.result);
-        if(!parsed || parsed.app !== "kalcul" || !parsed.data) throw new Error("invalid");
-        admGrantImportedPayload = parsed;
-        const name = (parsed.data.settings && parsed.data.settings.name) || "(entreprise sans nom)";
-        const p = parsed.data.pro || {};
-        let statusTxt = "Gratuit / essai en cours";
-        if(p.active) statusTxt = (p.expiresAt===null) ? "Pro à vie" : ("Pro jusqu'au " + new Date(p.expiresAt).toLocaleDateString("fr-FR"));
-        document.getElementById("admGrantCompanyInfo").style.display = "block";
-        document.getElementById("admGrantCompanyInfo").textContent = `Entreprise détectée : ${name} — statut actuel : ${statusTxt}`;
-        document.getElementById("admGrantControls").style.display = "block";
-      }catch(err){
-        admGrantImportedPayload = null;
-        document.getElementById("admGrantCompanyInfo").style.display = "none";
-        document.getElementById("admGrantControls").style.display = "none";
-        alert("Ce fichier n'est pas une sauvegarde Kalcul valide.");
-      }
-    };
-    reader.readAsText(file);
-  });
-
-  document.getElementById("admGrantGenerateBtn").addEventListener("click", ()=>{
-    if(!admGrantImportedPayload){ alert("Importez d'abord le fichier de l'entreprise."); return; }
-    const level = document.getElementById("admGrantLevel").value;
-    const payload = JSON.parse(JSON.stringify(admGrantImportedPayload)); // copie profonde, ne touche pas l'original
-    payload.data.settings = payload.data.settings || {};
-
-    if(level === "free"){
-      payload.data.pro = {active:false, expiresAt:null, planId:null};
-      payload.data.trialLimitOverride = null;
-    } else if(level === "trial_bonus"){
-      payload.data.pro = {active:false, expiresAt:null, planId:null};
-      payload.data.trialLimitOverride = 999999;
-    } else if(level === "admin_unlimited"){
-      payload.data.pro = {active:true, expiresAt:null, planId:"admin_unlimited"};
-      payload.data.trialLimitOverride = null;
-    } else {
-      const plan = PLANS.find(pl=>pl.id===level);
-      if(!plan){ alert("Plan inconnu."); return; }
-      const expiresAt = plan.days===null ? null : new Date(Date.now() + plan.days*24*60*60*1000).toISOString();
-      payload.data.pro = {active:true, expiresAt, planId:plan.id};
-      payload.data.trialLimitOverride = null;
-    }
-    payload.exportedAt = new Date().toISOString();
-    payload.grantedByAdmin = true; // indique à la restauration d'appliquer directement, sans la fusion "plus avantageux"
-
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
-    const url = URL.createObjectURL(blob);
-    const safeName = (payload.data.settings.name || "entreprise").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g,"") || "entreprise";
-    const a = document.createElement("a");
-    a.href = url; a.download = `kalcul-acces-${safeName}.json`;
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
-    alert("Fichier d'accès généré. Renvoyez-le à l'entreprise : elle l'importera de son côté via Réglages → Restaurer.");
-  });
-
-  document.getElementById("admSelfUnlimitedBtn").addEventListener("click", ()=>{
-    pro = {active:true, expiresAt:null, planId:"admin_demo"};
-    save(KEYS.pro, pro);
-    renderAdmSelfStatus();
-    renderQuota(); renderStockQuota(); renderCaisseQuota(); renderTrialUiRestrictions();
-    if(document.getElementById("view-pro").classList.contains("active")) renderProView();
-    alert("Accès illimité activé sur cet appareil.");
-  });
-  document.getElementById("admSelfRemoveBtn").addEventListener("click", ()=>{
-    pro = {active:false, expiresAt:null, planId:null};
-    trialLimitOverride = null;
-    save(KEYS.pro, pro);
-    save(KEYS.trialOverride, null);
-    renderAdmSelfStatus();
-    renderQuota(); renderStockQuota(); renderCaisseQuota(); renderTrialUiRestrictions();
-    if(document.getElementById("view-pro").classList.contains("active")) renderProView();
-    alert("Retour à l'essai standard sur cet appareil.");
-  });
-
-  document.getElementById("admLogoFile").addEventListener("change", (e)=>{
-    const file = e.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = ()=>{
-      admPendingLogo = reader.result;
-      document.getElementById("admLogoPreviewGrid").innerHTML = `<img src="${admPendingLogo}" alt="" style="width:52px;height:52px;border-radius:8px;object-fit:cover;border:1px solid var(--line);">`;
-    };
-    reader.readAsDataURL(file);
-  });
-
-  document.getElementById("admApplyBtn").addEventListener("click", async ()=>{
-    const p1 = document.getElementById("admNewPassword").value;
-    const p2 = document.getElementById("admNewPassword2").value;
-    if(p1 || p2){
-      if(p1 !== p2){ alert("Les deux mots de passe ne correspondent pas."); return; }
-      if(p1.length < 4){ alert("Choisissez un mot de passe d'au moins 4 caractères."); return; }
-      adminSecurity.passHash = await hashText(p1);
-      save(KEYS.adminSecurity, adminSecurity);
-    }
-    siteConfig = readAdminForm();
-    save(KEYS.siteConfig, siteConfig);
-    applySiteConfig(siteConfig);
-    alert("Appliqué sur cet appareil. Exportez data.json si vous voulez le pousser chez tous les utilisateurs.");
-  });
-  document.getElementById("admExportBtn").addEventListener("click", ()=>{
-    const cfg = readAdminForm();
-    const blob = new Blob([JSON.stringify(cfg, null, 2)], {type:"application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = "data.json";
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
-  });
-  document.getElementById("admResetBtn").addEventListener("click", ()=>{
-    if(!confirm("Réinitialiser la configuration locale (couleurs, textes, logo) ? L'application reviendra à ses réglages d'origine sur cet appareil au prochain chargement.")) return;
-    siteConfig = null;
-    save(KEYS.siteConfig, null);
-    alert("Configuration locale réinitialisée. Rechargement...");
-    location.reload();
-  });
-  document.getElementById("admImportFile").addEventListener("change", (e)=>{
-    const file = e.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = ()=>{
-      try{
-        const cfg = JSON.parse(reader.result);
-        if(!cfg || typeof cfg !== "object") throw new Error("invalid");
-        siteConfig = cfg;
-        save(KEYS.siteConfig, siteConfig);
-        openAdminPanel();
-        applySiteConfig(siteConfig);
-        alert("data.json importé et appliqué sur cet appareil.");
-      }catch(err){
-        alert("Ce fichier n'est pas un data.json Kalcul valide.");
-      }
-    };
-    reader.readAsText(file);
-  });
-}
-
 
 /* ============================================================
    BOÎTES À SUGGESTIONS — 2 boutons flottants (WhatsApp / Email),
